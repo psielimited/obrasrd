@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, User } from "lucide-react";
+import { Bell, LogIn, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useMyProfile } from "@/hooks/use-profile-data";
+import { useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 
 const TopNav = () => {
   const { user } = useAuthSession();
   const { data: profile } = useMyProfile();
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -48,6 +50,15 @@ const TopNav = () => {
                   </Link>
                 </>
               )}
+              <Link to="/notificaciones" className="relative text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
+                <Bell className="h-4 w-4" />
+                Alertas
+                {unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-3 min-w-5 h-5 px-1 rounded-full bg-accent text-[10px] font-bold text-accent-foreground inline-flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <User className="h-3.5 w-3.5" />
@@ -68,7 +79,19 @@ const TopNav = () => {
           )}
         </nav>
 
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
+          {user && (
+            <Link to="/notificaciones" className="relative">
+              <Button variant="ghost" size="sm">
+                <Bell className="h-4 w-4" />
+              </Button>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-accent text-[9px] font-bold text-accent-foreground inline-flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
           {user ? (
             <Link to="/perfil">
               <Button variant="ghost" size="sm">

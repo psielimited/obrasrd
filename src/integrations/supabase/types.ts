@@ -160,6 +160,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          lead_id: string | null;
+          metadata: Json;
+          read_at: string | null;
+          recipient_user_id: string;
+          title: string;
+          type: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: string;
+          lead_id?: string | null;
+          metadata?: Json;
+          read_at?: string | null;
+          recipient_user_id: string;
+          title: string;
+          type: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          lead_id?: string | null;
+          metadata?: Json;
+          read_at?: string | null;
+          recipient_user_id?: string;
+          title?: string;
+          type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_lead_id_fkey";
+            columns: ["lead_id"];
+            isOneToOne: false;
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       phases: {
         Row: {
           created_at: string;

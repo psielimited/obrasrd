@@ -17,6 +17,7 @@ import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderLeadsPage from "./pages/ProviderLeadsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,14 @@ const App = () => (
             element={
               <RequireAuth>
                 <ProviderLeadsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/notificaciones"
+            element={
+              <RequireAuth>
+                <NotificationsPage />
               </RequireAuth>
             }
           />
