@@ -22,6 +22,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import ConsumerDashboardPage from "./pages/ConsumerDashboardPage";
 import ConsumerRequestsPage from "./pages/ConsumerRequestsPage";
 import ConsumerSavedProvidersPage from "./pages/ConsumerSavedProvidersPage";
+import DashboardHomeRedirect from "./pages/DashboardHomeRedirect";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,14 @@ const AppContent = () => {
         <Route path="/proyectos" element={<ProjectBuilder />} />
         <Route path="/publicar" element={<PublishService />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <DashboardHomeRedirect />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/perfil"
           element={

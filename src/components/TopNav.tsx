@@ -42,7 +42,7 @@ const TopNav = () => {
               </Link>
               {profile?.role === "provider" && (
                 <>
-                  <Link to="/dashboard/proveedor" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
                     Dashboard
                   </Link>
                   <Link to="/dashboard/leads" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
@@ -51,7 +51,7 @@ const TopNav = () => {
                 </>
               )}
               {profile?.role === "buyer" && (
-                <Link to="/dashboard/cliente" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
                   Dashboard
                 </Link>
               )}

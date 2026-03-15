@@ -15,7 +15,7 @@ const AuthPage = () => {
   const [displayName, setDisplayName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const redirectTo = (location.state as { from?: string } | undefined)?.from ?? "/perfil";
+  const redirectTo = (location.state as { from?: string } | undefined)?.from ?? "/dashboard";
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -64,7 +64,7 @@ const AuthPage = () => {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {mode === "signin" ? "Iniciar sesion" : "Crear cuenta"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Accede a tu perfil y dashboard de proveedor.</p>
+          <p className="text-sm text-muted-foreground mt-1">Accede a tu cuenta y panel personalizado.</p>
         </div>
 
         <div className="flex gap-2">

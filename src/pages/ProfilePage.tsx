@@ -123,7 +123,7 @@ const ProfilePage = () => {
           {role === "provider" && (
             <div className="bg-muted/40 p-4 rounded-lg flex flex-col gap-2">
               <p className="text-sm text-foreground">Tu cuenta esta configurada como proveedor.</p>
-              <Link to="/dashboard/proveedor" className="text-sm font-semibold text-accent hover:underline">
+              <Link to="/dashboard" className="text-sm font-semibold text-accent hover:underline">
                 Ir al dashboard de proveedor
               </Link>
             </div>
@@ -131,7 +131,7 @@ const ProfilePage = () => {
           {role === "buyer" && (
             <div className="bg-muted/40 p-4 rounded-lg flex flex-col gap-2">
               <p className="text-sm text-foreground">Tu cuenta esta configurada como cliente.</p>
-              <Link to="/dashboard/cliente" className="text-sm font-semibold text-accent hover:underline">
+              <Link to="/dashboard" className="text-sm font-semibold text-accent hover:underline">
                 Ir al dashboard de cliente
               </Link>
             </div>
