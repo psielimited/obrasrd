@@ -176,16 +176,18 @@ const ProviderProfile = () => {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button variant="whatsapp" size="lg" className="flex-1" onClick={() => window.open(whatsappUrl, "_blank")}>
                 Contactar por WhatsApp
               </Button>
-              <Button variant="accent" size="lg" className="flex-1" onClick={() => setShowQuoteForm((prev) => !prev)}>
-                Solicitar cotizacion
-              </Button>
-              <Button variant={isSaved ? "default" : "outline"} size="lg" onClick={onToggleSave}>
-                <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="accent" size="lg" className="flex-1" onClick={() => setShowQuoteForm((prev) => !prev)}>
+                  Solicitar cotizacion
+                </Button>
+                <Button variant={isSaved ? "default" : "outline"} size="lg" onClick={onToggleSave} className="shrink-0">
+                  <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+                </Button>
+              </div>
             </div>
 
             {showQuoteForm && (
