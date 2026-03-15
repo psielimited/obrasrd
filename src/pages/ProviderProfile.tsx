@@ -1,12 +1,20 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { PROVIDERS } from "@/data/marketplace";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, CheckCircle, MapPin, Briefcase, Calendar } from "lucide-react";
+import { useProvider } from "@/hooks/use-marketplace-data";
 
 const ProviderProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const provider = PROVIDERS.find((p) => p.id === id);
+  const { data: provider, isLoading } = useProvider(id);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Cargando proveedor...</p>
+      </div>
+    );
+  }
 
   if (!provider) {
     return (

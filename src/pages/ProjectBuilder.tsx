@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { PHASES } from "@/data/marketplace";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { usePhases } from "@/hooks/use-marketplace-data";
 
 const ProjectBuilder = () => {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ const ProjectBuilder = () => {
   const [projectName, setProjectName] = useState("");
   const [projectType, setProjectType] = useState("");
   const [selectedPhases, setSelectedPhases] = useState<number[]>([]);
+  const { data: phases = [] } = usePhases();
 
   const projectTypes = [
     "Casa Residencial",
@@ -118,7 +119,7 @@ const ProjectBuilder = () => {
                 Selecciona las fases necesarias
               </label>
               <div className="space-y-3 mb-6">
-                {PHASES.map((phase) => (
+                {phases.map((phase) => (
                   <button
                     key={phase.id}
                     onClick={() => togglePhase(phase.id)}
@@ -167,7 +168,8 @@ const ProjectBuilder = () => {
                 </h3>
                 <div className="space-y-3">
                   {selectedPhases.sort().map((phaseId) => {
-                    const phase = PHASES.find((p) => p.id === phaseId)!;
+                    const phase = phases.find((item) => item.id === phaseId);
+                    if (!phase) return null;
                     return (
                       <div key={phase.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
                         <div className="flex items-baseline gap-2 mb-1">

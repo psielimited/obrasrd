@@ -1,8 +1,9 @@
-import { PHASES } from "@/data/marketplace";
 import { useNavigate } from "react-router-dom";
+import { usePhases } from "@/hooks/use-marketplace-data";
 
 const PhaseGrid = () => {
   const navigate = useNavigate();
+  const { data: phases = [] } = usePhases();
 
   return (
     <section className="px-4 py-8 md:py-12">
@@ -11,7 +12,7 @@ const PhaseGrid = () => {
           Fases de construcción
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {PHASES.map((phase) => (
+          {phases.map((phase) => (
             <button
               key={phase.id}
               onClick={() => navigate(`/fase/${phase.slug}`)}

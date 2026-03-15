@@ -1,12 +1,13 @@
-import { MATERIALS } from "@/data/marketplace";
 import MaterialCard from "@/components/MaterialCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useMaterials } from "@/hooks/use-marketplace-data";
 
 const MaterialsPage = () => {
   const navigate = useNavigate();
-  const categories = [...new Set(MATERIALS.map((m) => m.category))];
+  const { data: materials = [] } = useMaterials();
+  const categories = [...new Set(materials.map((material) => material.category))];
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
@@ -36,7 +37,7 @@ const MaterialsPage = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {MATERIALS.map((material) => (
+            {materials.map((material) => (
               <MaterialCard key={material.id} material={material} />
             ))}
           </div>

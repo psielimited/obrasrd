@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { PROVIDERS, MATERIALS, PHASES, POPULAR_CATEGORIES } from "@/data/marketplace";
 import ProviderCard from "@/components/ProviderCard";
 import MaterialCard from "@/components/MaterialCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Search } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useMaterials, useProviders } from "@/hooks/use-marketplace-data";
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -12,13 +12,15 @@ const SearchPage = () => {
   const initialQuery = searchParams.get("q") || "";
   const initialCategory = searchParams.get("categoria") || "";
   const [query, setQuery] = useState(initialQuery);
+  const { data: providers = [] } = useProviders();
+  const { data: materials = [] } = useMaterials();
   const [activeTab, setActiveTab] = useState<"servicios" | "materiales">(
     initialCategory === "materiales" ? "materiales" : "servicios"
   );
 
   const normalizedQuery = query.toLowerCase();
 
-  const filteredProviders = PROVIDERS.filter(
+  const filteredProviders = providers.filter(
     (p) =>
       p.name.toLowerCase().includes(normalizedQuery) ||
       p.trade.toLowerCase().includes(normalizedQuery) ||
@@ -27,7 +29,7 @@ const SearchPage = () => {
       (initialCategory && p.categorySlug === initialCategory)
   );
 
-  const filteredMaterials = MATERIALS.filter(
+  const filteredMaterials = materials.filter(
     (m) =>
       m.name.toLowerCase().includes(normalizedQuery) ||
       m.category.toLowerCase().includes(normalizedQuery) ||

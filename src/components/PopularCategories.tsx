@@ -1,8 +1,9 @@
-import { POPULAR_CATEGORIES } from "@/data/marketplace";
 import { useNavigate } from "react-router-dom";
+import { usePopularCategories } from "@/hooks/use-marketplace-data";
 
 const PopularCategories = () => {
   const navigate = useNavigate();
+  const { data: popularCategories = [] } = usePopularCategories();
 
   return (
     <section className="px-4 py-8 md:py-12 bg-muted/50">
@@ -11,7 +12,7 @@ const PopularCategories = () => {
           Categorías populares
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {POPULAR_CATEGORIES.map((cat) => (
+          {popularCategories.map((cat) => (
             <button
               key={cat.slug}
               onClick={() => navigate(`/buscar?categoria=${cat.slug}`)}

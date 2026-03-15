@@ -2,11 +2,12 @@ import HeroSearch from "@/components/HeroSearch";
 import PhaseGrid from "@/components/PhaseGrid";
 import PopularCategories from "@/components/PopularCategories";
 import HowItWorks from "@/components/HowItWorks";
-import { PROVIDERS } from "@/data/marketplace";
 import ProviderCard from "@/components/ProviderCard";
+import { useProviders } from "@/hooks/use-marketplace-data";
 
 const Index = () => {
-  const featuredProviders = PROVIDERS.filter((p) => p.verified).slice(0, 4);
+  const { data: providers = [] } = useProviders();
+  const featuredProviders = providers.filter((provider) => provider.verified).slice(0, 4);
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
@@ -35,10 +36,10 @@ const Index = () => {
             <div>
               <p className="text-lg font-black tracking-tight text-foreground">ObrasRD</p>
               <p className="text-xs text-muted-foreground">
-                El marketplace de construcción de República Dominicana.
+                El marketplace de construccion de Republica Dominicana.
               </p>
             </div>
-            <p className="text-xs text-muted-foreground"><p className="text-xs text-muted-foreground">© 2026 ObrasRD. Todos los derechos reservados.</p></p>
+            <p className="text-xs text-muted-foreground">� 2026 ObrasRD. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

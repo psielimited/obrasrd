@@ -1,13 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { PHASES, PROVIDERS } from "@/data/marketplace";
 import ProviderCard from "@/components/ProviderCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { usePhases, useProviders } from "@/hooks/use-marketplace-data";
 
 const PhasePage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const phase = PHASES.find((p) => p.slug === slug);
+  const { data: phases = [] } = usePhases();
+  const { data: providers = [] } = useProviders();
+  const phase = phases.find((item) => item.slug === slug);
 
   if (!phase) {
     return (
@@ -17,7 +19,7 @@ const PhasePage = () => {
     );
   }
 
-  const providers = PROVIDERS.filter((p) => p.phaseId === phase.id);
+  const phaseProviders = providers.filter((provider) => provider.phaseId === phase.id);
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
@@ -49,12 +51,12 @@ const PhasePage = () => {
           </div>
 
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
-            Proveedores en esta fase ({providers.length})
+            Proveedores en esta fase ({phaseProviders.length})
           </h2>
 
-          {providers.length > 0 ? (
+          {phaseProviders.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {providers.map((provider) => (
+              {phaseProviders.map((provider) => (
                 <ProviderCard key={provider.id} provider={provider} />
               ))}
             </div>
