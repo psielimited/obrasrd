@@ -335,6 +335,35 @@ export type Database = {
           },
         ];
       };
+      saved_providers: {
+        Row: {
+          created_at: string;
+          id: number;
+          provider_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          provider_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          provider_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_providers_provider_id_fkey";
+            columns: ["provider_id"];
+            isOneToOne: false;
+            referencedRelation: "providers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       projects: {
         Row: {
           created_at: string;

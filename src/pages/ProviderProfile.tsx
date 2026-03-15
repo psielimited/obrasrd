@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, CheckCircle, MapPin, Briefcase, Calendar } from "lucide-react";
+import { ArrowLeft, Star, CheckCircle, MapPin, Briefcase, Calendar, Heart } from "lucide-react";
 import { useProvider } from "@/hooks/use-marketplace-data";
 import { createLead } from "@/lib/leads-api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useMyProfile } from "@/hooks/use-profile-data";
+import { toggleSavedProvider } from "@/lib/saved-providers-api";
+import { savedProvidersQueryKeys, useMySavedProviderIds } from "@/hooks/use-saved-providers-data";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ProviderProfile = () => {
   const { id } = useParams();
@@ -14,6 +17,8 @@ const ProviderProfile = () => {
   const { data: provider, isLoading } = useProvider(id);
   const { user } = useAuthSession();
   const { data: profile } = useMyProfile();
+  const { data: savedProviderIds = [] } = useMySavedProviderIds();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const [showQuoteForm, setShowQuoteForm] = useState(false);
@@ -52,6 +57,7 @@ const ProviderProfile = () => {
   )}`;
 
   const canSubmitLead = requesterContact.trim() && message.trim();
+  const isSaved = savedProviderIds.includes(provider.id);
 
   const submitLead = async () => {
     if (!canSubmitLead || isSubmittingLead) {
@@ -84,6 +90,32 @@ const ProviderProfile = () => {
       });
     } finally {
       setIsSubmittingLead(false);
+    }
+  };
+
+  const onToggleSave = async () => {
+    if (!user) {
+      navigate("/auth", { state: { from: `/proveedor/${provider.id}` } });
+      return;
+    }
+
+    try {
+      const saved = await toggleSavedProvider(provider.id);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: savedProvidersQueryKeys.ids }),
+        queryClient.invalidateQueries({ queryKey: savedProvidersQueryKeys.list }),
+      ]);
+
+      toast({
+        title: saved ? "Proveedor guardado" : "Proveedor removido",
+        description: saved ? "Lo agregamos a tus guardados." : "Se elimino de tus guardados.",
+      });
+    } catch (error) {
+      toast({
+        title: "No se pudo actualizar",
+        description: error instanceof Error ? error.message : "Intenta nuevamente.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -150,6 +182,9 @@ const ProviderProfile = () => {
               </Button>
               <Button variant="accent" size="lg" className="flex-1" onClick={() => setShowQuoteForm((prev) => !prev)}>
                 Solicitar cotizacion
+              </Button>
+              <Button variant={isSaved ? "default" : "outline"} size="lg" onClick={onToggleSave}>
+                <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
               </Button>
             </div>
 
