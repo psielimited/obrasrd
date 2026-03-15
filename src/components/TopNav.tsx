@@ -5,7 +5,7 @@ const TopNav = () => {
     <header className="bg-card border-b border-border sticky top-0 z-50">
       <div className="container max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="text-lg font-black tracking-tight text-foreground">
-          OBRA
+          ObrasRD
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/buscar" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">

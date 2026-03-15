@@ -17,7 +17,7 @@ const ProviderProfile = () => {
   }
 
   const whatsappUrl = `https://wa.me/${provider.whatsapp}?text=${encodeURIComponent(
-    `Hola, me interesa cotizar sus servicios de ${provider.trade}. Vi su perfil en OBRA.`
+    `Hola, me interesa cotizar sus servicios de ${provider.trade}. Vi su perfil en ObrasRD.`
   )}`;
 
   return (
