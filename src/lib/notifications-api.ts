@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
-export type NotificationType = "lead_new" | "lead_status" | "lead_reply";
+export type NotificationType = "lead_new" | "lead_status" | "lead_reply" | "lead_message";
 
 export interface AppNotification {
   id: string;

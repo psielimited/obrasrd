@@ -8,12 +8,14 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { useMyRequestedLeads } from "@/hooks/use-leads-data";
 import { useMyNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 import { useMyProfile } from "@/hooks/use-profile-data";
+import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 
 const ConsumerDashboardPage = () => {
   const { data: profile } = useMyProfile();
   const { data: leads = [] } = useMyRequestedLeads();
   const { data: notifications = [] } = useMyNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  useDashboardRealtimeSync();
 
   const activeRequests = leads.filter((lead) => ["new", "contacted", "qualified"].includes(lead.status)).length;
   const respondedRequests = leads.filter((lead) => lead.status !== "new").length;

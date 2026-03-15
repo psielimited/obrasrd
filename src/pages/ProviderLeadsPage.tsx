@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { MessageSquareWarning } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { MessageSquare, MessageSquareWarning } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
@@ -31,6 +31,7 @@ import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
 import { leadQueryKeys, useMyLeads } from "@/hooks/use-leads-data";
 import { LeadStatus, RequesterState, updateLead } from "@/lib/leads-api";
 import { useToast } from "@/hooks/use-toast";
+import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 
 const REQUESTER_STATE_LABELS: Record<RequesterState, string> = {
   active: "Activa",
@@ -47,11 +48,13 @@ const REQUESTER_STATE_CLASSES: Record<RequesterState, string> = {
 const ACTIONABLE_FILTER_STORAGE_KEY = "provider-leads-show-only-actionable";
 
 const ProviderLeadsPage = () => {
+  const navigate = useNavigate();
   const { data: profile } = useMyProfile();
   const { data: providerProfile } = useMyProviderProfile();
   const { data: leads = [], isLoading } = useMyLeads();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  useDashboardRealtimeSync();
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | LeadStatus>("all");
@@ -220,6 +223,7 @@ const ProviderLeadsPage = () => {
                       <TableHead>Mensaje</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead>Estado cliente</TableHead>
+                      <TableHead>Mensajes</TableHead>
                       <TableHead>Nota interna</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
@@ -231,6 +235,10 @@ const ProviderLeadsPage = () => {
                       const whatsappUrl = lead.requesterContact
                         ? `https://wa.me/${lead.requesterContact.replace(/[^\d]/g, "")}`
                         : null;
+                      const unreadForProvider =
+                        Boolean(lead.lastMessageAt) &&
+                        (!lead.providerLastReadAt ||
+                          Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt));
 
                       return (
                         <TableRow key={lead.id} className={`border-slate-800 hover:bg-slate-900/40 ${lead.requesterState !== "active" ? "opacity-70" : ""}`}>
@@ -262,6 +270,18 @@ const ProviderLeadsPage = () => {
                             <Badge variant="outline" className={REQUESTER_STATE_CLASSES[lead.requesterState]}>
                               {REQUESTER_STATE_LABELS[lead.requesterState]}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <Button size="sm" variant="outline" onClick={() => navigate(`/lead/${lead.id}/chat`)}>
+                                <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                                Chat
+                              </Button>
+                              <p className="text-[11px] text-slate-500 line-clamp-2">{lead.lastMessagePreview || "Sin mensajes"}</p>
+                              {unreadForProvider && (
+                                <Badge variant="outline" className="border-accent/40 text-accent w-fit">No leido</Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Input
@@ -297,6 +317,10 @@ const ProviderLeadsPage = () => {
                   const whatsappUrl = lead.requesterContact
                     ? `https://wa.me/${lead.requesterContact.replace(/[^\d]/g, "")}`
                     : null;
+                  const unreadForProvider =
+                    Boolean(lead.lastMessageAt) &&
+                    (!lead.providerLastReadAt ||
+                      Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt));
 
                   return (
                     <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 space-y-3">
@@ -314,6 +338,10 @@ const ProviderLeadsPage = () => {
                       </div>
 
                       <p className="text-sm text-slate-300">{lead.message}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs text-slate-500 line-clamp-1">{lead.lastMessagePreview || "Sin mensajes"}</p>
+                        {unreadForProvider && <Badge variant="outline" className="border-accent/40 text-accent">No leido</Badge>}
+                      </div>
 
                       <Select value={status} onValueChange={(value) => setDraftStatuses((prev) => ({ ...prev, [lead.id]: value as LeadStatus }))}>
                         <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
@@ -336,6 +364,9 @@ const ProviderLeadsPage = () => {
                       <div className="flex gap-2">
                         <Button size="sm" variant="accent" onClick={() => onSaveLead(lead.id)} disabled={isSaving === lead.id}>
                           {isSaving === lead.id ? "Guardando..." : "Guardar"}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => navigate(`/lead/${lead.id}/chat`)}>
+                          Chat
                         </Button>
                         {whatsappUrl && (
                           <Button size="sm" variant="whatsapp" onClick={() => window.open(whatsappUrl, "_blank")}>

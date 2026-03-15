@@ -62,12 +62,16 @@ export type Database = {
           created_at: string
           estimated_budget: string | null
           id: string
+          last_message_at: string | null
+          last_message_preview: string | null
           message: string
           provider_id: string
+          provider_last_read_at: string | null
           provider_reply: string | null
           requester_archived_at: string | null
           requester_cancelled_at: string | null
           requester_contact: string | null
+          requester_last_read_at: string | null
           requester_name: string | null
           requester_state: string
           requester_user_id: string | null
@@ -80,12 +84,16 @@ export type Database = {
           created_at?: string
           estimated_budget?: string | null
           id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
           message: string
           provider_id: string
+          provider_last_read_at?: string | null
           provider_reply?: string | null
           requester_archived_at?: string | null
           requester_cancelled_at?: string | null
           requester_contact?: string | null
+          requester_last_read_at?: string | null
           requester_name?: string | null
           requester_state?: string
           requester_user_id?: string | null
@@ -98,12 +106,16 @@ export type Database = {
           created_at?: string
           estimated_budget?: string | null
           id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
           message?: string
           provider_id?: string
+          provider_last_read_at?: string | null
           provider_reply?: string | null
           requester_archived_at?: string | null
           requester_cancelled_at?: string | null
           requester_contact?: string | null
+          requester_last_read_at?: string | null
           requester_name?: string | null
           requester_state?: string
           requester_user_id?: string | null
@@ -170,6 +182,41 @@ export type Database = {
           whatsapp?: string
         }
         Relationships: []
+      }
+      lead_messages: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          message: string
+          sender_role: string
+          sender_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          message: string
+          sender_role: string
+          sender_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          message?: string
+          sender_role?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

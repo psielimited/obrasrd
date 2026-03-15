@@ -23,6 +23,7 @@ import ConsumerDashboardPage from "./pages/ConsumerDashboardPage";
 import ConsumerRequestsPage from "./pages/ConsumerRequestsPage";
 import ConsumerSavedProvidersPage from "./pages/ConsumerSavedProvidersPage";
 import DashboardHomeRedirect from "./pages/DashboardHomeRedirect";
+import LeadThreadPage from "./pages/LeadThreadPage";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -30,7 +31,9 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const location = useLocation();
   const isDashboardShellRoute =
-    location.pathname.startsWith("/dashboard") || location.pathname === "/notificaciones";
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname === "/notificaciones" ||
+    location.pathname.startsWith("/lead/");
 
   return (
     <>
@@ -113,6 +116,14 @@ const AppContent = () => {
           element={
             <RequireAuth>
               <NotificationsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/lead/:id/chat"
+          element={
+            <RequireAuth>
+              <LeadThreadPage />
             </RequireAuth>
           }
         />

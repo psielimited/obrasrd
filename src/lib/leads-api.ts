@@ -13,6 +13,10 @@ export interface Lead {
   requesterState: RequesterState;
   requesterCancelledAt?: string;
   requesterArchivedAt?: string;
+  providerLastReadAt?: string;
+  requesterLastReadAt?: string;
+  lastMessageAt?: string;
+  lastMessagePreview?: string;
   message: string;
   estimatedBudget?: string;
   providerReply?: string;
@@ -40,6 +44,10 @@ const toLead = (row: Tables<"leads">): Lead => ({
   requesterState: (row.requester_state as RequesterState) ?? "active",
   requesterCancelledAt: row.requester_cancelled_at ?? undefined,
   requesterArchivedAt: row.requester_archived_at ?? undefined,
+  providerLastReadAt: row.provider_last_read_at ?? undefined,
+  requesterLastReadAt: row.requester_last_read_at ?? undefined,
+  lastMessageAt: row.last_message_at ?? undefined,
+  lastMessagePreview: row.last_message_preview ?? undefined,
   message: row.message,
   estimatedBudget: row.estimated_budget ?? undefined,
   providerReply: row.provider_reply ?? undefined,
@@ -109,6 +117,24 @@ export const getLeadsForRequester = async (): Promise<Lead[]> => {
   return data.map(toLead);
 };
 
+export const getLeadById = async (leadId: string): Promise<Lead | null> => {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("id", leadId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return toLead(data);
+};
+
 export const updateLead = async (
   leadId: string,
   payload: { status: LeadStatus; providerReply?: string },
@@ -132,6 +158,14 @@ export const updateMyLeadState = async (
     p_lead_id: leadId,
     p_requester_state: requesterState,
   });
+
+  if (error) {
+    throw error;
+  }
+};
+
+export const markMyLeadThreadRead = async (leadId: string): Promise<void> => {
+  const { error } = await supabase.rpc("mark_my_lead_thread_read", { p_lead_id: leadId });
 
   if (error) {
     throw error;

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { MessageSquareWarning, RotateCcw, XCircle, Archive } from "lucide-react";
+import { MessageSquare, MessageSquareWarning, RotateCcw, XCircle, Archive } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
 import EmptyState from "@/components/dashboard/EmptyState";
@@ -19,6 +20,7 @@ import { useMyRequestedLeads, leadQueryKeys } from "@/hooks/use-leads-data";
 import { RequesterState, type LeadStatus, updateMyLeadState } from "@/lib/leads-api";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 
 const REQUESTER_STATE_LABELS: Record<RequesterState, string> = {
   active: "Activa",
@@ -33,9 +35,11 @@ const REQUESTER_STATE_CLASSES: Record<RequesterState, string> = {
 };
 
 const ConsumerRequestsPage = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: requests = [], isLoading } = useMyRequestedLeads();
+  useDashboardRealtimeSync();
 
   const sorted = useMemo(() => [...requests].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)), [requests]);
 
@@ -87,57 +91,75 @@ const ConsumerRequestsPage = () => {
                   <TableHead>Solicitud</TableHead>
                   <TableHead>Estado proveedor</TableHead>
                   <TableHead>Estado cliente</TableHead>
+                  <TableHead>Mensajes</TableHead>
                   <TableHead>Timeline</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sorted.map((lead) => (
-                  <TableRow key={lead.id} className="border-slate-800 hover:bg-slate-900/40">
-                    <TableCell>
-                      <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitud"}</p>
-                      <p className="text-xs text-slate-400 line-clamp-2 mt-1">{lead.message}</p>
-                      <p className="text-xs text-slate-500 mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
-                    </TableCell>
-                    <TableCell><StatusBadge status={lead.status} /></TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={REQUESTER_STATE_CLASSES[lead.requesterState]}>
-                        {REQUESTER_STATE_LABELS[lead.requesterState]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="border-slate-700 text-slate-300">Creada</Badge>
-                        {lead.contactedAt && <Badge variant="outline" className="border-slate-700 text-slate-300">Contactada</Badge>}
-                        {lead.providerReply && <Badge variant="outline" className="border-slate-700 text-slate-300">Respuesta</Badge>}
-                        {lead.closedAt && <Badge variant="outline" className="border-slate-700 text-slate-300">Cerrada</Badge>}
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-1">{new Date(lead.createdAt).toLocaleString()}</p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {lead.requesterState !== "active" && (
-                          <Button size="sm" variant="outline" onClick={() => updateState(lead.id, "active")}>
-                            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                            Reactivar
+                {sorted.map((lead) => {
+                  const unreadForRequester =
+                    Boolean(lead.lastMessageAt) &&
+                    (!lead.requesterLastReadAt ||
+                      Date.parse(lead.lastMessageAt) > Date.parse(lead.requesterLastReadAt));
+
+                  return (
+                    <TableRow key={lead.id} className="border-slate-800 hover:bg-slate-900/40">
+                      <TableCell>
+                        <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitud"}</p>
+                        <p className="text-xs text-slate-400 line-clamp-2 mt-1">{lead.message}</p>
+                        <p className="text-xs text-slate-500 mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
+                      </TableCell>
+                      <TableCell><StatusBadge status={lead.status} /></TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={REQUESTER_STATE_CLASSES[lead.requesterState]}>
+                          {REQUESTER_STATE_LABELS[lead.requesterState]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/lead/${lead.id}/chat`)}>
+                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                            Chat
                           </Button>
-                        )}
-                        {lead.requesterState === "active" && (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => updateState(lead.id, "archived")}>
-                              <Archive className="h-3.5 w-3.5 mr-1" />
-                              Archivar
+                          <p className="text-[11px] text-slate-500 line-clamp-2">{lead.lastMessagePreview || "Sin mensajes"}</p>
+                          {unreadForRequester && <Badge variant="outline" className="border-accent/40 text-accent w-fit">No leido</Badge>}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Badge variant="outline" className="border-slate-700 text-slate-300">Creada</Badge>
+                          {lead.contactedAt && <Badge variant="outline" className="border-slate-700 text-slate-300">Contactada</Badge>}
+                          {lead.providerReply && <Badge variant="outline" className="border-slate-700 text-slate-300">Respuesta</Badge>}
+                          {lead.closedAt && <Badge variant="outline" className="border-slate-700 text-slate-300">Cerrada</Badge>}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1">{new Date(lead.createdAt).toLocaleString()}</p>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          {lead.requesterState !== "active" && (
+                            <Button size="sm" variant="outline" onClick={() => updateState(lead.id, "active")}>
+                              <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                              Reactivar
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={() => updateState(lead.id, "cancelled")}>
-                              <XCircle className="h-3.5 w-3.5 mr-1" />
-                              Cancelar
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          )}
+                          {lead.requesterState === "active" && (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => updateState(lead.id, "archived")}>
+                                <Archive className="h-3.5 w-3.5 mr-1" />
+                                Archivar
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => updateState(lead.id, "cancelled")}>
+                                <XCircle className="h-3.5 w-3.5 mr-1" />
+                                Cancelar
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

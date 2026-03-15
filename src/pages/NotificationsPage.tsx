@@ -14,6 +14,7 @@ import {
   type AppNotification,
 } from "@/lib/notifications-api";
 import { useToast } from "@/hooks/use-toast";
+import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 
 const getNotificationLabel = (notification: AppNotification) => {
   switch (notification.type) {
@@ -23,6 +24,8 @@ const getNotificationLabel = (notification: AppNotification) => {
       return "Estado de solicitud";
     case "lead_reply":
       return "Mensaje del proveedor";
+    case "lead_message":
+      return "Mensaje";
     default:
       return "Notificacion";
   }
@@ -33,6 +36,7 @@ const NotificationsPage = () => {
   const { data: notifications = [], isLoading } = useMyNotifications();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  useDashboardRealtimeSync();
 
   const unreadCount = notifications.filter((item) => !item.readAt).length;
 

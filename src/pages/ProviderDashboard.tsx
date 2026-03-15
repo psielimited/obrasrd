@@ -20,6 +20,7 @@ import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
 import { useMyLeads } from "@/hooks/use-leads-data";
 import { useMyNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 import { usePhases } from "@/hooks/use-marketplace-data";
+import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 
 const calculateProfileCompleteness = (provider: ReturnType<typeof useMyProviderProfile>["data"]) => {
   if (!provider) return 0;
@@ -49,6 +50,7 @@ const ProviderDashboard = () => {
   const { data: notifications = [] } = useMyNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
   const { data: phases = [] } = usePhases();
+  useDashboardRealtimeSync();
 
   const profileCompleteness = calculateProfileCompleteness(providerProfile);
   const leadsNewOrPending = leads.filter((lead) => lead.status === "new" || lead.status === "contacted").length;
