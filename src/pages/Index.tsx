@@ -33,7 +33,7 @@ const Index = () => {
         <div className="container max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <p className="text-lg font-black tracking-tight text-foreground">OBRA</p>
+              <p className="text-lg font-black tracking-tight text-foreground">ObrasRD</p>
               <p className="text-xs text-muted-foreground">
                 El marketplace de construcción de República Dominicana.
               </p>
