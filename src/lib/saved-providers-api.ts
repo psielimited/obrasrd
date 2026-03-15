@@ -1,6 +1,6 @@
 import type { Provider } from "@/data/marketplace";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 
 const toProvider = (row: Tables<"providers">): Provider => ({
   id: row.id,
@@ -51,7 +51,10 @@ export const getMySavedProviderIds = async (): Promise<string[]> => {
 };
 
 export interface SavedProviderItem {
+  id: number;
   provider: Provider;
+  note?: string;
+  isShortlisted: boolean;
   createdAt: string;
 }
 
@@ -60,7 +63,7 @@ export const getMySavedProviders = async (): Promise<SavedProviderItem[]> => {
 
   const { data, error } = await supabase
     .from("saved_providers")
-    .select("created_at, providers(*)")
+    .select("id,created_at,note,is_shortlisted, providers(*)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -73,7 +76,10 @@ export const getMySavedProviders = async (): Promise<SavedProviderItem[]> => {
       const providerRow = item.providers as Tables<"providers"> | null;
       if (!providerRow) return null;
       return {
+        id: item.id,
         provider: toProvider(providerRow),
+        note: item.note ?? undefined,
+        isShortlisted: item.is_shortlisted,
         createdAt: item.created_at,
       };
     })
@@ -104,6 +110,30 @@ export const unsaveProvider = async (providerId: string): Promise<void> => {
     .delete()
     .eq("user_id", userId)
     .eq("provider_id", providerId);
+
+  if (error) {
+    throw error;
+  }
+};
+
+export const updateSavedProviderMeta = async (
+  savedProviderId: number,
+  payload: { note?: string; isShortlisted?: boolean },
+): Promise<void> => {
+  const updatePayload: TablesUpdate<"saved_providers"> = {};
+
+  if (payload.note !== undefined) {
+    updatePayload.note = payload.note.trim() ? payload.note.trim() : null;
+  }
+
+  if (payload.isShortlisted !== undefined) {
+    updatePayload.is_shortlisted = payload.isShortlisted;
+  }
+
+  const { error } = await supabase
+    .from("saved_providers")
+    .update(updatePayload)
+    .eq("id", savedProviderId);
 
   if (error) {
     throw error;
