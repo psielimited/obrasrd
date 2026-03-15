@@ -8,7 +8,7 @@ interface MaterialCardProps {
 
 const MaterialCard = ({ material }: MaterialCardProps) => {
   const whatsappUrl = `https://wa.me/${material.whatsapp}?text=${encodeURIComponent(
-    `Hola, me interesa cotizar: ${material.name}. `Hola, me interesa cotizar: ${material.name}. Vi el producto en ObrasRD.``
+    `Hola, me interesa cotizar: ${material.name}. Vi el producto en ObrasRD.`
   )}`;
 
   return (
