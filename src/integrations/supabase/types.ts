@@ -204,6 +204,71 @@ export type Database = {
           },
         ];
       };
+      outbound_messages: {
+        Row: {
+          attempts: number;
+          body: string;
+          channel: string;
+          created_at: string;
+          id: string;
+          last_error: string | null;
+          max_attempts: number;
+          next_attempt_at: string;
+          notification_id: string;
+          payload: Json;
+          recipient: string;
+          recipient_user_id: string;
+          sent_at: string | null;
+          status: string;
+          subject: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          body: string;
+          channel: string;
+          created_at?: string;
+          id?: string;
+          last_error?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          notification_id: string;
+          payload?: Json;
+          recipient: string;
+          recipient_user_id: string;
+          sent_at?: string | null;
+          status?: string;
+          subject?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          body?: string;
+          channel?: string;
+          created_at?: string;
+          id?: string;
+          last_error?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          notification_id?: string;
+          payload?: Json;
+          recipient?: string;
+          recipient_user_id?: string;
+          sent_at?: string | null;
+          status?: string;
+          subject?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outbound_messages_notification_id_fkey";
+            columns: ["notification_id"];
+            isOneToOne: false;
+            referencedRelation: "notifications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       phases: {
         Row: {
           created_at: string;
@@ -393,6 +458,8 @@ export type Database = {
         Row: {
           created_at: string;
           display_name: string | null;
+          notification_email_enabled: boolean;
+          notification_whatsapp_enabled: boolean;
           phone: string | null;
           role: string;
           updated_at: string;
@@ -401,6 +468,8 @@ export type Database = {
         Insert: {
           created_at?: string;
           display_name?: string | null;
+          notification_email_enabled?: boolean;
+          notification_whatsapp_enabled?: boolean;
           phone?: string | null;
           role?: string;
           updated_at?: string;
@@ -409,6 +478,8 @@ export type Database = {
         Update: {
           created_at?: string;
           display_name?: string | null;
+          notification_email_enabled?: boolean;
+          notification_whatsapp_enabled?: boolean;
           phone?: string | null;
           role?: string;
           updated_at?: string;

@@ -15,6 +15,8 @@ const ProfilePage = () => {
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>("buyer");
+  const [notificationEmailEnabled, setNotificationEmailEnabled] = useState(true);
+  const [notificationWhatsappEnabled, setNotificationWhatsappEnabled] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -22,6 +24,8 @@ const ProfilePage = () => {
     setDisplayName(profile.displayName ?? "");
     setPhone(profile.phone ?? "");
     setRole(profile.role);
+    setNotificationEmailEnabled(profile.notificationEmailEnabled);
+    setNotificationWhatsappEnabled(profile.notificationWhatsappEnabled);
   }, [profile]);
 
   const saveProfile = async () => {
@@ -31,6 +35,8 @@ const ProfilePage = () => {
         displayName: displayName.trim() || undefined,
         phone: phone.trim() || undefined,
         role,
+        notificationEmailEnabled,
+        notificationWhatsappEnabled,
       });
       await queryClient.invalidateQueries({ queryKey: profileQueryKeys.myProfile });
       toast({
@@ -91,6 +97,27 @@ const ProfilePage = () => {
                 Proveedor
               </Button>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Notificaciones</label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={notificationEmailEnabled ? "default" : "outline"}
+                onClick={() => setNotificationEmailEnabled((prev) => !prev)}
+              >
+                Email
+              </Button>
+              <Button
+                variant={notificationWhatsappEnabled ? "default" : "outline"}
+                onClick={() => setNotificationWhatsappEnabled((prev) => !prev)}
+              >
+                WhatsApp
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Para WhatsApp usa un telefono valido en tu perfil.
+            </p>
           </div>
 
           {role === "provider" && (

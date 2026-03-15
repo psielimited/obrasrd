@@ -9,6 +9,8 @@ export interface UserProfile {
   displayName?: string;
   role: UserRole;
   phone?: string;
+  notificationEmailEnabled: boolean;
+  notificationWhatsappEnabled: boolean;
 }
 
 export interface ProviderProfileInput {
@@ -64,7 +66,7 @@ export const getMyProfile = async (): Promise<UserProfile | null> => {
 
   const { data, error } = await supabase
     .from("user_profiles")
-    .select("user_id,display_name,role,phone")
+    .select("user_id,display_name,role,phone,notification_email_enabled,notification_whatsapp_enabled")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -77,6 +79,8 @@ export const getMyProfile = async (): Promise<UserProfile | null> => {
     displayName: data.display_name ?? undefined,
     role: (data.role as UserRole) ?? "buyer",
     phone: data.phone ?? undefined,
+    notificationEmailEnabled: data.notification_email_enabled ?? true,
+    notificationWhatsappEnabled: data.notification_whatsapp_enabled ?? false,
   };
 };
 
@@ -88,6 +92,8 @@ export const upsertMyProfile = async (payload: Omit<UserProfile, "userId">): Pro
     display_name: payload.displayName ?? null,
     role: payload.role,
     phone: payload.phone ?? null,
+    notification_email_enabled: payload.notificationEmailEnabled,
+    notification_whatsapp_enabled: payload.notificationWhatsappEnabled,
   });
 
   if (error) {
