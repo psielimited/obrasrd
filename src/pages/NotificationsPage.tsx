@@ -1,11 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { BellDot, CheckCheck } from "lucide-react";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
+import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
 import EmptyState from "@/components/dashboard/EmptyState";
 import StatCard from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
 import { notificationQueryKeys, useMyNotifications } from "@/hooks/use-notifications-data";
+import { useMyProfile } from "@/hooks/use-profile-data";
 import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
@@ -27,6 +29,7 @@ const getNotificationLabel = (notification: AppNotification) => {
 };
 
 const NotificationsPage = () => {
+  const { data: profile } = useMyProfile();
   const { data: notifications = [], isLoading } = useMyNotifications();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -67,8 +70,10 @@ const NotificationsPage = () => {
     }
   };
 
+  const Layout = profile?.role === "provider" ? ProviderDashboardLayout : ConsumerDashboardLayout;
+
   return (
-    <ProviderDashboardLayout
+    <Layout
       title="Notificaciones"
       subtitle="Controla actualizaciones de leads y respuestas"
       actionLabel="Acciones"
@@ -130,7 +135,7 @@ const NotificationsPage = () => {
           )}
         </SectionCard>
       </div>
-    </ProviderDashboardLayout>
+    </Layout>
   );
 };
 

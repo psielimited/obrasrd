@@ -19,6 +19,9 @@ import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderProfileEditorPage from "./pages/ProviderProfileEditorPage";
 import ProviderLeadsPage from "./pages/ProviderLeadsPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import ConsumerDashboardPage from "./pages/ConsumerDashboardPage";
+import ConsumerRequestsPage from "./pages/ConsumerRequestsPage";
+import ConsumerSavedProvidersPage from "./pages/ConsumerSavedProvidersPage";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -61,6 +64,30 @@ const AppContent = () => {
           element={
             <RequireAuth>
               <ProviderProfileEditorPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/dashboard/cliente"
+          element={
+            <RequireAuth>
+              <ConsumerDashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/dashboard/cliente/solicitudes"
+          element={
+            <RequireAuth>
+              <ConsumerRequestsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/dashboard/cliente/guardados"
+          element={
+            <RequireAuth>
+              <ConsumerSavedProvidersPage />
             </RequireAuth>
           }
         />

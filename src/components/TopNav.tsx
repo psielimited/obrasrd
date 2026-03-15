@@ -50,6 +50,11 @@ const TopNav = () => {
                   </Link>
                 </>
               )}
+              {profile?.role === "buyer" && (
+                <Link to="/dashboard/cliente" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                  Dashboard
+                </Link>
+              )}
               <Link to="/notificaciones" className="relative text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
                 <Bell className="h-4 w-4" />
                 Alertas

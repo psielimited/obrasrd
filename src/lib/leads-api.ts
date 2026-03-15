@@ -78,6 +78,29 @@ export const getLeadsForProvider = async (providerId: string): Promise<Lead[]> =
   return data.map(toLead);
 };
 
+export const getLeadsForRequester = async (): Promise<Lead[]> => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw userError ?? new Error("Usuario no autenticado");
+  }
+
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("requester_user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    throw error ?? new Error("No se pudieron cargar tus solicitudes");
+  }
+
+  return data.map(toLead);
+};
+
 export const updateLead = async (
   leadId: string,
   payload: { status: LeadStatus; providerReply?: string },

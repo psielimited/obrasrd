@@ -128,6 +128,14 @@ const ProfilePage = () => {
               </Link>
             </div>
           )}
+          {role === "buyer" && (
+            <div className="bg-muted/40 p-4 rounded-lg flex flex-col gap-2">
+              <p className="text-sm text-foreground">Tu cuenta esta configurada como cliente.</p>
+              <Link to="/dashboard/cliente" className="text-sm font-semibold text-accent hover:underline">
+                Ir al dashboard de cliente
+              </Link>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Button variant="accent" onClick={saveProfile} disabled={isSaving}>
