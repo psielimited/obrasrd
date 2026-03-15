@@ -39,9 +39,14 @@ const TopNav = () => {
                 Perfil
               </Link>
               {profile?.role === "provider" && (
-                <Link to="/dashboard/proveedor" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-                  Dashboard
-                </Link>
+                <>
+                  <Link to="/dashboard/proveedor" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                    Dashboard
+                  </Link>
+                  <Link to="/dashboard/leads" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                    Leads
+                  </Link>
+                </>
               )}
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground flex items-center gap-1">

@@ -55,32 +55,47 @@ export type Database = {
       };
       leads: {
         Row: {
+          closed_at: string | null;
+          contacted_at: string | null;
           created_at: string;
+          estimated_budget: string | null;
           id: string;
           message: string;
           provider_id: string;
+          provider_reply: string | null;
           requester_contact: string | null;
           requester_name: string | null;
+          requester_user_id: string | null;
           status: string;
           updated_at: string;
         };
         Insert: {
+          closed_at?: string | null;
+          contacted_at?: string | null;
           created_at?: string;
+          estimated_budget?: string | null;
           id?: string;
           message: string;
           provider_id: string;
+          provider_reply?: string | null;
           requester_contact?: string | null;
           requester_name?: string | null;
+          requester_user_id?: string | null;
           status?: string;
           updated_at?: string;
         };
         Update: {
+          closed_at?: string | null;
+          contacted_at?: string | null;
           created_at?: string;
+          estimated_budget?: string | null;
           id?: string;
           message?: string;
           provider_id?: string;
+          provider_reply?: string | null;
           requester_contact?: string | null;
           requester_name?: string | null;
+          requester_user_id?: string | null;
           status?: string;
           updated_at?: string;
         };

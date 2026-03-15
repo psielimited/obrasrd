@@ -215,6 +215,9 @@ const ProviderDashboard = () => {
           <Button variant="accent" onClick={onSave} disabled={!isValid || isSaving}>
             {isSaving ? "Guardando..." : "Guardar perfil"}
           </Button>
+          <Link to="/dashboard/leads" className="text-sm font-semibold text-accent self-center hover:underline">
+            Ver bandeja de leads
+          </Link>
           {providerProfile?.id && (
             <Link to={`/proveedor/${providerProfile.id}`} className="text-sm font-semibold text-accent self-center hover:underline">
               Ver perfil publico

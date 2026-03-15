@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProviderDashboard from "./pages/ProviderDashboard";
+import ProviderLeadsPage from "./pages/ProviderLeadsPage";
 import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,14 @@ const App = () => (
             element={
               <RequireAuth>
                 <ProviderDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/leads"
+            element={
+              <RequireAuth>
+                <ProviderLeadsPage />
               </RequireAuth>
             }
           />
