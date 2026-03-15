@@ -83,7 +83,7 @@ export const getMySavedProviders = async (): Promise<SavedProviderItem[]> => {
         createdAt: item.created_at,
       };
     })
-    .filter((item): item is SavedProviderItem => Boolean(item));
+    .filter((item): item is SavedProviderItem => item != null && Boolean(item.provider));
 };
 
 export const saveProvider = async (providerId: string): Promise<void> => {
