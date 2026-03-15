@@ -8,26 +8,52 @@ import { notificationQueryKeys } from "@/hooks/use-notifications-data";
 
 interface UseDashboardRealtimeSyncOptions {
   leadId?: string;
+  includeLeads?: boolean;
+  includeRequests?: boolean;
+  includeNotifications?: boolean;
+  includeThread?: boolean;
 }
 
 export const useDashboardRealtimeSync = (options: UseDashboardRealtimeSyncOptions = {}) => {
   const { user } = useAuthSession();
   const queryClient = useQueryClient();
-  const { leadId } = options;
+  const {
+    leadId,
+    includeLeads = true,
+    includeRequests = true,
+    includeNotifications = true,
+    includeThread = true,
+  } = options;
 
   useEffect(() => {
     if (!user) return;
+
+    const pendingInvalidations = new Map<string, readonly unknown[]>();
+    let flushTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const queueInvalidation = (queryKey: readonly unknown[]) => {
+      pendingInvalidations.set(JSON.stringify(queryKey), queryKey);
+      if (flushTimer) return;
+
+      // Coalesce bursts from multiple realtime triggers (lead + message + notification).
+      flushTimer = setTimeout(() => {
+        const jobs = Array.from(pendingInvalidations.values()).map((key) =>
+          queryClient.invalidateQueries({ queryKey: key }),
+        );
+        pendingInvalidations.clear();
+        flushTimer = undefined;
+        void Promise.all(jobs);
+      }, 120);
+    };
 
     const channel = supabase
       .channel(`dashboard-sync-${user.id}-${leadId ?? "all"}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "leads" },
-        async () => {
-          await Promise.all([
-            queryClient.invalidateQueries({ queryKey: leadQueryKeys.myLeads }),
-            queryClient.invalidateQueries({ queryKey: leadQueryKeys.myRequests }),
-          ]);
+        () => {
+          if (includeLeads) queueInvalidation(leadQueryKeys.myLeads);
+          if (includeRequests) queueInvalidation(leadQueryKeys.myRequests);
         },
       )
       .on(
@@ -38,34 +64,39 @@ export const useDashboardRealtimeSync = (options: UseDashboardRealtimeSyncOption
           table: "lead_messages",
           ...(leadId ? { filter: `lead_id=eq.${leadId}` } : {}),
         },
-        async () => {
-          const invalidateThread = leadId
-            ? queryClient.invalidateQueries({ queryKey: leadMessagesQueryKeys.thread(leadId) })
-            : Promise.resolve();
-
-          await Promise.all([
-            invalidateThread,
-            queryClient.invalidateQueries({ queryKey: leadQueryKeys.myLeads }),
-            queryClient.invalidateQueries({ queryKey: leadQueryKeys.myRequests }),
-            queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list }),
-            queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount }),
-          ]);
+        () => {
+          if (includeThread && leadId) queueInvalidation(leadMessagesQueryKeys.thread(leadId));
+          if (includeLeads) queueInvalidation(leadQueryKeys.myLeads);
+          if (includeRequests) queueInvalidation(leadQueryKeys.myRequests);
+          if (includeNotifications) {
+            queueInvalidation(notificationQueryKeys.list);
+            queueInvalidation(notificationQueryKeys.unreadCount);
+          }
         },
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
-        async () => {
-          await Promise.all([
-            queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list }),
-            queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount }),
-          ]);
+        () => {
+          if (includeNotifications) {
+            queueInvalidation(notificationQueryKeys.list);
+            queueInvalidation(notificationQueryKeys.unreadCount);
+          }
         },
       )
       .subscribe();
 
     return () => {
+      if (flushTimer) clearTimeout(flushTimer);
       void supabase.removeChannel(channel);
     };
-  }, [leadId, queryClient, user]);
+  }, [
+    includeLeads,
+    includeNotifications,
+    includeRequests,
+    includeThread,
+    leadId,
+    queryClient,
+    user,
+  ]);
 };

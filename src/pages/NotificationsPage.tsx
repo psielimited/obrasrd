@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { BellDot, CheckCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
@@ -32,11 +33,16 @@ const getNotificationLabel = (notification: AppNotification) => {
 };
 
 const NotificationsPage = () => {
+  const navigate = useNavigate();
   const { data: profile } = useMyProfile();
   const { data: notifications = [], isLoading } = useMyNotifications();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  useDashboardRealtimeSync();
+  useDashboardRealtimeSync({
+    includeLeads: false,
+    includeRequests: false,
+    includeThread: false,
+  });
 
   const unreadCount = notifications.filter((item) => !item.readAt).length;
 
@@ -68,6 +74,24 @@ const NotificationsPage = () => {
     } catch (error) {
       toast({
         title: "No se pudo marcar",
+        description: error instanceof Error ? error.message : "Intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onOpenNotification = async (notification: AppNotification) => {
+    if (!notification.leadId) return;
+
+    try {
+      if (!notification.readAt) {
+        await markNotificationAsRead(notification.id);
+        await refreshNotifications();
+      }
+      navigate(`/lead/${notification.leadId}/chat`);
+    } catch (error) {
+      toast({
+        title: "No se pudo abrir",
         description: error instanceof Error ? error.message : "Intenta nuevamente.",
         variant: "destructive",
       });
@@ -127,11 +151,18 @@ const NotificationsPage = () => {
                       <p className="text-sm text-slate-300 mt-1">{notification.body}</p>
                       <p className="text-xs text-slate-500 mt-2">{new Date(notification.createdAt).toLocaleString()}</p>
                     </div>
-                    {!notification.readAt && (
-                      <Button variant="accent" size="sm" onClick={() => onRead(notification.id)}>
-                        Marcar leida
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {notification.leadId && (
+                        <Button variant="outline" size="sm" onClick={() => onOpenNotification(notification)}>
+                          Abrir chat
+                        </Button>
+                      )}
+                      {!notification.readAt && (
+                        <Button variant="accent" size="sm" onClick={() => onRead(notification.id)}>
+                          Marcar leida
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

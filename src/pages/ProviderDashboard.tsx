@@ -6,6 +6,7 @@ import {
   Eye,
   FilePlus2,
   ListChecks,
+  MessageSquare,
   UserRoundCog,
 } from "lucide-react";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
@@ -15,6 +16,7 @@ import QuickActionCard from "@/components/dashboard/QuickActionCard";
 import EmptyState from "@/components/dashboard/EmptyState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
 import { useMyLeads } from "@/hooks/use-leads-data";
@@ -50,12 +52,23 @@ const ProviderDashboard = () => {
   const { data: notifications = [] } = useMyNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
   const { data: phases = [] } = usePhases();
-  useDashboardRealtimeSync();
+  useDashboardRealtimeSync({ includeRequests: false, includeThread: false });
 
   const profileCompleteness = calculateProfileCompleteness(providerProfile);
   const leadsNewOrPending = leads.filter((lead) => lead.status === "new" || lead.status === "contacted").length;
+  const unreadLeadThreads = leads.filter(
+    (lead) =>
+      Boolean(lead.lastMessageAt) &&
+      (!lead.providerLastReadAt || Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt)),
+  ).length;
   const profilePublished = Boolean(providerProfile) && profileCompleteness >= 70;
-  const recentLeads = leads.slice(0, 5);
+  const recentLeads = [...leads]
+    .sort((a, b) => {
+      const aActivityAt = a.lastMessageAt || a.createdAt;
+      const bActivityAt = b.lastMessageAt || b.createdAt;
+      return Date.parse(bActivityAt) - Date.parse(aActivityAt);
+    })
+    .slice(0, 5);
   const recentNotifications = notifications.slice(0, 5);
 
   const currentPhase = phases.find((phase) => phase.id === providerProfile?.phaseId);
@@ -102,7 +115,12 @@ const ProviderDashboard = () => {
         >
           <div className="grid gap-3 md:grid-cols-4">
             <StatCard title="Leads totales" value={String(leads.length)} hint="Solicitudes recibidas" icon={ClipboardList} />
-            <StatCard title="Leads nuevos / pendientes" value={String(leadsNewOrPending)} hint="Requieren seguimiento" icon={ListChecks} />
+            <StatCard
+              title="Leads nuevos / pendientes"
+              value={String(leadsNewOrPending)}
+              hint={`Chats no leidos: ${unreadLeadThreads}`}
+              icon={ListChecks}
+            />
             <StatCard title="Notificaciones sin leer" value={String(unreadCount)} hint="Actualizaciones recientes" icon={Bell} />
             <StatCard
               title="Perfil"
@@ -194,9 +212,17 @@ const ProviderDashboard = () => {
             title="Leads recientes"
             description="Ultimas solicitudes de cotizacion"
             right={
-              <Link to="/dashboard/leads" className="text-xs font-semibold text-accent hover:underline">
-                Ver todos
-              </Link>
+              <div className="flex items-center gap-2">
+                {unreadLeadThreads > 0 && (
+                  <Badge variant="outline" className="border-accent/40 text-accent">
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    {unreadLeadThreads} no leidos
+                  </Badge>
+                )}
+                <Link to="/dashboard/leads" className="text-xs font-semibold text-accent hover:underline">
+                  Ver todos
+                </Link>
+              </div>
             }
           >
             {recentLeads.length === 0 ? (
@@ -207,10 +233,19 @@ const ProviderDashboard = () => {
                   <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
-                      <StatusBadge status={lead.status} />
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={lead.status} />
+                        {Boolean(lead.lastMessageAt) &&
+                          (!lead.providerLastReadAt ||
+                            Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt)) && (
+                            <Badge variant="outline" className="border-accent/40 text-accent">
+                              No leido
+                            </Badge>
+                          )}
+                      </div>
                     </div>
                     <p className="text-xs text-slate-400">{lead.estimatedBudget ? `Presupuesto: ${lead.estimatedBudget}` : "Sin presupuesto"}</p>
-                    <p className="text-xs text-slate-500 mt-1">{new Date(lead.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-slate-500 mt-1">{new Date(lead.lastMessageAt || lead.createdAt).toLocaleString()}</p>
                   </div>
                 ))}
               </div>

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { MessageSquare, MessageSquareWarning, RotateCcw, XCircle, Archive } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { LEAD_STATUS_LABELS } from "@/components/dashboard/dashboard-constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -34,14 +35,52 @@ const REQUESTER_STATE_CLASSES: Record<RequesterState, string> = {
   archived: "border-slate-500/40 text-slate-300",
 };
 
+type RequestPresetFilter = "all" | "today" | "week" | "archived";
+
+const PRESET_LABELS: Record<RequestPresetFilter, string> = {
+  all: "Todas",
+  today: "Hoy",
+  week: "7 dias",
+  archived: "Archivadas",
+};
+
 const ConsumerRequestsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: requests = [], isLoading } = useMyRequestedLeads();
-  useDashboardRealtimeSync();
+  useDashboardRealtimeSync({ includeLeads: false, includeThread: false });
+  const [showOnlyUnread, setShowOnlyUnread] = useState(false);
+  const [preset, setPreset] = useState<RequestPresetFilter>("all");
 
-  const sorted = useMemo(() => [...requests].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)), [requests]);
+  const sorted = useMemo(
+    () =>
+      [...requests]
+        .filter((lead) => {
+          const createdAt = Date.parse(lead.createdAt);
+          const now = new Date();
+          const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          const weekStart = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+
+          const matchesPreset =
+            preset === "all" ||
+            (preset === "today" && createdAt >= todayStart) ||
+            (preset === "week" && createdAt >= weekStart) ||
+            (preset === "archived" && lead.requesterState === "archived");
+          if (!matchesPreset) return false;
+
+          if (!showOnlyUnread) return true;
+          return Boolean(lead.lastMessageAt) &&
+            (!lead.requesterLastReadAt ||
+              Date.parse(lead.lastMessageAt) > Date.parse(lead.requesterLastReadAt));
+        })
+        .sort((a, b) => {
+          const aActivityAt = a.lastMessageAt || a.createdAt;
+          const bActivityAt = b.lastMessageAt || b.createdAt;
+          return Date.parse(bActivityAt) - Date.parse(aActivityAt);
+        }),
+    [preset, requests, showOnlyUnread],
+  );
 
   const updateState = async (leadId: string, state: RequesterState) => {
     try {
@@ -76,6 +115,25 @@ const ConsumerRequestsPage = () => {
         </SectionCard>
 
         <SectionCard title="Listado" description="Solicitudes enviadas recientemente">
+          <div className="mb-3 space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(PRESET_LABELS) as RequestPresetFilter[]).map((option) => (
+                <Button
+                  key={option}
+                  size="sm"
+                  variant={preset === option ? "accent" : "outline"}
+                  onClick={() => setPreset(option)}
+                >
+                  {PRESET_LABELS[option]}
+                </Button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-slate-800 px-3 py-2">
+              <span className="text-sm text-slate-300">Solo no leidos</span>
+              <Switch checked={showOnlyUnread} onCheckedChange={setShowOnlyUnread} />
+            </div>
+            <p className="text-xs text-slate-500">Mostrando {sorted.length} solicitudes</p>
+          </div>
           {isLoading ? (
             <p className="text-sm text-slate-400">Cargando solicitudes...</p>
           ) : sorted.length === 0 ? (

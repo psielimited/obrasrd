@@ -54,10 +54,11 @@ const ProviderLeadsPage = () => {
   const { data: leads = [], isLoading } = useMyLeads();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  useDashboardRealtimeSync();
+  useDashboardRealtimeSync({ includeRequests: false, includeThread: false });
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | LeadStatus>("all");
+  const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [showOnlyActionable, setShowOnlyActionable] = useState<boolean>(() => {
     const stored = localStorage.getItem(ACTIONABLE_FILTER_STORAGE_KEY);
     return stored === null ? true : stored === "true";
@@ -94,19 +95,26 @@ const ProviderLeadsPage = () => {
 
     return leads
       .filter((lead) => {
+        const unreadForProvider =
+          Boolean(lead.lastMessageAt) &&
+          (!lead.providerLastReadAt ||
+            Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt));
         const matchesActionable = !showOnlyActionable || lead.requesterState === "active";
+        const matchesUnread = !showOnlyUnread || unreadForProvider;
         const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
         const searchable = `${lead.requesterName || ""} ${lead.requesterContact || ""} ${lead.message}`.toLowerCase();
         const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
-        return matchesActionable && matchesStatus && matchesQuery;
+        return matchesActionable && matchesUnread && matchesStatus && matchesQuery;
       })
       .sort((a, b) => {
         const aRank = a.requesterState === "active" ? 0 : 1;
         const bRank = b.requesterState === "active" ? 0 : 1;
         if (aRank !== bRank) return aRank - bRank;
-        return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+        const aActivityAt = a.lastMessageAt || a.createdAt;
+        const bActivityAt = b.lastMessageAt || b.createdAt;
+        return Date.parse(bActivityAt) - Date.parse(aActivityAt);
       });
-  }, [leads, query, showOnlyActionable, statusFilter]);
+  }, [leads, query, showOnlyActionable, showOnlyUnread, statusFilter]);
 
   useEffect(() => {
     localStorage.setItem(ACTIONABLE_FILTER_STORAGE_KEY, String(showOnlyActionable));
@@ -182,7 +190,7 @@ const ProviderLeadsPage = () => {
         </div>
 
         <SectionCard title="Filtros" description="Busca por nombre, contacto o contenido de solicitud">
-          <div className="grid gap-3 md:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-5">
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -203,6 +211,10 @@ const ProviderLeadsPage = () => {
             <div className="flex items-center gap-2 rounded-md border border-slate-800 px-3">
               <Switch checked={showOnlyActionable} onCheckedChange={setShowOnlyActionable} />
               <span className="text-sm text-slate-300">Solo accionables</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-md border border-slate-800 px-3">
+              <Switch checked={showOnlyUnread} onCheckedChange={setShowOnlyUnread} />
+              <span className="text-sm text-slate-300">Solo no leidos</span>
             </div>
             <div className="text-sm text-slate-400 flex items-center">Mostrando {filteredLeads.length} resultados</div>
           </div>
