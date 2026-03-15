@@ -1,231 +1,249 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertTriangle,
+  Bell,
+  ClipboardList,
+  Eye,
+  FilePlus2,
+  ListChecks,
+  UserRoundCog,
+} from "lucide-react";
+import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
+import StatCard from "@/components/dashboard/StatCard";
+import SectionCard from "@/components/dashboard/SectionCard";
+import QuickActionCard from "@/components/dashboard/QuickActionCard";
+import EmptyState from "@/components/dashboard/EmptyState";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
+import { useMyLeads } from "@/hooks/use-leads-data";
+import { useMyNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 import { usePhases } from "@/hooks/use-marketplace-data";
-import { useMyProfile, useMyProviderProfile, profileQueryKeys } from "@/hooks/use-profile-data";
-import { upsertMyProviderProfile } from "@/lib/profile-api";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+
+const calculateProfileCompleteness = (provider: ReturnType<typeof useMyProviderProfile>["data"]) => {
+  if (!provider) return 0;
+
+  const checks = [
+    Boolean(provider.name.trim()),
+    Boolean(provider.trade.trim()),
+    provider.phaseId > 0,
+    Boolean(provider.categorySlug.trim()),
+    Boolean(provider.city.trim()),
+    Boolean(provider.location.trim()),
+    provider.yearsExperience > 0,
+    Boolean(provider.whatsapp.trim()),
+    Boolean(provider.description.trim()),
+    provider.serviceAreas.length > 0,
+  ];
+
+  const completed = checks.filter(Boolean).length;
+  return Math.round((completed / checks.length) * 100);
+};
 
 const ProviderDashboard = () => {
-  const { data: phases = [] } = usePhases();
+  const navigate = useNavigate();
   const { data: profile } = useMyProfile();
   const { data: providerProfile } = useMyProviderProfile();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { data: leads = [] } = useMyLeads();
+  const { data: notifications = [] } = useMyNotifications();
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const { data: phases = [] } = usePhases();
 
-  const [name, setName] = useState("");
-  const [trade, setTrade] = useState("");
-  const [phaseId, setPhaseId] = useState<number>(0);
-  const [categorySlug, setCategorySlug] = useState("");
-  const [location, setLocation] = useState("");
-  const [city, setCity] = useState("");
-  const [yearsExperience, setYearsExperience] = useState(0);
-  const [description, setDescription] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [startingPrice, setStartingPrice] = useState("");
-  const [serviceAreasRaw, setServiceAreasRaw] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const profileCompleteness = calculateProfileCompleteness(providerProfile);
+  const leadsNewOrPending = leads.filter((lead) => lead.status === "new" || lead.status === "contacted").length;
+  const profilePublished = Boolean(providerProfile) && profileCompleteness >= 70;
+  const recentLeads = leads.slice(0, 5);
+  const recentNotifications = notifications.slice(0, 5);
 
-  const selectedPhase = phases.find((phase) => phase.id === phaseId);
-  const availableCategories = useMemo(
-    () => selectedPhase?.categories ?? [],
-    [selectedPhase],
-  );
+  const currentPhase = phases.find((phase) => phase.id === providerProfile?.phaseId);
+  const currentCategory = currentPhase?.categories.find((category) => category.slug === providerProfile?.categorySlug);
 
-  useEffect(() => {
-    if (!providerProfile) return;
+  const warnings: string[] = [];
+  if (!providerProfile?.description?.trim()) warnings.push("Completa tu descripcion para mejorar confianza.");
+  if (!providerProfile?.whatsapp?.trim()) warnings.push("Agrega tu WhatsApp para recibir respuestas mas rapido.");
+  if (!providerProfile?.serviceAreas?.length) warnings.push("Define al menos una area de servicio.");
 
-    setName(providerProfile.name);
-    setTrade(providerProfile.trade);
-    setPhaseId(providerProfile.phaseId);
-    setCategorySlug(providerProfile.categorySlug);
-    setLocation(providerProfile.location);
-    setCity(providerProfile.city);
-    setYearsExperience(providerProfile.yearsExperience);
-    setDescription(providerProfile.description);
-    setWhatsapp(providerProfile.whatsapp);
-    setStartingPrice(providerProfile.startingPrice ? String(providerProfile.startingPrice) : "");
-    setServiceAreasRaw(providerProfile.serviceAreas.join(", "));
-  }, [providerProfile]);
-
-  useEffect(() => {
-    if (!phaseId && phases.length > 0) {
-      setPhaseId(phases[0].id);
-      setCategorySlug(phases[0].categories[0]?.slug ?? "");
-    }
-  }, [phaseId, phases]);
-
-  useEffect(() => {
-    if (!availableCategories.find((category) => category.slug === categorySlug)) {
-      setCategorySlug(availableCategories[0]?.slug ?? "");
-    }
-  }, [availableCategories, categorySlug]);
-
-  const serviceAreas = useMemo(
-    () =>
-      serviceAreasRaw
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-    [serviceAreasRaw],
-  );
+  const greetingName = profile?.displayName || providerProfile?.name || "proveedor";
 
   if (profile?.role !== "provider") {
     return (
-      <div className="min-h-screen px-4 py-8 pb-20 md:pb-8">
-        <div className="container max-w-2xl mx-auto bg-card p-6 rounded-xl obra-shadow space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard de proveedor</h1>
-          <p className="text-sm text-muted-foreground">
-            Para acceder al dashboard, cambia tu rol a Proveedor en tu perfil.
-          </p>
-          <Link to="/perfil" className="text-sm font-semibold text-accent hover:underline">
-            Ir a mi perfil
-          </Link>
-        </div>
-      </div>
+      <ProviderDashboardLayout
+        title="Resumen"
+        subtitle="Panel de control para proveedores"
+      >
+        <EmptyState
+          title="Activa tu perfil de proveedor"
+          description="Para usar este panel, cambia tu rol a Proveedor desde tu cuenta."
+          icon={UserRoundCog}
+          action={
+            <Button variant="accent" onClick={() => navigate("/perfil")}>
+              Ir a mi cuenta
+            </Button>
+          }
+        />
+      </ProviderDashboardLayout>
     );
   }
 
-  const isValid =
-    name.trim() &&
-    trade.trim() &&
-    phaseId > 0 &&
-    categorySlug.trim() &&
-    location.trim() &&
-    city.trim() &&
-    description.trim() &&
-    whatsapp.trim();
-
-  const onSave = async () => {
-    if (!isValid) return;
-
-    setIsSaving(true);
-    try {
-      await upsertMyProviderProfile({
-        id: providerProfile?.id,
-        name: name.trim(),
-        trade: trade.trim(),
-        phaseId,
-        categorySlug,
-        location: location.trim(),
-        city: city.trim(),
-        yearsExperience,
-        description: description.trim(),
-        whatsapp: whatsapp.trim(),
-        startingPrice: startingPrice.trim() ? Number(startingPrice) : undefined,
-        serviceAreas,
-      });
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["marketplace", "providers"] }),
-        queryClient.invalidateQueries({ queryKey: profileQueryKeys.myProviderProfile }),
-      ]);
-
-      toast({
-        title: "Perfil guardado",
-        description: "Tu perfil de proveedor se actualizo correctamente.",
-      });
-    } catch (error) {
-      toast({
-        title: "No se pudo guardar",
-        description: error instanceof Error ? error.message : "Intenta nuevamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen px-4 py-8 pb-20 md:pb-8">
-      <div className="container max-w-3xl mx-auto bg-card p-6 rounded-xl obra-shadow space-y-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard de proveedor</h1>
-          <p className="text-sm text-muted-foreground mt-1">Administra tu ficha publica en ObrasRD.</p>
+    <ProviderDashboardLayout
+      title="Resumen"
+      subtitle="Controla tus leads, perfil y actividad del marketplace"
+      actionLabel="Acciones"
+      onAction={() => navigate("/dashboard/proveedor/perfil")}
+    >
+      <div className="space-y-6">
+        <SectionCard
+          title={`Hola, ${greetingName}`}
+          description="Este es tu centro de control para administrar oportunidades y mantener tu perfil competitivo."
+        >
+          <div className="grid gap-3 md:grid-cols-4">
+            <StatCard title="Leads totales" value={String(leads.length)} hint="Solicitudes recibidas" icon={ClipboardList} />
+            <StatCard title="Leads nuevos / pendientes" value={String(leadsNewOrPending)} hint="Requieren seguimiento" icon={ListChecks} />
+            <StatCard title="Notificaciones sin leer" value={String(unreadCount)} hint="Actualizaciones recientes" icon={Bell} />
+            <StatCard
+              title="Perfil"
+              value={profilePublished ? "Publicado" : `${profileCompleteness}%`}
+              hint={profilePublished ? "Listo para captar leads" : "Completa campos clave"}
+              icon={Eye}
+            />
+          </div>
+        </SectionCard>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <QuickActionCard to="/dashboard/proveedor/perfil" title="Editar perfil" description="Actualiza tu ficha profesional" icon={<UserRoundCog className="h-5 w-5" />} />
+          <QuickActionCard to="/dashboard/leads" title="Ver leads" description="Da seguimiento a solicitudes" icon={<ClipboardList className="h-5 w-5" />} />
+          <QuickActionCard to={providerProfile?.id ? `/proveedor/${providerProfile.id}` : "/buscar"} title="Ver perfil publico" description="Revisa como te ven clientes" icon={<Eye className="h-5 w-5" />} />
+          <QuickActionCard to="/publicar" title="Publicar servicio" description="Crea una nueva oferta" icon={<FilePlus2 className="h-5 w-5" />} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Nombre comercial</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Oficio</label>
-            <input value={trade} onChange={(e) => setTrade(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
+        <div className="grid gap-6 xl:grid-cols-3">
+          <SectionCard
+            title="Estado del perfil"
+            description="Tu nivel de completitud influye en conversion y confianza"
+            className="xl:col-span-2"
+          >
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-slate-300">Completitud del perfil</span>
+                  <span className="font-semibold text-slate-100">{profileCompleteness}%</span>
+                </div>
+                <Progress value={profileCompleteness} className="h-2 bg-slate-800" />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Fase / categoria</p>
+                  <p className="text-sm text-slate-100 mt-1">{currentPhase?.name || "Sin fase"}</p>
+                  <p className="text-xs text-slate-400">{currentCategory?.name || "Sin categoria"}</p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Cobertura</p>
+                  <p className="text-sm text-slate-100 mt-1">{providerProfile?.city || "Sin ciudad"}</p>
+                  <p className="text-xs text-slate-400">{providerProfile?.serviceAreas.length || 0} areas de servicio</p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Experiencia</p>
+                  <p className="text-sm text-slate-100 mt-1">{providerProfile?.yearsExperience || 0} anos</p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">WhatsApp</p>
+                  <p className="text-sm text-slate-100 mt-1">{providerProfile?.whatsapp || "Sin registrar"}</p>
+                </div>
+              </div>
+
+              {warnings.length > 0 && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 space-y-2">
+                  {warnings.map((warning) => (
+                    <div key={warning} className="flex items-start gap-2 text-sm text-amber-200">
+                      <AlertTriangle className="h-4 w-4 mt-0.5" />
+                      <span>{warning}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Insights marketplace" description="Sugerencias practicas para mejorar visibilidad">
+            <div className="space-y-3 text-sm">
+              <p className="text-slate-300">
+                Fase activa: <span className="text-slate-100 font-semibold">{currentPhase?.name || "No definida"}</span>
+              </p>
+              <p className="text-slate-300">
+                Categoria: <span className="text-slate-100 font-semibold">{currentCategory?.name || "No definida"}</span>
+              </p>
+              <p className="text-slate-300">
+                Zonas: <span className="text-slate-100 font-semibold">{providerProfile?.serviceAreas.join(", ") || "No definidas"}</span>
+              </p>
+              <ul className="text-slate-400 space-y-1.5 pt-2 border-t border-slate-800">
+                <li>- Responde leads nuevos en menos de 1 hora para mejorar cierre.</li>
+                <li>- Mantener WhatsApp actualizado aumenta contactos directos.</li>
+                <li>- Un perfil con descripcion clara mejora la confianza del cliente.</li>
+              </ul>
+            </div>
+          </SectionCard>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Fase</label>
-            <select value={phaseId || ""} onChange={(e) => setPhaseId(Number(e.target.value))} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent">
-              {phases.map((phase) => (
-                <option key={phase.id} value={phase.id}>{phase.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Categoria</label>
-            <select value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent">
-              {availableCategories.map((category) => (
-                <option key={category.slug} value={category.slug}>{category.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <div className="grid gap-6 xl:grid-cols-2">
+          <SectionCard
+            title="Leads recientes"
+            description="Ultimas solicitudes de cotizacion"
+            right={
+              <Link to="/dashboard/leads" className="text-xs font-semibold text-accent hover:underline">
+                Ver todos
+              </Link>
+            }
+          >
+            {recentLeads.length === 0 ? (
+              <p className="text-sm text-slate-400">No tienes leads todavia.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentLeads.map((lead) => (
+                  <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
+                      <StatusBadge status={lead.status} />
+                    </div>
+                    <p className="text-xs text-slate-400">{lead.estimatedBudget ? `Presupuesto: ${lead.estimatedBudget}` : "Sin presupuesto"}</p>
+                    <p className="text-xs text-slate-500 mt-1">{new Date(lead.createdAt).toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Ubicacion</label>
-            <input value={location} onChange={(e) => setLocation(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Ciudad</label>
-            <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Anos experiencia</label>
-            <input type="number" min={0} value={yearsExperience} onChange={(e) => setYearsExperience(Number(e.target.value) || 0)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">WhatsApp</label>
-            <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Precio inicial RD$</label>
-            <input type="number" min={0} value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Areas de servicio (separadas por coma)</label>
-          <input value={serviceAreasRaw} onChange={(e) => setServiceAreasRaw(e.target.value)} placeholder="Santo Domingo, Santiago" className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent" />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Descripcion</label>
-          <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent resize-none" />
-        </div>
-
-        <div className="flex gap-3">
-          <Button variant="accent" onClick={onSave} disabled={!isValid || isSaving}>
-            {isSaving ? "Guardando..." : "Guardar perfil"}
-          </Button>
-          <Link to="/dashboard/leads" className="text-sm font-semibold text-accent self-center hover:underline">
-            Ver bandeja de leads
-          </Link>
-          {providerProfile?.id && (
-            <Link to={`/proveedor/${providerProfile.id}`} className="text-sm font-semibold text-accent self-center hover:underline">
-              Ver perfil publico
-            </Link>
-          )}
+          <SectionCard
+            title="Notificaciones recientes"
+            description="Actividad reciente de tu cuenta"
+            right={
+              <Link to="/notificaciones" className="text-xs font-semibold text-accent hover:underline">
+                Ver todas
+              </Link>
+            }
+          >
+            {recentNotifications.length === 0 ? (
+              <p className="text-sm text-slate-400">No tienes notificaciones.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentNotifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`rounded-xl border p-3 ${notification.readAt ? "border-slate-800 bg-slate-950/40" : "border-accent/30 bg-accent/10"}`}
+                  >
+                    <p className="text-sm font-semibold text-slate-100">{notification.title}</p>
+                    <p className="text-xs text-slate-400 mt-1">{notification.body}</p>
+                    <p className="text-xs text-slate-500 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
         </div>
       </div>
-    </div>
+    </ProviderDashboardLayout>
   );
 };
 

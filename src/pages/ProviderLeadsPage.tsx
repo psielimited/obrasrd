@@ -1,29 +1,47 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { MessageSquareWarning } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
+import SectionCard from "@/components/dashboard/SectionCard";
+import EmptyState from "@/components/dashboard/EmptyState";
+import StatCard from "@/components/dashboard/StatCard";
+import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { LEAD_STATUS_LABELS } from "@/components/dashboard/dashboard-constants";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
-import { useProviderLeads, leadQueryKeys } from "@/hooks/use-leads-data";
+import { leadQueryKeys, useMyLeads } from "@/hooks/use-leads-data";
 import { LeadStatus, updateLead } from "@/lib/leads-api";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-
-const STATUS_LABELS: Record<LeadStatus, string> = {
-  new: "Nuevo",
-  contacted: "Contactado",
-  qualified: "Calificado",
-  closed_won: "Cerrado - Ganado",
-  closed_lost: "Cerrado - Perdido",
-};
 
 const ProviderLeadsPage = () => {
   const { data: profile } = useMyProfile();
   const { data: providerProfile } = useMyProviderProfile();
-  const { data: leads = [], isLoading } = useProviderLeads(providerProfile?.id);
+  const { data: leads = [], isLoading } = useMyLeads();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | LeadStatus>("all");
   const [isSaving, setIsSaving] = useState<string | null>(null);
   const [draftStatuses, setDraftStatuses] = useState<Record<string, LeadStatus>>({});
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const summary = useMemo(() => {
     return leads.reduce(
@@ -43,37 +61,20 @@ const ProviderLeadsPage = () => {
     );
   }, [leads]);
 
-  if (profile?.role !== "provider") {
-    return (
-      <div className="min-h-screen px-4 py-8 pb-20 md:pb-8">
-        <div className="container max-w-2xl mx-auto bg-card p-6 rounded-xl obra-shadow space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Leads de proveedor</h1>
-          <p className="text-sm text-muted-foreground">Debes tener rol Proveedor para ver esta bandeja.</p>
-          <Link to="/perfil" className="text-sm font-semibold text-accent hover:underline">
-            Ir a mi perfil
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const filteredLeads = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
 
-  if (!providerProfile) {
-    return (
-      <div className="min-h-screen px-4 py-8 pb-20 md:pb-8">
-        <div className="container max-w-2xl mx-auto bg-card p-6 rounded-xl obra-shadow space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Leads de proveedor</h1>
-          <p className="text-sm text-muted-foreground">Completa primero tu perfil de proveedor para recibir leads.</p>
-          <Link to="/dashboard/proveedor" className="text-sm font-semibold text-accent hover:underline">
-            Completar perfil
-          </Link>
-        </div>
-      </div>
-    );
-  }
+    return leads.filter((lead) => {
+      const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
+      const searchable = `${lead.requesterName || ""} ${lead.requesterContact || ""} ${lead.message}`.toLowerCase();
+      const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+      return matchesStatus && matchesQuery;
+    });
+  }, [leads, query, statusFilter]);
 
   const onSaveLead = async (leadId: string) => {
     const lead = leads.find((item) => item.id === leadId);
-    if (!lead) return;
+    if (!lead || isSaving === leadId) return;
 
     setIsSaving(leadId);
     try {
@@ -82,11 +83,11 @@ const ProviderLeadsPage = () => {
         providerReply: draftReplies[leadId] ?? lead.providerReply,
       });
 
-      await queryClient.invalidateQueries({ queryKey: leadQueryKeys.providerLeads(providerProfile.id) });
+      await queryClient.invalidateQueries({ queryKey: leadQueryKeys.myLeads });
 
       toast({
         title: "Lead actualizado",
-        description: "El estado del lead se guardo correctamente.",
+        description: "Cambios guardados correctamente.",
       });
     } catch (error) {
       toast({
@@ -99,122 +100,206 @@ const ProviderLeadsPage = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen px-4 py-8 pb-20 md:pb-8">
-      <div className="container max-w-4xl mx-auto space-y-5">
-        <div className="bg-card p-6 rounded-xl obra-shadow">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Bandeja de leads</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gestiona solicitudes de cotizacion recibidas en tu perfil.
-          </p>
+  if (profile?.role !== "provider") {
+    return (
+      <ProviderDashboardLayout title="Leads" subtitle="Gestion de solicitudes de cotizacion">
+        <EmptyState
+          title="Rol de proveedor requerido"
+          description="Necesitas activar tu perfil como proveedor para gestionar leads."
+          icon={MessageSquareWarning}
+          action={<Link to="/perfil" className="text-sm font-semibold text-accent hover:underline">Ir a mi cuenta</Link>}
+        />
+      </ProviderDashboardLayout>
+    );
+  }
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mt-4">
-            <div className="bg-muted rounded-lg p-2 text-center">
-              <p className="text-[10px] uppercase text-muted-foreground">Total</p>
-              <p className="text-sm font-bold">{summary.total}</p>
-            </div>
-            {(Object.keys(STATUS_LABELS) as LeadStatus[]).map((status) => (
-              <div key={status} className="bg-muted rounded-lg p-2 text-center">
-                <p className="text-[10px] uppercase text-muted-foreground">{STATUS_LABELS[status]}</p>
-                <p className="text-sm font-bold">{summary[status]}</p>
-              </div>
-            ))}
-          </div>
+  if (!providerProfile) {
+    return (
+      <ProviderDashboardLayout title="Leads" subtitle="Gestion de solicitudes de cotizacion">
+        <EmptyState
+          title="Completa tu perfil primero"
+          description="Necesitas publicar tu ficha para comenzar a recibir leads."
+          icon={MessageSquareWarning}
+          action={<Link to="/dashboard/proveedor/perfil" className="text-sm font-semibold text-accent hover:underline">Editar perfil</Link>}
+        />
+      </ProviderDashboardLayout>
+    );
+  }
+
+  return (
+    <ProviderDashboardLayout
+      title="Leads"
+      subtitle="Da seguimiento rapido a nuevas oportunidades"
+      actionLabel="Acciones"
+      onAction={() => toast({ title: "Tip", description: "Filtra por estado y responde leads nuevos primero." })}
+    >
+      <div className="space-y-6">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <StatCard title="Total" value={String(summary.total)} icon={MessageSquareWarning} />
+          {(Object.keys(LEAD_STATUS_LABELS) as LeadStatus[]).map((status) => (
+            <StatCard key={status} title={LEAD_STATUS_LABELS[status]} value={String(summary[status])} icon={MessageSquareWarning} />
+          ))}
         </div>
 
-        {isLoading ? (
-          <div className="bg-card p-6 rounded-xl obra-shadow">
-            <p className="text-sm text-muted-foreground">Cargando leads...</p>
+        <SectionCard title="Filtros" description="Busca por nombre, contacto o contenido de solicitud">
+          <div className="grid gap-3 md:grid-cols-3">
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar lead..."
+              className="bg-slate-950 border-slate-700 text-slate-100"
+            />
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | LeadStatus)}>
+              <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {(Object.keys(LEAD_STATUS_LABELS) as LeadStatus[]).map((status) => (
+                  <SelectItem key={status} value={status}>{LEAD_STATUS_LABELS[status]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-sm text-slate-400 flex items-center">Mostrando {filteredLeads.length} resultados</div>
           </div>
-        ) : leads.length === 0 ? (
-          <div className="bg-card p-6 rounded-xl obra-shadow">
-            <p className="text-sm text-muted-foreground">Aun no tienes leads. Comparte tu perfil para comenzar.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {leads.map((lead) => {
-              const status = draftStatuses[lead.id] ?? lead.status;
-              const reply = draftReplies[lead.id] ?? lead.providerReply ?? "";
-              const whatsappUrl = lead.requesterContact
-                ? `https://wa.me/${lead.requesterContact.replace(/[^\d]/g, "")}`
-                : null;
+        </SectionCard>
 
-              return (
-                <div key={lead.id} className="bg-card p-4 rounded-xl obra-shadow space-y-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-bold text-foreground">{lead.requesterName || "Solicitante"}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(lead.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold px-2 py-1 rounded bg-muted text-muted-foreground">
-                      {STATUS_LABELS[lead.status]}
-                    </span>
-                  </div>
+        <SectionCard title="Bandeja" description="Actualiza estado, agrega nota y contacta por WhatsApp">
+          {isLoading ? (
+            <p className="text-sm text-slate-400">Cargando leads...</p>
+          ) : filteredLeads.length === 0 ? (
+            <p className="text-sm text-slate-400">No hay resultados para tu filtro actual.</p>
+          ) : (
+            <>
+              <div className="hidden lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-800 hover:bg-transparent">
+                      <TableHead>Solicitante</TableHead>
+                      <TableHead>Mensaje</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Nota interna</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredLeads.map((lead) => {
+                      const status = draftStatuses[lead.id] ?? lead.status;
+                      const reply = draftReplies[lead.id] ?? lead.providerReply ?? "";
+                      const whatsappUrl = lead.requesterContact
+                        ? `https://wa.me/${lead.requesterContact.replace(/[^\d]/g, "")}`
+                        : null;
 
-                  {lead.requesterContact && (
-                    <p className="text-xs text-muted-foreground">Contacto: {lead.requesterContact}</p>
-                  )}
+                      return (
+                        <TableRow key={lead.id} className="border-slate-800 hover:bg-slate-900/40">
+                          <TableCell>
+                            <p className="font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
+                            <p className="text-xs text-slate-500">{lead.requesterContact || "Sin contacto"}</p>
+                            <p className="text-xs text-slate-500">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                          </TableCell>
+                          <TableCell>
+                            <p className="text-sm text-slate-300 line-clamp-2">{lead.message}</p>
+                            <p className="text-xs text-slate-500 mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-2">
+                              <StatusBadge status={lead.status} />
+                              <Select value={status} onValueChange={(value) => setDraftStatuses((prev) => ({ ...prev, [lead.id]: value as LeadStatus }))}>
+                                <SelectTrigger className="h-8 bg-slate-950 border-slate-700 text-slate-100 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                {(Object.keys(LEAD_STATUS_LABELS) as LeadStatus[]).map((option) => (
+                                  <SelectItem key={option} value={option}>{LEAD_STATUS_LABELS[option]}</SelectItem>
+                                ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={reply}
+                              onChange={(event) => setDraftReplies((prev) => ({ ...prev, [lead.id]: event.target.value }))}
+                              placeholder="Nota de seguimiento"
+                              className="h-8 bg-slate-950 border-slate-700 text-slate-100"
+                            />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="inline-flex gap-2">
+                              <Button size="sm" variant="accent" onClick={() => onSaveLead(lead.id)} disabled={isSaving === lead.id}>
+                                {isSaving === lead.id ? "Guardando..." : "Guardar"}
+                              </Button>
+                              {whatsappUrl && (
+                                <Button size="sm" variant="whatsapp" onClick={() => window.open(whatsappUrl, "_blank")}>
+                                  WhatsApp
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
 
-                  {lead.estimatedBudget && (
-                    <p className="text-xs text-muted-foreground">Presupuesto: {lead.estimatedBudget}</p>
-                  )}
+              <div className="space-y-3 lg:hidden">
+                {filteredLeads.map((lead) => {
+                  const status = draftStatuses[lead.id] ?? lead.status;
+                  const reply = draftReplies[lead.id] ?? lead.providerReply ?? "";
+                  const whatsappUrl = lead.requesterContact
+                    ? `https://wa.me/${lead.requesterContact.replace(/[^\d]/g, "")}`
+                    : null;
 
-                  <p className="text-sm text-foreground">{lead.message}</p>
+                  return (
+                    <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
+                          <p className="text-xs text-slate-500">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <StatusBadge status={lead.status} />
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Estado</label>
-                      <select
-                        value={status}
-                        onChange={(event) =>
-                          setDraftStatuses((prev) => ({ ...prev, [lead.id]: event.target.value as LeadStatus }))
-                        }
-                        className="w-full px-3 py-2 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent text-sm"
-                      >
-                        {(Object.keys(STATUS_LABELS) as LeadStatus[]).map((option) => (
-                          <option key={option} value={option}>
-                            {STATUS_LABELS[option]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Nota interna</label>
-                      <input
+                      <p className="text-sm text-slate-300">{lead.message}</p>
+
+                      <Select value={status} onValueChange={(value) => setDraftStatuses((prev) => ({ ...prev, [lead.id]: value as LeadStatus }))}>
+                        <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(LEAD_STATUS_LABELS) as LeadStatus[]).map((option) => (
+                            <SelectItem key={option} value={option}>{LEAD_STATUS_LABELS[option]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Input
                         value={reply}
-                        onChange={(event) =>
-                          setDraftReplies((prev) => ({ ...prev, [lead.id]: event.target.value }))
-                        }
-                        placeholder="Ej: Contactado por WhatsApp"
-                        className="w-full px-3 py-2 rounded-lg bg-card obra-shadow outline-none focus:ring-2 focus:ring-accent text-sm"
+                        onChange={(event) => setDraftReplies((prev) => ({ ...prev, [lead.id]: event.target.value }))}
+                        placeholder="Nota de seguimiento"
+                        className="bg-slate-950 border-slate-700 text-slate-100"
                       />
-                    </div>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="accent"
-                      size="sm"
-                      onClick={() => onSaveLead(lead.id)}
-                      disabled={isSaving === lead.id}
-                    >
-                      {isSaving === lead.id ? "Guardando..." : "Guardar"}
-                    </Button>
-                    {whatsappUrl && (
-                      <Button variant="whatsapp" size="sm" onClick={() => window.open(whatsappUrl, "_blank")}>
-                        WhatsApp
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="accent" onClick={() => onSaveLead(lead.id)} disabled={isSaving === lead.id}>
+                          {isSaving === lead.id ? "Guardando..." : "Guardar"}
+                        </Button>
+                        {whatsappUrl && (
+                          <Button size="sm" variant="whatsapp" onClick={() => window.open(whatsappUrl, "_blank")}>
+                            WhatsApp
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </SectionCard>
       </div>
-    </div>
+    </ProviderDashboardLayout>
   );
 };
 

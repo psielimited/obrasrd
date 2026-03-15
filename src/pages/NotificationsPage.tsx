@@ -1,4 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { BellDot, CheckCheck } from "lucide-react";
+import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
+import SectionCard from "@/components/dashboard/SectionCard";
+import EmptyState from "@/components/dashboard/EmptyState";
+import StatCard from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
 import { notificationQueryKeys, useMyNotifications } from "@/hooks/use-notifications-data";
 import {
@@ -13,9 +18,9 @@ const getNotificationLabel = (notification: AppNotification) => {
     case "lead_new":
       return "Nuevo lead";
     case "lead_status":
-      return "Actualizacion";
+      return "Estado de solicitud";
     case "lead_reply":
-      return "Mensaje";
+      return "Mensaje del proveedor";
     default:
       return "Notificacion";
   }
@@ -52,6 +57,7 @@ const NotificationsPage = () => {
     try {
       await markAllNotificationsAsRead();
       await refreshNotifications();
+      toast({ title: "Listo", description: "Notificaciones marcadas como leidas." });
     } catch (error) {
       toast({
         title: "No se pudo marcar",
@@ -62,59 +68,69 @@ const NotificationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 pb-20 md:pb-8">
-      <div className="container max-w-3xl mx-auto space-y-4">
-        <div className="bg-card p-6 rounded-xl obra-shadow">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">Notificaciones</h1>
-              <p className="text-sm text-muted-foreground mt-1">Mantente al dia con cambios de tus solicitudes y leads.</p>
-            </div>
+    <ProviderDashboardLayout
+      title="Notificaciones"
+      subtitle="Controla actualizaciones de leads y respuestas"
+      actionLabel="Acciones"
+      onAction={onReadAll}
+      actionDisabled={unreadCount === 0}
+    >
+      <div className="space-y-6">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <StatCard title="No leidas" value={String(unreadCount)} hint="Pendientes de revisar" icon={BellDot} />
+          <StatCard title="Total" value={String(notifications.length)} hint="Ultimos 50 eventos" icon={CheckCheck} />
+        </div>
+
+        <SectionCard
+          title="Bandeja"
+          description="Mantente al dia con cada movimiento"
+          right={
             <Button variant="outline" size="sm" onClick={onReadAll} disabled={unreadCount === 0}>
               Marcar todo leido
             </Button>
-          </div>
-
-          <div className="mt-4 inline-flex items-center px-2.5 py-1 rounded bg-muted text-xs font-semibold text-muted-foreground">
-            No leidas: {unreadCount}
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="bg-card p-6 rounded-xl obra-shadow text-sm text-muted-foreground">Cargando notificaciones...</div>
-        ) : notifications.length === 0 ? (
-          <div className="bg-card p-6 rounded-xl obra-shadow text-sm text-muted-foreground">No tienes notificaciones todavia.</div>
-        ) : (
-          <div className="space-y-3">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`bg-card p-4 rounded-xl obra-shadow ${notification.readAt ? "opacity-80" : "border border-accent/30"}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-bold">
-                      {getNotificationLabel(notification)}
-                    </p>
-                    <h2 className="text-sm font-bold text-foreground mt-1">{notification.title}</h2>
-                    <p className="text-sm text-muted-foreground mt-1">{notification.body}</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </p>
+          }
+        >
+          {isLoading ? (
+            <p className="text-sm text-slate-400">Cargando notificaciones...</p>
+          ) : notifications.length === 0 ? (
+            <EmptyState
+              title="Sin notificaciones"
+              description="Aun no tienes actividad reciente."
+              icon={BellDot}
+            />
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`rounded-xl border p-4 ${
+                    notification.readAt
+                      ? "border-slate-800 bg-slate-950/50"
+                      : "border-accent/40 bg-accent/10"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                        {getNotificationLabel(notification)}
+                      </p>
+                      <h3 className="text-sm font-semibold text-slate-100 mt-1">{notification.title}</h3>
+                      <p className="text-sm text-slate-300 mt-1">{notification.body}</p>
+                      <p className="text-xs text-slate-500 mt-2">{new Date(notification.createdAt).toLocaleString()}</p>
+                    </div>
+                    {!notification.readAt && (
+                      <Button variant="accent" size="sm" onClick={() => onRead(notification.id)}>
+                        Marcar leida
+                      </Button>
+                    )}
                   </div>
-
-                  {!notification.readAt && (
-                    <Button variant="outline" size="sm" onClick={() => onRead(notification.id)}>
-                      Marcar leida
-                    </Button>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </SectionCard>
       </div>
-    </div>
+    </ProviderDashboardLayout>
   );
 };
 
