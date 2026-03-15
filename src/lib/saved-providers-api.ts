@@ -72,7 +72,7 @@ export const getMySavedProviders = async (): Promise<SavedProviderItem[]> => {
   }
 
   return data
-    .map((item) => {
+    .map((item): SavedProviderItem | null => {
       const providerRow = item.providers as Tables<"providers"> | null;
       if (!providerRow) return null;
       return {
@@ -83,7 +83,7 @@ export const getMySavedProviders = async (): Promise<SavedProviderItem[]> => {
         createdAt: item.created_at,
       };
     })
-    .filter((item): item is SavedProviderItem => item != null && Boolean(item.provider));
+    .filter((item): item is SavedProviderItem => item != null);
 };
 
 export const saveProvider = async (providerId: string): Promise<void> => {
