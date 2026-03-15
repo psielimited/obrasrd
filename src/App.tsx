@@ -13,6 +13,10 @@ import MaterialsPage from "./pages/MaterialsPage";
 import ProjectBuilder from "./pages/ProjectBuilder";
 import PublishService from "./pages/PublishService";
 import NotFound from "./pages/NotFound";
+import AuthPage from "./pages/AuthPage";
+import ProfilePage from "./pages/ProfilePage";
+import ProviderDashboard from "./pages/ProviderDashboard";
+import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +35,23 @@ const App = () => (
           <Route path="/materiales" element={<MaterialsPage />} />
           <Route path="/proyectos" element={<ProjectBuilder />} />
           <Route path="/publicar" element={<PublishService />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route
+            path="/perfil"
+            element={
+              <RequireAuth>
+                <ProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/proveedor"
+            element={
+              <RequireAuth>
+                <ProviderDashboard />
+              </RequireAuth>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <BottomNav />

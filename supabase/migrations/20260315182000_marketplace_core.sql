@@ -279,7 +279,7 @@ insert into public.providers (
   rating, review_count, completed_projects, verified, whatsapp, starting_price, portfolio_images, service_areas
 )
 select v.id::uuid, v.name, v.trade, v.category_slug, p.id, v.location, v.city, v.years_experience, v.description,
-  v.rating, v.review_count, v.completed_projects, v.verified, v.whatsapp, v.starting_price, v.portfolio_images, v.service_areas
+  v.rating, v.review_count, v.completed_projects, v.verified, v.whatsapp, v.starting_price, v.portfolio_images::text[], v.service_areas::text[]
 from public.phases p
 join (
   values

@@ -1,29 +1,13 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { LogIn, LogOut, User } from "lucide-react";
-import type { User as SupaUser } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { useMyProfile } from "@/hooks/use-profile-data";
 
 const TopNav = () => {
-  const [user, setUser] = useState<SupaUser | null>(null);
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleGoogleSignIn = async () => {
-    await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-  };
+  const { user } = useAuthSession();
+  const { data: profile } = useMyProfile();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -48,35 +32,51 @@ const TopNav = () => {
           <Link to="/publicar" className="text-sm font-semibold text-foreground bg-accent px-3 py-1.5 rounded-lg hover:brightness-95 transition-all">
             Publicar
           </Link>
+
           {user ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <User className="h-3.5 w-3.5" />
-                {user.email?.split("@")[0]}
-              </span>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
+            <>
+              <Link to="/perfil" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                Perfil
+              </Link>
+              {profile?.role === "provider" && (
+                <Link to="/dashboard/proveedor" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                  Dashboard
+                </Link>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <User className="h-3.5 w-3.5" />
+                  {profile?.displayName || user.email?.split("@")[0]}
+                </span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
           ) : (
-            <Button variant="outline" size="sm" onClick={handleGoogleSignIn} className="gap-2">
-              <LogIn className="h-4 w-4" />
-              Iniciar sesión
-            </Button>
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="gap-2">
+                <LogIn className="h-4 w-4" />
+                Iniciar sesion
+              </Button>
+            </Link>
           )}
         </nav>
 
-        {/* Mobile sign-in button */}
         <div className="md:hidden">
           {user ? (
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <Link to="/perfil">
+              <Button variant="ghost" size="sm">
+                <User className="h-4 w-4" />
+              </Button>
+            </Link>
           ) : (
-            <Button variant="outline" size="sm" onClick={handleGoogleSignIn} className="gap-1.5 text-xs">
-              <LogIn className="h-3.5 w-3.5" />
-              Entrar
-            </Button>
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <LogIn className="h-3.5 w-3.5" />
+                Entrar
+              </Button>
+            </Link>
           )}
         </div>
       </div>

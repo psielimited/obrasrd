@@ -256,6 +256,7 @@ export type Database = {
           id: string;
           location: string;
           name: string;
+          owner_user_id: string | null;
           phase_id: number;
           portfolio_images: string[];
           rating: number;
@@ -277,6 +278,7 @@ export type Database = {
           id?: string;
           location: string;
           name: string;
+          owner_user_id?: string | null;
           phase_id: number;
           portfolio_images?: string[];
           rating?: number;
@@ -298,6 +300,7 @@ export type Database = {
           id?: string;
           location?: string;
           name?: string;
+          owner_user_id?: string | null;
           phase_id?: number;
           portfolio_images?: string[];
           rating?: number;
@@ -311,16 +314,50 @@ export type Database = {
           years_experience?: number;
         };
         Relationships: [
-          {
-            foreignKeyName: "providers_phase_id_fkey";
-            columns: ["phase_id"];
-            isOneToOne: false;
-            referencedRelation: "phases";
-            referencedColumns: ["id"];
-          },
-        ];
+            {
+              foreignKeyName: "providers_phase_id_fkey";
+              columns: ["phase_id"];
+              isOneToOne: false;
+              referencedRelation: "phases";
+              referencedColumns: ["id"];
+            },
+            {
+              foreignKeyName: "providers_owner_user_id_fkey";
+              columns: ["owner_user_id"];
+              isOneToOne: false;
+              referencedRelation: "user_profiles";
+              referencedColumns: ["user_id"];
+            },
+          ];
+        };
+      user_profiles: {
+        Row: {
+          created_at: string;
+          display_name: string | null;
+          phone: string | null;
+          role: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          display_name?: string | null;
+          phone?: string | null;
+          role?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          display_name?: string | null;
+          phone?: string | null;
+          role?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
-      service_posts: {
+        service_posts: {
         Row: {
           created_at: string;
           description: string;
