@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { MessageSquareWarning } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,7 +8,9 @@ import EmptyState from "@/components/dashboard/EmptyState";
 import StatCard from "@/components/dashboard/StatCard";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { LEAD_STATUS_LABELS } from "@/components/dashboard/dashboard-constants";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,8 +29,22 @@ import {
 } from "@/components/ui/table";
 import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
 import { leadQueryKeys, useMyLeads } from "@/hooks/use-leads-data";
-import { LeadStatus, updateLead } from "@/lib/leads-api";
+import { LeadStatus, RequesterState, updateLead } from "@/lib/leads-api";
 import { useToast } from "@/hooks/use-toast";
+
+const REQUESTER_STATE_LABELS: Record<RequesterState, string> = {
+  active: "Activa",
+  cancelled: "Cancelada",
+  archived: "Archivada",
+};
+
+const REQUESTER_STATE_CLASSES: Record<RequesterState, string> = {
+  active: "border-emerald-500/40 text-emerald-300",
+  cancelled: "border-rose-500/40 text-rose-300",
+  archived: "border-slate-500/40 text-slate-300",
+};
+
+const ACTIONABLE_FILTER_STORAGE_KEY = "provider-leads-show-only-actionable";
 
 const ProviderLeadsPage = () => {
   const { data: profile } = useMyProfile();
@@ -39,6 +55,10 @@ const ProviderLeadsPage = () => {
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | LeadStatus>("all");
+  const [showOnlyActionable, setShowOnlyActionable] = useState<boolean>(() => {
+    const stored = localStorage.getItem(ACTIONABLE_FILTER_STORAGE_KEY);
+    return stored === null ? true : stored === "true";
+  });
   const [isSaving, setIsSaving] = useState<string | null>(null);
   const [draftStatuses, setDraftStatuses] = useState<Record<string, LeadStatus>>({});
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
@@ -61,16 +81,33 @@ const ProviderLeadsPage = () => {
     );
   }, [leads]);
 
+  const actionableCount = useMemo(
+    () => leads.filter((lead) => lead.requesterState === "active").length,
+    [leads],
+  );
+
   const filteredLeads = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return leads.filter((lead) => {
-      const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
-      const searchable = `${lead.requesterName || ""} ${lead.requesterContact || ""} ${lead.message}`.toLowerCase();
-      const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
-      return matchesStatus && matchesQuery;
-    });
-  }, [leads, query, statusFilter]);
+    return leads
+      .filter((lead) => {
+        const matchesActionable = !showOnlyActionable || lead.requesterState === "active";
+        const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
+        const searchable = `${lead.requesterName || ""} ${lead.requesterContact || ""} ${lead.message}`.toLowerCase();
+        const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+        return matchesActionable && matchesStatus && matchesQuery;
+      })
+      .sort((a, b) => {
+        const aRank = a.requesterState === "active" ? 0 : 1;
+        const bRank = b.requesterState === "active" ? 0 : 1;
+        if (aRank !== bRank) return aRank - bRank;
+        return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      });
+  }, [leads, query, showOnlyActionable, statusFilter]);
+
+  useEffect(() => {
+    localStorage.setItem(ACTIONABLE_FILTER_STORAGE_KEY, String(showOnlyActionable));
+  }, [showOnlyActionable]);
 
   const onSaveLead = async (leadId: string) => {
     const lead = leads.find((item) => item.id === leadId);
@@ -135,14 +172,14 @@ const ProviderLeadsPage = () => {
     >
       <div className="space-y-6">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <StatCard title="Total" value={String(summary.total)} icon={MessageSquareWarning} />
+          <StatCard title="Total" value={String(summary.total)} hint={`Accionables: ${actionableCount}`} icon={MessageSquareWarning} />
           {(Object.keys(LEAD_STATUS_LABELS) as LeadStatus[]).map((status) => (
             <StatCard key={status} title={LEAD_STATUS_LABELS[status]} value={String(summary[status])} icon={MessageSquareWarning} />
           ))}
         </div>
 
         <SectionCard title="Filtros" description="Busca por nombre, contacto o contenido de solicitud">
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-4">
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -160,6 +197,10 @@ const ProviderLeadsPage = () => {
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex items-center gap-2 rounded-md border border-slate-800 px-3">
+              <Switch checked={showOnlyActionable} onCheckedChange={setShowOnlyActionable} />
+              <span className="text-sm text-slate-300">Solo accionables</span>
+            </div>
             <div className="text-sm text-slate-400 flex items-center">Mostrando {filteredLeads.length} resultados</div>
           </div>
         </SectionCard>
@@ -178,6 +219,7 @@ const ProviderLeadsPage = () => {
                       <TableHead>Solicitante</TableHead>
                       <TableHead>Mensaje</TableHead>
                       <TableHead>Estado</TableHead>
+                      <TableHead>Estado cliente</TableHead>
                       <TableHead>Nota interna</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
@@ -191,7 +233,7 @@ const ProviderLeadsPage = () => {
                         : null;
 
                       return (
-                        <TableRow key={lead.id} className="border-slate-800 hover:bg-slate-900/40">
+                        <TableRow key={lead.id} className={`border-slate-800 hover:bg-slate-900/40 ${lead.requesterState !== "active" ? "opacity-70" : ""}`}>
                           <TableCell>
                             <p className="font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
                             <p className="text-xs text-slate-500">{lead.requesterContact || "Sin contacto"}</p>
@@ -215,6 +257,11 @@ const ProviderLeadsPage = () => {
                                 </SelectContent>
                               </Select>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={REQUESTER_STATE_CLASSES[lead.requesterState]}>
+                              {REQUESTER_STATE_LABELS[lead.requesterState]}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Input
@@ -258,7 +305,12 @@ const ProviderLeadsPage = () => {
                           <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
                           <p className="text-xs text-slate-500">{new Date(lead.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <StatusBadge status={lead.status} />
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={lead.status} />
+                          <Badge variant="outline" className={REQUESTER_STATE_CLASSES[lead.requesterState]}>
+                            {REQUESTER_STATE_LABELS[lead.requesterState]}
+                          </Badge>
+                        </div>
                       </div>
 
                       <p className="text-sm text-slate-300">{lead.message}</p>
