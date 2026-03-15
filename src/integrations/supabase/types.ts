@@ -63,8 +63,11 @@ export type Database = {
           message: string;
           provider_id: string;
           provider_reply: string | null;
+          requester_archived_at: string | null;
+          requester_cancelled_at: string | null;
           requester_contact: string | null;
           requester_name: string | null;
+          requester_state: string;
           requester_user_id: string | null;
           status: string;
           updated_at: string;
@@ -78,8 +81,11 @@ export type Database = {
           message: string;
           provider_id: string;
           provider_reply?: string | null;
+          requester_archived_at?: string | null;
+          requester_cancelled_at?: string | null;
           requester_contact?: string | null;
           requester_name?: string | null;
+          requester_state?: string;
           requester_user_id?: string | null;
           status?: string;
           updated_at?: string;
@@ -93,8 +99,11 @@ export type Database = {
           message?: string;
           provider_id?: string;
           provider_reply?: string | null;
+          requester_archived_at?: string | null;
+          requester_cancelled_at?: string | null;
           requester_contact?: string | null;
           requester_name?: string | null;
+          requester_state?: string;
           requester_user_id?: string | null;
           status?: string;
           updated_at?: string;

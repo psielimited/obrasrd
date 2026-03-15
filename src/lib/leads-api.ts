@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
 export type LeadStatus = "new" | "contacted" | "qualified" | "closed_won" | "closed_lost";
+export type RequesterState = "active" | "cancelled" | "archived";
 
 export interface Lead {
   id: string;
@@ -9,6 +10,9 @@ export interface Lead {
   requesterName?: string;
   requesterContact?: string;
   requesterUserId?: string;
+  requesterState: RequesterState;
+  requesterCancelledAt?: string;
+  requesterArchivedAt?: string;
   message: string;
   estimatedBudget?: string;
   providerReply?: string;
@@ -33,6 +37,9 @@ const toLead = (row: Tables<"leads">): Lead => ({
   requesterName: row.requester_name ?? undefined,
   requesterContact: row.requester_contact ?? undefined,
   requesterUserId: row.requester_user_id ?? undefined,
+  requesterState: (row.requester_state as RequesterState) ?? "active",
+  requesterCancelledAt: row.requester_cancelled_at ?? undefined,
+  requesterArchivedAt: row.requester_archived_at ?? undefined,
   message: row.message,
   estimatedBudget: row.estimated_budget ?? undefined,
   providerReply: row.provider_reply ?? undefined,
@@ -53,6 +60,7 @@ export const createLead = async (payload: CreateLeadInput): Promise<void> => {
     requester_name: payload.requesterName?.trim() ? payload.requesterName.trim() : null,
     requester_contact: payload.requesterContact?.trim() ? payload.requesterContact.trim() : null,
     requester_user_id: user?.id ?? null,
+    requester_state: "active",
     message: payload.message.trim(),
     estimated_budget: payload.estimatedBudget?.trim() ? payload.estimatedBudget.trim() : null,
     status: "new",
@@ -111,6 +119,20 @@ export const updateLead = async (
   };
 
   const { error } = await supabase.from("leads").update(updatePayload).eq("id", leadId);
+  if (error) {
+    throw error;
+  }
+};
+
+export const updateMyLeadState = async (
+  leadId: string,
+  requesterState: RequesterState,
+): Promise<void> => {
+  const { error } = await supabase.rpc("update_my_lead_state", {
+    p_lead_id: leadId,
+    p_requester_state: requesterState,
+  });
+
   if (error) {
     throw error;
   }
