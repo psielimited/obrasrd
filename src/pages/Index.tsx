@@ -38,7 +38,7 @@ const Index = () => {
                 El marketplace de construcción de República Dominicana.
               </p>
             </div>
-            <p className="text-xs text-muted-foreground">© 2026 OBRA. Todos los derechos reservados.</p>
+            <p className="text-xs text-muted-foreground"><p className="text-xs text-muted-foreground">© 2026 ObrasRD. Todos los derechos reservados.</p></p>
           </div>
         </div>
       </footer>
