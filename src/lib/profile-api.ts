@@ -1,6 +1,6 @@
 import type { Provider } from "@/data/marketplace";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
 export type UserRole = "buyer" | "provider" | "admin";
 
@@ -26,6 +26,7 @@ export interface ProviderProfileInput {
   whatsapp: string;
   startingPrice?: number;
   serviceAreas: string[];
+  portfolioImages: string[];
   isFeatured: boolean;
 }
 
@@ -124,8 +125,7 @@ export const getMyProviderProfile = async (): Promise<Provider | null> => {
 export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Promise<string> => {
   const userId = await requireUserId();
 
-  const providerPayload: TablesInsert<"providers"> = {
-    ...(payload.id ? { id: payload.id } : {}),
+  const editableFields: Omit<TablesUpdate<"providers">, "id"> = {
     owner_user_id: userId,
     name: payload.name,
     trade: payload.trade,
@@ -138,19 +138,35 @@ export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Pr
     whatsapp: payload.whatsapp,
     starting_price: payload.startingPrice ?? null,
     service_areas: payload.serviceAreas,
-    portfolio_images: [],
-    rating: 0,
-    review_count: 0,
-    completed_projects: 0,
-    verified: false,
+    portfolio_images: payload.portfolioImages,
     is_featured: payload.isFeatured,
   };
 
-  const { data, error } = await supabase
-    .from("providers")
-    .upsert(providerPayload)
-    .select("id")
-    .single();
+  let data: { id: string } | null = null;
+  let error: { message: string } | null = null;
+
+  if (payload.id) {
+    const response = await supabase
+      .from("providers")
+      .update(editableFields)
+      .eq("id", payload.id)
+      .eq("owner_user_id", userId)
+      .select("id")
+      .single();
+    data = response.data;
+    error = response.error;
+  } else {
+    const insertPayload: TablesInsert<"providers"> = {
+      ...editableFields,
+      rating: 0,
+      review_count: 0,
+      completed_projects: 0,
+      verified: false,
+    };
+    const response = await supabase.from("providers").insert(insertPayload).select("id").single();
+    data = response.data;
+    error = response.error;
+  }
 
   if (error || !data) {
     throw error ?? new Error("No se pudo guardar el perfil de proveedor");

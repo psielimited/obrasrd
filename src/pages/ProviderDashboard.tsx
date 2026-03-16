@@ -24,26 +24,11 @@ import { useMyNotifications, useUnreadNotificationCount } from "@/hooks/use-noti
 import { usePhases } from "@/hooks/use-marketplace-data";
 import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
-
-const calculateProfileCompleteness = (provider: ReturnType<typeof useMyProviderProfile>["data"]) => {
-  if (!provider) return 0;
-
-  const checks = [
-    Boolean(provider.name.trim()),
-    Boolean(provider.trade.trim()),
-    provider.phaseId > 0,
-    Boolean(provider.categorySlug.trim()),
-    Boolean(provider.city.trim()),
-    Boolean(provider.location.trim()),
-    provider.yearsExperience > 0,
-    Boolean(provider.whatsapp.trim()),
-    Boolean(provider.description.trim()),
-    provider.serviceAreas.length > 0,
-  ];
-
-  const completed = checks.filter(Boolean).length;
-  return Math.round((completed / checks.length) * 100);
-};
+import { calculateProviderProfileCompleteness, getProviderTrustBadges, isProviderActive } from "@/lib/provider-trust";
+import CategoryTag from "@/components/marketplace/CategoryTag";
+import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
+import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
+import { useMemo } from "react";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   active: "Activo",
@@ -63,7 +48,7 @@ const ProviderDashboard = () => {
   const { data: planSnapshot } = useMyProviderPlanSnapshot();
   useDashboardRealtimeSync({ includeRequests: false, includeThread: false });
 
-  const profileCompleteness = calculateProfileCompleteness(providerProfile);
+  const profileCompleteness = calculateProviderProfileCompleteness(providerProfile);
   const leadsNewOrPending = leads.filter((lead) => lead.status === "new" || lead.status === "contacted").length;
   const unreadLeadThreads = leads.filter(
     (lead) =>
@@ -79,6 +64,24 @@ const ProviderDashboard = () => {
     })
     .slice(0, 5);
   const recentNotifications = notifications.slice(0, 5);
+  const portfolioImageCount = providerProfile?.portfolioImages.length ?? 0;
+  const hasRecentLeadActivity = leads.some((lead) => {
+    const activityAt = lead.lastMessageAt || lead.createdAt;
+    return Date.now() - Date.parse(activityAt) <= 1000 * 60 * 60 * 24 * 14;
+  });
+  const hasRecentNotificationActivity = notifications.some(
+    (notification) => Date.now() - Date.parse(notification.createdAt) <= 1000 * 60 * 60 * 24 * 14,
+  );
+  const providerActive = isProviderActive(providerProfile, {
+    profileCompleteness,
+    hasRecentLeadActivity,
+    hasRecentNotificationActivity,
+  });
+  const trustBadges = getProviderTrustBadges(providerProfile, {
+    profileCompleteness,
+    hasRecentLeadActivity,
+    hasRecentNotificationActivity,
+  });
 
   const currentPhase = phases.find((phase) => phase.id === providerProfile?.phaseId);
   const currentCategory = currentPhase?.categories.find((category) => category.slug === providerProfile?.categorySlug);
@@ -87,6 +90,8 @@ const ProviderDashboard = () => {
   if (!providerProfile?.description?.trim()) warnings.push("Completa tu descripcion para mejorar confianza.");
   if (!providerProfile?.whatsapp?.trim()) warnings.push("Agrega tu WhatsApp para recibir respuestas mas rapido.");
   if (!providerProfile?.serviceAreas?.length) warnings.push("Define al menos una area de servicio.");
+  if (portfolioImageCount === 0) warnings.push("Sube fotos reales de tus trabajos para generar confianza.");
+  if (portfolioImageCount > 0 && portfolioImageCount < 3) warnings.push("Agrega al menos 3 fotos para fortalecer tu perfil.");
 
   const greetingName = profile?.displayName || providerProfile?.name || "proveedor";
   const planProgress =
@@ -96,6 +101,16 @@ const ProviderDashboard = () => {
           Math.round((planSnapshot.leadsUsedThisMonth / planSnapshot.monthlyLeadQuota) * 100),
         )
       : 0;
+  const trustChecklist = useMemo(
+    () => [
+      { label: "Sube 3 fotos reales de trabajos", done: portfolioImageCount >= 3 },
+      { label: "Completa tu descripcion", done: Boolean(providerProfile?.description?.trim()) },
+      { label: "Agrega WhatsApp", done: Boolean(providerProfile?.whatsapp?.trim()) },
+      { label: "Define zonas de servicio", done: Boolean(providerProfile?.serviceAreas?.length) },
+      { label: "Mantente activo en la plataforma", done: providerActive },
+    ],
+    [portfolioImageCount, providerProfile?.description, providerProfile?.serviceAreas, providerProfile?.whatsapp, providerActive],
+  );
 
   if (profile?.role !== "provider") {
     return (
@@ -145,6 +160,9 @@ const ProviderDashboard = () => {
               icon={Eye}
             />
           </div>
+          <div className="mt-4">
+            <TrustBadgeRow badges={trustBadges} />
+          </div>
         </SectionCard>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -153,6 +171,77 @@ const ProviderDashboard = () => {
           <QuickActionCard to={providerProfile?.id ? `/proveedor/${providerProfile.id}` : "/buscar"} title="Ver perfil publico" description="Revisa como te ven clientes" icon={<Eye className="h-5 w-5" />} />
           <QuickActionCard to="/publicar" title="Publicar servicio" description="Crea una nueva oferta" icon={<FilePlus2 className="h-5 w-5" />} />
         </div>
+
+        <SectionCard title="Confianza visual" description="Tu evidencia visual y consistencia de actividad elevan conversiones">
+          <div className="grid gap-6 xl:grid-cols-3">
+            <div className="space-y-3">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Imagenes de portafolio</p>
+                <p className="mt-1 text-lg font-bold text-slate-100">{portfolioImageCount}</p>
+                <p className="text-xs text-slate-400">
+                  {portfolioImageCount === 0
+                    ? "Sube fotos reales de tus trabajos"
+                    : portfolioImageCount < 3
+                      ? "Recomendado: al menos 3 imagenes"
+                      : "Buen nivel de evidencia visual"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Verificacion</p>
+                <p className="mt-1 text-sm font-semibold text-slate-100">{providerProfile?.verified ? "Servicio verificado" : "Pendiente de verificacion"}</p>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Estado de actividad</p>
+                <p className="mt-1 text-sm font-semibold text-slate-100">{providerActive ? "Proveedor activo" : "Actividad por mejorar"}</p>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Completitud</p>
+                <p className="mt-1 text-sm font-semibold text-slate-100">{profileCompleteness}%</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+              <p className="text-sm font-semibold text-slate-100 mb-3">Checklist de confianza</p>
+              <div className="space-y-2">
+                {trustChecklist.map((item) => (
+                  <div key={item.label} className="flex items-start gap-2 text-sm">
+                    <span className={`mt-0.5 h-2.5 w-2.5 rounded-full ${item.done ? "bg-emerald-400" : "bg-slate-600"}`} />
+                    <span className={item.done ? "text-slate-200" : "text-slate-400"}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-slate-100">Como te ve el cliente</p>
+              <MarketplaceVisualFrame
+                categorySlug={providerProfile?.categorySlug}
+                categoryLabel={currentCategory?.name}
+                badgeRow={<Badge variant="outline" className="border-slate-700 text-slate-200">Vista previa</Badge>}
+              >
+                {providerProfile?.portfolioImages[0] ? (
+                  <img
+                    src={providerProfile.portfolioImages[0]}
+                    alt="Vista previa del portafolio"
+                    className="h-40 w-full object-cover"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="h-40 grid place-items-center text-xs text-slate-400">
+                    Agrega tu primera imagen para destacar tu trabajo.
+                  </div>
+                )}
+              </MarketplaceVisualFrame>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 space-y-2">
+                <p className="text-sm font-semibold text-slate-100">{providerProfile?.name || "Tu nombre comercial"}</p>
+                <p className="text-xs text-slate-400">{providerProfile?.trade || "Tu especialidad"}</p>
+                <CategoryTag categorySlug={providerProfile?.categorySlug} categoryName={currentCategory?.name} />
+                <TrustBadgeRow badges={trustBadges} />
+              </div>
+            </div>
+          </div>
+        </SectionCard>
 
         <div className="grid gap-6 xl:grid-cols-3">
           <SectionCard

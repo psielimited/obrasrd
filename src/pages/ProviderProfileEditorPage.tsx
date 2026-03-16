@@ -20,7 +20,7 @@ import { usePhases } from "@/hooks/use-marketplace-data";
 import { useMyProfile, useMyProviderProfile, profileQueryKeys } from "@/hooks/use-profile-data";
 import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 import { upsertMyProviderProfile } from "@/lib/profile-api";
-import { UserRoundCog } from "lucide-react";
+import { ArrowDown, ArrowUp, ImagePlus, Trash2, UserRoundCog } from "lucide-react";
 
 const ProviderProfileEditorPage = () => {
   const queryClient = useQueryClient();
@@ -41,6 +41,8 @@ const ProviderProfileEditorPage = () => {
   const [whatsapp, setWhatsapp] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
   const [serviceAreasRaw, setServiceAreasRaw] = useState("");
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [portfolioImageUrl, setPortfolioImageUrl] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -61,6 +63,7 @@ const ProviderProfileEditorPage = () => {
     setWhatsapp(providerProfile.whatsapp);
     setStartingPrice(providerProfile.startingPrice ? String(providerProfile.startingPrice) : "");
     setServiceAreasRaw(providerProfile.serviceAreas.join(", "));
+    setPortfolioImages(providerProfile.portfolioImages);
     setIsFeatured(Boolean(providerProfile.isFeatured));
   }, [providerProfile]);
 
@@ -96,6 +99,32 @@ const ProviderProfileEditorPage = () => {
     description.trim() &&
     whatsapp.trim();
 
+  const addPortfolioImage = () => {
+    const url = portfolioImageUrl.trim();
+    if (!url || portfolioImages.includes(url)) {
+      setPortfolioImageUrl("");
+      return;
+    }
+
+    setPortfolioImages((prev) => [...prev, url]);
+    setPortfolioImageUrl("");
+  };
+
+  const removePortfolioImage = (index: number) => {
+    setPortfolioImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const movePortfolioImage = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= portfolioImages.length) return;
+
+    setPortfolioImages((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, item);
+      return next;
+    });
+  };
+
   const onSave = async () => {
     if (!isValid || isSaving) return;
 
@@ -114,6 +143,7 @@ const ProviderProfileEditorPage = () => {
         whatsapp: whatsapp.trim(),
         startingPrice: startingPrice.trim() ? Number(startingPrice) : undefined,
         serviceAreas,
+        portfolioImages,
         isFeatured,
       });
 
@@ -278,6 +308,75 @@ const ProviderProfileEditorPage = () => {
           </div>
         </SectionCard>
 
+        <SectionCard title="Trabajos realizados" description="Muestra evidencia visual real de tu trabajo">
+          <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+            <p className="text-sm text-slate-300">
+              En construccion, las imagenes generan mas confianza que una descripcion larga.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              Sube fotos reales de trabajos, procesos y resultados de obra.
+            </p>
+
+            <div className="mt-4 flex flex-col sm:flex-row gap-2">
+              <Input
+                value={portfolioImageUrl}
+                onChange={(event) => setPortfolioImageUrl(event.target.value)}
+                placeholder="https://..."
+              />
+              <Button type="button" variant="outline" onClick={addPortfolioImage}>
+                <ImagePlus className="h-4 w-4 mr-1.5" />
+                Agregar imagen
+              </Button>
+            </div>
+
+            {portfolioImages.length === 0 ? (
+              <div className="mt-4 rounded-lg border border-dashed border-slate-700 p-4 text-center text-sm text-slate-400">
+                Aun no has agregado imagenes de portafolio.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-2">
+                {portfolioImages.map((imageUrl, index) => (
+                  <div key={`${imageUrl}-${index}`} className="rounded-lg border border-slate-800 bg-slate-900/60 p-2.5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-xs text-slate-300 break-all">{imageUrl}</p>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={index === 0}
+                          onClick={() => movePortfolioImage(index, index - 1)}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={index === portfolioImages.length - 1}
+                          onClick={() => movePortfolioImage(index, index + 1)}
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removePortfolioImage(index)}>
+                          <Trash2 className="h-4 w-4 text-rose-300" />
+                        </Button>
+                      </div>
+                    </div>
+                    <img
+                      src={imageUrl}
+                      alt={`Portafolio ${index + 1}`}
+                      className="mt-2 h-28 w-full rounded-md object-cover"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </SectionCard>
+
         <SectionCard title="Visibilidad premium" description="Configura beneficios segun tu plan actual">
           <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
@@ -296,7 +395,7 @@ const ProviderProfileEditorPage = () => {
               />
             </div>
             <p className="text-xs text-slate-500">
-              Plan: {planSnapshot?.planName ?? "Gratis"} • Slots destacados: {planSnapshot?.featuredSlots ?? 0}
+              Plan: {planSnapshot?.planName ?? "Gratis"} - Slots destacados: {planSnapshot?.featuredSlots ?? 0}
             </p>
           </div>
         </SectionCard>
