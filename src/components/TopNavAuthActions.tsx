@@ -35,11 +35,22 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
           </Link>
         )}
         {user ? (
-          <Link to="/perfil">
-            <Button variant="ghost" size="sm">
-              <User className="h-4 w-4" />
+          <>
+            <Link to="/perfil">
+              <Button variant="ghost" size="sm">
+                <User className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              aria-label="Cerrar sesion"
+              title="Cerrar sesion"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
-          </Link>
+          </>
         ) : (
           <Link to="/auth">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs">
@@ -97,8 +108,9 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
           <User className="h-3.5 w-3.5" />
           {profile?.displayName || user.email?.split("@")[0]}
         </span>
-        <Button variant="ghost" size="sm" onClick={handleSignOut}>
+        <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-1.5">
           <LogOut className="h-4 w-4" />
+          Cerrar sesion
         </Button>
       </div>
     </>
