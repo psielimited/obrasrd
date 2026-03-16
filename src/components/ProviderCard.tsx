@@ -22,7 +22,7 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
   )}`;
 
   return (
-    <div className="bg-card p-4 rounded-xl obra-shadow">
+    <div className="rounded-xl border border-border/80 bg-card p-4 obra-shadow">
       <div className="flex items-start justify-between mb-2 gap-3">
         <div className="flex-1 min-w-0">
           <h3

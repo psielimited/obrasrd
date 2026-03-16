@@ -34,7 +34,7 @@
 
     --radius: 0.75rem;
 
-    --whatsapp: 142 70% 49%;
+    --whatsapp: 142 68% 40%;
     --whatsapp-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 98%;
@@ -67,6 +67,8 @@
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 45 93% 47%;
+    --whatsapp: 142 66% 42%;
+    --whatsapp-foreground: 0 0% 100%;
   }
 }
 

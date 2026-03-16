@@ -16,7 +16,7 @@ const PopularCategories = () => {
             <button
               key={cat.slug}
               onClick={() => navigate(`/buscar?categoria=${cat.slug}`)}
-              className="bg-card p-4 rounded-xl obra-shadow hover:obra-shadow-md transition-shadow text-left group"
+              className="rounded-xl border border-border/80 bg-card p-4 text-left transition-shadow hover:obra-shadow-md group"
             >
               <h3 className="text-sm font-bold text-foreground">{cat.name}</h3>
               <p className="text-xs text-muted-foreground font-tabular">{cat.count} proveedores</p>
