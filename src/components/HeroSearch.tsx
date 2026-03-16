@@ -19,7 +19,7 @@ const HeroSearch = () => {
       <div
         aria-hidden
         className="absolute inset-0 bg-center bg-cover"
-        style={{ backgroundImage: "url('https://picsum.photos/seed/obrasrd-hero-construccion/1800/900')" }}
+        style={{ backgroundImage: "url('/hero-construction.svg')" }}
       />
       <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/88 to-background" />
       <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.12),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(30,64,175,0.12),transparent_45%)]" />
