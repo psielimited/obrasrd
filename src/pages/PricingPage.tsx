@@ -50,7 +50,7 @@ const PricingPage = () => {
               <Button className="font-semibold">{ctaLabel}</Button>
             </Link>
             <Link to="/buscar">
-              <Button variant="outline" className="border-slate-700 text-slate-200 hover:bg-slate-900">
+              <Button variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
                 Ver marketplace
               </Button>
             </Link>
