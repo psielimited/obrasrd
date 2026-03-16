@@ -87,6 +87,7 @@ returns table (
   plan_name text,
   status text,
   monthly_lead_quota int,
+  featured_slots int,
   leads_used_this_month int,
   leads_remaining_this_month int,
   is_quota_unlimited boolean,
@@ -103,6 +104,7 @@ declare
   v_plan_name text;
   v_status text;
   v_quota int;
+  v_featured_slots int;
   v_used int;
   v_period_start timestamptz := date_trunc('month', now());
   v_period_end timestamptz := date_trunc('month', now()) + interval '1 month';
@@ -112,8 +114,8 @@ begin
     raise exception 'Usuario no autenticado';
   end if;
 
-  select s.plan_code, pp.name, s.status, pp.monthly_lead_quota
-    into v_plan_code, v_plan_name, v_status, v_quota
+  select s.plan_code, pp.name, s.status, pp.monthly_lead_quota, pp.featured_slots
+    into v_plan_code, v_plan_name, v_status, v_quota, v_featured_slots
   from public.provider_subscriptions s
   join public.provider_plans pp on pp.code = s.plan_code
   where s.provider_user_id = v_user_id
@@ -124,8 +126,8 @@ begin
   limit 1;
 
   if v_plan_code is null then
-    select pp.code, pp.name, 'active', pp.monthly_lead_quota
-      into v_plan_code, v_plan_name, v_status, v_quota
+    select pp.code, pp.name, 'active', pp.monthly_lead_quota, pp.featured_slots
+      into v_plan_code, v_plan_name, v_status, v_quota, v_featured_slots
     from public.provider_plans pp
     where pp.code = 'free'
     limit 1;
@@ -145,6 +147,7 @@ begin
     v_plan_name,
     v_status,
     v_quota,
+    v_featured_slots,
     v_used,
     case when v_quota is null then null else greatest(v_quota - v_used, 0) end,
     v_quota is null,

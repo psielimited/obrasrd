@@ -26,6 +26,7 @@ export interface Provider {
   reviewCount: number;
   completedProjects: number;
   verified: boolean;
+  isFeatured?: boolean;
   whatsapp: string;
   startingPrice?: number;
   portfolioImages: string[];

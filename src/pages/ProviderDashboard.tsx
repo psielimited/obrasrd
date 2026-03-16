@@ -246,6 +246,12 @@ const ProviderDashboard = () => {
                 {planSnapshot?.isQuotaUnlimited ? "Ilimitado" : planSnapshot?.leadsRemainingThisMonth ?? 25}
               </p>
             </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 md:col-span-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Slots destacados</p>
+              <p className="text-sm text-slate-100 mt-1">
+                {planSnapshot?.featuredSlots ?? 0} disponibles en tu plan actual
+              </p>
+            </div>
           </div>
 
           {!planSnapshot?.isQuotaUnlimited && (

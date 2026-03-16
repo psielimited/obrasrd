@@ -5,6 +5,7 @@ export interface ProviderPlanSnapshot {
   planName: string;
   status: "active" | "trialing" | "past_due" | "cancelled";
   monthlyLeadQuota: number | null;
+  featuredSlots: number;
   leadsUsedThisMonth: number;
   leadsRemainingThisMonth: number | null;
   isQuotaUnlimited: boolean;
@@ -27,6 +28,7 @@ export const getMyProviderPlanSnapshot = async (): Promise<ProviderPlanSnapshot 
     planName: row.plan_name,
     status: row.status,
     monthlyLeadQuota: row.monthly_lead_quota,
+    featuredSlots: row.featured_slots,
     leadsUsedThisMonth: row.leads_used_this_month,
     leadsRemainingThisMonth: row.leads_remaining_this_month,
     isQuotaUnlimited: row.is_quota_unlimited,

@@ -79,3 +79,9 @@ After applying Supabase migrations, run:
 `supabase/verification/20260315_lead_messaging_smoke.sql`
 
 This script validates lead messaging lifecycle pieces (RPCs, triggers, and notification side-effects) and ends with `ROLLBACK` by default.
+
+For provider monetization scaffolding checks, run:
+
+`supabase/verification/20260316_provider_plans_smoke.sql`
+
+This validates plan snapshot, featured entitlement blocking, and lead quota enforcement (also with `ROLLBACK` by default).

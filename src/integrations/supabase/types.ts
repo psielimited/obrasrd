@@ -436,6 +436,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          is_featured: boolean
           location: string
           name: string
           owner_user_id: string | null
@@ -458,6 +459,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          is_featured?: boolean
           location: string
           name: string
           owner_user_id?: string | null
@@ -480,6 +482,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          is_featured?: boolean
           location?: string
           name?: string
           owner_user_id?: string | null
@@ -687,6 +690,7 @@ export type Database = {
       get_my_provider_plan_snapshot: {
         Args: Record<PropertyKey, never>
         Returns: {
+          featured_slots: number
           is_quota_unlimited: boolean
           leads_remaining_this_month: number | null
           leads_used_this_month: number

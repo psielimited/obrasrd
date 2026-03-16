@@ -26,6 +26,7 @@ export interface ProviderProfileInput {
   whatsapp: string;
   startingPrice?: number;
   serviceAreas: string[];
+  isFeatured: boolean;
 }
 
 const toProvider = (row: Tables<"providers">): Provider => ({
@@ -42,6 +43,7 @@ const toProvider = (row: Tables<"providers">): Provider => ({
   reviewCount: row.review_count,
   completedProjects: row.completed_projects,
   verified: row.verified,
+  isFeatured: row.is_featured,
   whatsapp: row.whatsapp,
   startingPrice: row.starting_price ? Number(row.starting_price) : undefined,
   portfolioImages: row.portfolio_images ?? [],
@@ -141,6 +143,7 @@ export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Pr
     review_count: 0,
     completed_projects: 0,
     verified: false,
+    is_featured: payload.isFeatured,
   };
 
   const { data, error } = await supabase

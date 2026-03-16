@@ -35,6 +35,7 @@ const toProvider = (row: Tables<"providers">): Provider => ({
   reviewCount: row.review_count,
   completedProjects: row.completed_projects,
   verified: row.verified,
+  isFeatured: row.is_featured,
   whatsapp: row.whatsapp,
   startingPrice: row.starting_price ? Number(row.starting_price) : undefined,
   portfolioImages: row.portfolio_images ?? [],
