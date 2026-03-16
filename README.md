@@ -71,3 +71,11 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Migration Smoke Checks
+
+After applying Supabase migrations, run:
+
+`supabase/verification/20260315_lead_messaging_smoke.sql`
+
+This script validates lead messaging lifecycle pieces (RPCs, triggers, and notification side-effects) and ends with `ROLLBACK` by default.
