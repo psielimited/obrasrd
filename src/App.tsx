@@ -25,6 +25,7 @@ const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 const ConsumerDashboardPage = lazy(() => import("./pages/ConsumerDashboardPage"));
 const ConsumerRequestsPage = lazy(() => import("./pages/ConsumerRequestsPage"));
 const ConsumerSavedProvidersPage = lazy(() => import("./pages/ConsumerSavedProvidersPage"));
+const ConsumerCompareProvidersPage = lazy(() => import("./pages/ConsumerCompareProvidersPage"));
 const DashboardHomeRedirect = lazy(() => import("./pages/DashboardHomeRedirect"));
 const LeadThreadPage = lazy(() => import("./pages/LeadThreadPage"));
 
@@ -103,6 +104,14 @@ const AppContent = () => {
             element={
               <RequireAuth>
                 <ConsumerSavedProvidersPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/cliente/comparar"
+            element={
+              <RequireAuth>
+                <ConsumerCompareProvidersPage />
               </RequireAuth>
             }
           />

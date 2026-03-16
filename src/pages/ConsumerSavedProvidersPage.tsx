@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Heart, Scale, Star } from "lucide-react";
+﻿import { useMemo, useState } from "react";
+import { ArrowRightLeft, Heart, Scale, Star } from "lucide-react";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
 import EmptyState from "@/components/dashboard/EmptyState";
 import SectionCard from "@/components/dashboard/SectionCard";
@@ -18,13 +18,12 @@ const ConsumerSavedProvidersPage = () => {
   const { toast } = useToast();
   const { data: savedProviders = [], isLoading } = useMySavedProviders();
 
-  const [compareIds, setCompareIds] = useState<string[]>([]);
   const [noteDrafts, setNoteDrafts] = useState<Record<number, string>>({});
   const [isSavingNoteId, setIsSavingNoteId] = useState<number | null>(null);
 
-  const comparedProviders = useMemo(
-    () => savedProviders.filter((item) => compareIds.includes(item.provider.id)),
-    [savedProviders, compareIds],
+  const shortlistCount = useMemo(
+    () => savedProviders.filter((item) => item.isShortlisted).length,
+    [savedProviders],
   );
 
   const refreshSaved = async () => {
@@ -37,7 +36,6 @@ const ConsumerSavedProvidersPage = () => {
   const onRemove = async (providerId: string) => {
     try {
       await unsaveProvider(providerId);
-      setCompareIds((prev) => prev.filter((id) => id !== providerId));
       await refreshSaved();
       toast({ title: "Eliminado", description: "Proveedor removido de guardados." });
     } catch (error) {
@@ -86,57 +84,29 @@ const ConsumerSavedProvidersPage = () => {
     }
   };
 
-  const toggleCompare = (providerId: string) => {
-    setCompareIds((prev) => {
-      if (prev.includes(providerId)) {
-        return prev.filter((id) => id !== providerId);
-      }
-      if (prev.length >= 3) {
-        toast({ title: "Maximo 3", description: "Puedes comparar hasta 3 proveedores." });
-        return prev;
-      }
-      return [...prev, providerId];
-    });
-  };
-
   return (
     <ConsumerDashboardLayout
       title="Proveedores guardados"
       subtitle="Compara tus opciones favoritas antes de decidir"
       actionLabel="Acciones"
-      onAction={() => navigate("/buscar")}
+      onAction={() => navigate("/dashboard/cliente/comparar")}
     >
       <div className="space-y-6">
-        {comparedProviders.length > 0 && (
-          <SectionCard title="Comparador" description={`Comparando ${comparedProviders.length} proveedor(es)`}>
-            <div className="overflow-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400">
-                    <th className="text-left py-2 pr-3">Proveedor</th>
-                    <th className="text-left py-2 pr-3">Ciudad</th>
-                    <th className="text-left py-2 pr-3">Rating</th>
-                    <th className="text-left py-2 pr-3">Experiencia</th>
-                    <th className="text-left py-2 pr-3">Precio inicial</th>
-                    <th className="text-left py-2">Areas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparedProviders.map(({ provider }) => (
-                    <tr key={provider.id} className="border-b border-slate-900">
-                      <td className="py-2 pr-3 text-slate-100 font-semibold">{provider.name}</td>
-                      <td className="py-2 pr-3 text-slate-300">{provider.city}</td>
-                      <td className="py-2 pr-3 text-slate-300">{provider.rating.toFixed(1)}</td>
-                      <td className="py-2 pr-3 text-slate-300">{provider.yearsExperience} anos</td>
-                      <td className="py-2 pr-3 text-slate-300">{provider.startingPrice ? `RD$${provider.startingPrice.toLocaleString()}` : "N/D"}</td>
-                      <td className="py-2 text-slate-300">{provider.serviceAreas.length}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
-        )}
+        <SectionCard
+          title="Comparador"
+          description="Usa shortlist y compara proveedores en una vista dedicada."
+          right={
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/cliente/comparar")}>
+              <ArrowRightLeft className="h-4 w-4 mr-1" />
+              Abrir comparador
+            </Button>
+          }
+        >
+          <p className="text-sm text-slate-400">
+            Proveedores guardados: <span className="text-slate-100 font-semibold">{savedProviders.length}</span> • Shortlist:{" "}
+            <span className="text-slate-100 font-semibold">{shortlistCount}</span>
+          </p>
+        </SectionCard>
 
         {isLoading ? (
           <SectionCard title="Cargando" description="Obteniendo tus proveedores guardados...">
@@ -154,7 +124,6 @@ const ConsumerSavedProvidersPage = () => {
             <div className="space-y-3">
               {savedProviders.map(({ id: savedId, provider, createdAt, note, isShortlisted }) => {
                 const noteValue = noteDrafts[savedId] ?? note ?? "";
-                const isCompared = compareIds.includes(provider.id);
 
                 return (
                   <div key={provider.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
@@ -165,13 +134,13 @@ const ConsumerSavedProvidersPage = () => {
                           {isShortlisted && <Badge variant="outline" className="border-amber-500/40 text-amber-300">Shortlist</Badge>}
                           {provider.verified && <Badge variant="outline" className="border-emerald-500/40 text-emerald-300">Verificado</Badge>}
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">{provider.trade} � {provider.city}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{provider.trade} • {provider.city}</p>
                         <p className="text-xs text-slate-500 mt-1">Guardado: {new Date(createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="flex gap-2 flex-wrap">
-                        <Button variant={isCompared ? "default" : "outline"} size="sm" onClick={() => toggleCompare(provider.id)}>
+                        <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/cliente/comparar")}>
                           <Scale className="h-4 w-4 mr-1" />
-                          {isCompared ? "Comparando" : "Comparar"}
+                          Comparar
                         </Button>
                         <Button variant={isShortlisted ? "default" : "outline"} size="sm" onClick={() => onToggleShortlist(savedId, isShortlisted)}>
                           <Star className={`h-4 w-4 mr-1 ${isShortlisted ? "fill-current" : ""}`} />

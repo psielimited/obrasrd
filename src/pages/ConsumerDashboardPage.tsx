@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bell, ClipboardList, Heart, MessageSquare, Search } from "lucide-react";
+import { Bell, ClipboardList, Heart, MessageSquare, Scale, Search } from "lucide-react";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
 import StatCard from "@/components/dashboard/StatCard";
@@ -53,10 +53,11 @@ const ConsumerDashboardPage = () => {
           </div>
         </SectionCard>
 
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
           <QuickActionCard to="/dashboard/cliente/solicitudes" title="Mis solicitudes" description="Ver y comparar respuestas" icon={<ClipboardList className="h-5 w-5" />} />
           <QuickActionCard to="/buscar" title="Buscar proveedores" description="Explorar por categoria y ciudad" icon={<Search className="h-5 w-5" />} />
           <QuickActionCard to="/dashboard/cliente/guardados" title="Guardados" description="Tus perfiles favoritos" icon={<Heart className="h-5 w-5" />} />
+          <QuickActionCard to="/dashboard/cliente/comparar" title="Comparar" description="Evaluar shortlist lado a lado" icon={<Scale className="h-5 w-5" />} />
           <QuickActionCard to="/notificaciones" title="Notificaciones" description="Mantente al dia" icon={<Bell className="h-5 w-5" />} />
         </div>
 
