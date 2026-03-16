@@ -165,7 +165,7 @@ export const updateMyLeadState = async (
 };
 
 export const markMyLeadThreadRead = async (leadId: string): Promise<void> => {
-  const { error } = await supabase.rpc("mark_my_lead_thread_read", { p_lead_id: leadId });
+  const { error } = await (supabase.rpc as any)("mark_my_lead_thread_read", { p_lead_id: leadId });
 
   if (error) {
     throw error;
