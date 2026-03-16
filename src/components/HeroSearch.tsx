@@ -3,9 +3,24 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
+const HERO_VARIANTS = [
+  "/hero-doodle-construction.svg",
+  "/hero-doodle-construction-b.svg",
+  "/hero-doodle-construction-c.svg",
+];
+
+const getHeroVariant = () => {
+  const now = new Date();
+  const dayStart = Date.UTC(now.getUTCFullYear(), 0, 0);
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const dayOfYear = Math.floor((today - dayStart) / (1000 * 60 * 60 * 24));
+  return HERO_VARIANTS[dayOfYear % HERO_VARIANTS.length];
+};
+
 const HeroSearch = () => {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const heroBackground = getHeroVariant();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +34,7 @@ const HeroSearch = () => {
       <div
         aria-hidden
         className="absolute inset-0 bg-center bg-cover"
-        style={{ backgroundImage: "url('/hero-construction.svg')" }}
+        style={{ backgroundImage: `url('${heroBackground}')` }}
       />
       <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-background/97 via-background/95 to-background md:from-background/92 md:via-background/86 md:to-background/92" />
       <div aria-hidden className="absolute inset-0 bg-slate-950/24 md:bg-slate-950/14" />

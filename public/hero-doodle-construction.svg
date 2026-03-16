@@ -1,0 +1,78 @@
+<svg width="1800" height="900" viewBox="0 0 1800 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1800" height="900" fill="#F8FAFC"/>
+
+  <!-- soft paper texture dots -->
+  <g opacity="0.18" stroke="#94A3B8" stroke-width="1">
+    <path d="M80 120h2M160 90h2M240 130h2M320 110h2M420 85h2M520 125h2M610 95h2M700 135h2M790 110h2M880 90h2M980 130h2M1080 100h2M1180 120h2M1280 88h2M1380 126h2M1480 104h2M1580 130h2M1680 98h2" />
+  </g>
+
+  <!-- skyline baseline -->
+  <path d="M0 650H1800" stroke="#0F172A" stroke-opacity="0.28" stroke-width="3"/>
+
+  <!-- doodle sun -->
+  <circle cx="1480" cy="140" r="44" stroke="#0F172A" stroke-width="4"/>
+  <g stroke="#0F172A" stroke-width="3" stroke-linecap="round">
+    <path d="M1480 76V58"/>
+    <path d="M1480 222V204"/>
+    <path d="M1416 140H1398"/>
+    <path d="M1562 140H1544"/>
+    <path d="M1436 96L1422 82"/>
+    <path d="M1524 184L1538 198"/>
+    <path d="M1524 96L1538 82"/>
+    <path d="M1436 184L1422 198"/>
+  </g>
+
+  <!-- crane -->
+  <g stroke="#0F172A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1180 650V230"/>
+    <path d="M1180 230H1520"/>
+    <path d="M1220 280H1460"/>
+    <path d="M1180 300L1520 230"/>
+    <path d="M1320 230V360"/>
+    <path d="M1320 360H1390"/>
+    <path d="M1390 360V450"/>
+    <path d="M1368 450H1412"/>
+  </g>
+
+  <!-- buildings -->
+  <g stroke="#0F172A" stroke-width="4" fill="none" stroke-linejoin="round">
+    <rect x="140" y="430" width="220" height="220" rx="8"/>
+    <rect x="390" y="360" width="180" height="290" rx="8"/>
+    <rect x="600" y="460" width="160" height="190" rx="8"/>
+    <rect x="800" y="390" width="210" height="260" rx="8"/>
+  </g>
+
+  <!-- windows doodle -->
+  <g stroke="#0F172A" stroke-width="3" opacity="0.75">
+    <path d="M180 480h40v36h-40zM250 480h40v36h-40zM180 540h40v36h-40zM250 540h40v36h-40z"/>
+    <path d="M430 410h34v30h-34zM495 410h34v30h-34zM430 470h34v30h-34zM495 470h34v30h-34zM430 530h34v30h-34zM495 530h34v30h-34z"/>
+    <path d="M835 430h36v32h-36zM902 430h36v32h-36zM835 490h36v32h-36zM902 490h36v32h-36z"/>
+  </g>
+
+  <!-- house under construction -->
+  <g stroke="#0F172A" stroke-width="5" fill="none" stroke-linejoin="round">
+    <path d="M980 650V520L1120 420L1260 520V650"/>
+    <path d="M1018 650V560H1088V650"/>
+    <path d="M1148 560H1216V620H1148z"/>
+    <path d="M1068 420L1120 360L1172 420"/>
+  </g>
+
+  <!-- playful tools doodles -->
+  <g stroke="#0F172A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+    <path d="M260 250l38 38M298 250l-38 38"/>
+    <path d="M720 230h60M748 202v56"/>
+    <path d="M900 250c12-14 34-14 46 0l-23 24-23-24z"/>
+    <path d="M1650 600l54-20M1668 560l20 54"/>
+  </g>
+
+  <!-- ground hatch -->
+  <g stroke="#0F172A" stroke-width="2" opacity="0.22">
+    <path d="M60 700l36 36M130 700l36 36M200 700l36 36M270 700l36 36M340 700l36 36M410 700l36 36M480 700l36 36M550 700l36 36M620 700l36 36M690 700l36 36M760 700l36 36M830 700l36 36M900 700l36 36M970 700l36 36M1040 700l36 36M1110 700l36 36M1180 700l36 36M1250 700l36 36M1320 700l36 36M1390 700l36 36M1460 700l36 36M1530 700l36 36M1600 700l36 36M1670 700l36 36"/>
+  </g>
+
+  <!-- title scribble -->
+  <g stroke="#0F172A" stroke-width="3" stroke-linecap="round" opacity="0.7">
+    <path d="M120 210c80-36 190-42 280-18"/>
+    <path d="M124 234c92-30 206-30 292-8"/>
+  </g>
+</svg>
