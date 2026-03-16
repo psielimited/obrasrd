@@ -1,5 +1,5 @@
--- Seed sample portfolio images for default marketplace providers.
--- Safe behavior: only fills providers that currently have no portfolio images.
+-- Refresh seeded provider portfolio images with construction-specific visuals.
+-- This migration intentionally updates the default seeded provider IDs.
 
 update public.providers
 set portfolio_images = case id
@@ -54,5 +54,4 @@ where id in (
   '00000000-0000-0000-0000-000000000006'::uuid,
   '00000000-0000-0000-0000-000000000007'::uuid,
   '00000000-0000-0000-0000-000000000008'::uuid
-)
-and coalesce(cardinality(portfolio_images), 0) = 0;
+);

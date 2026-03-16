@@ -9,17 +9,17 @@ const TRUST_BADGE_CONFIG: Record<
 > = {
   verified: {
     label: "Servicio verificado",
-    className: "border-emerald-700 bg-emerald-100 text-emerald-950 dark:border-emerald-400/60 dark:bg-emerald-500/20 dark:text-emerald-100",
+    className: "border-emerald-700 bg-emerald-950 text-emerald-100",
     icon: ShieldCheck,
   },
   active: {
     label: "Proveedor activo",
-    className: "border-cyan-700 bg-cyan-100 text-cyan-950 dark:border-cyan-400/60 dark:bg-cyan-500/20 dark:text-cyan-100",
+    className: "border-cyan-700 bg-cyan-950 text-cyan-100",
     icon: CheckCheck,
   },
   registered_project: {
     label: "Proyecto registrado",
-    className: "border-violet-700 bg-violet-100 text-violet-950 dark:border-violet-400/60 dark:bg-violet-500/20 dark:text-violet-100",
+    className: "border-violet-700 bg-violet-950 text-violet-100",
     icon: ShieldEllipsis,
   },
 };
