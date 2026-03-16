@@ -15,8 +15,16 @@ const HeroSearch = () => {
   };
 
   return (
-    <section className="bg-background px-4 pt-12 pb-8 md:pt-20 md:pb-12">
-      <div className="container max-w-2xl mx-auto text-center">
+    <section className="relative overflow-hidden bg-background px-4 pt-12 pb-8 md:pt-20 md:pb-12">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-center bg-cover"
+        style={{ backgroundImage: "url('https://picsum.photos/seed/obrasrd-hero-construccion/1800/900')" }}
+      />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/88 to-background" />
+      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.12),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(30,64,175,0.12),transparent_45%)]" />
+
+      <div className="container relative max-w-2xl mx-auto text-center">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-3">
           Encuentra profesionales y materiales para tu construcción.
         </h1>

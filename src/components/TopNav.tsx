@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogIn, User } from "lucide-react";
+import { LogIn } from "lucide-react";
 
 const TopNavAuthActions = lazy(() => import("@/components/TopNavAuthActions"));
 
@@ -35,9 +35,6 @@ const TopNav = () => {
 
   const desktopFallback = (
     <>
-      <Link to="/perfil" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-        Mi cuenta
-      </Link>
       <Link to="/auth">
         <Button variant="outline" size="sm" className="gap-2">
           <LogIn className="h-4 w-4" />
@@ -49,11 +46,6 @@ const TopNav = () => {
 
   const mobileFallback = (
     <>
-      <Link to="/perfil">
-        <Button variant="ghost" size="sm">
-          <User className="h-4 w-4" />
-        </Button>
-      </Link>
       <Link to="/auth">
         <Button variant="outline" size="sm" className="gap-1.5 text-xs">
           <LogIn className="h-3.5 w-3.5" />

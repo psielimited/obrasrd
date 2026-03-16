@@ -66,9 +66,6 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
   if (!user) {
     return (
       <>
-        <Link to="/perfil" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-          Mi cuenta
-        </Link>
         <Link to="/auth">
           <Button variant="outline" size="sm" className="gap-2">
             <LogIn className="h-4 w-4" />
