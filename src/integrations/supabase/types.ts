@@ -327,6 +327,83 @@ export type Database = {
           },
         ]
       }
+      provider_plans: {
+        Row: {
+          code: string
+          created_at: string
+          featured_slots: number
+          monthly_lead_quota: number | null
+          name: string
+          price_dop: number
+          price_usd: number
+          priority_support: boolean
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          featured_slots?: number
+          monthly_lead_quota?: number | null
+          name: string
+          price_dop?: number
+          price_usd?: number
+          priority_support?: boolean
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          featured_slots?: number
+          monthly_lead_quota?: number | null
+          name?: string
+          price_dop?: number
+          price_usd?: number
+          priority_support?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_subscriptions: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: number
+          plan_code: string
+          provider_user_id: string
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: never
+          plan_code: string
+          provider_user_id: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: never
+          plan_code?: string
+          provider_user_id?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_subscriptions_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "provider_plans"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       phases: {
         Row: {
           created_at: string

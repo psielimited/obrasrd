@@ -82,6 +82,9 @@ const TopNav = () => {
           <Link to="/publicar" className="text-sm font-semibold text-foreground bg-accent px-3 py-1.5 rounded-lg hover:brightness-95 transition-all">
             Publicar
           </Link>
+          <Link to="/precios" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+            Precios
+          </Link>
           <Suspense fallback={desktopFallback}>
             {showAuthActions ? <TopNavAuthActions /> : desktopFallback}
           </Suspense>

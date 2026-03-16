@@ -1,5 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export interface PublicProviderPlan {
+  code: string;
+  name: string;
+  monthlyLeadQuota: number | null;
+  featuredSlots: number;
+  prioritySupport: boolean;
+  priceUsd: number;
+}
+
 export interface ProviderPlanSnapshot {
   planCode: string;
   planName: string;
@@ -35,4 +44,24 @@ export const getMyProviderPlanSnapshot = async (): Promise<ProviderPlanSnapshot 
     periodStart: row.period_start,
     periodEnd: row.period_end,
   };
+};
+
+export const getPublicProviderPlans = async (): Promise<PublicProviderPlan[]> => {
+  const { data, error } = await supabase
+    .from("provider_plans")
+    .select("code, name, monthly_lead_quota, featured_slots, priority_support, price_usd")
+    .order("price_usd", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => ({
+    code: row.code,
+    name: row.name,
+    monthlyLeadQuota: row.monthly_lead_quota,
+    featuredSlots: row.featured_slots,
+    prioritySupport: row.priority_support,
+    priceUsd: row.price_usd,
+  }));
 };

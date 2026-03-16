@@ -17,6 +17,7 @@ const ProjectBuilder = lazy(() => import("./pages/ProjectBuilder"));
 const PublishService = lazy(() => import("./pages/PublishService"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProviderDashboard = lazy(() => import("./pages/ProviderDashboard"));
 const ProviderProfileEditorPage = lazy(() => import("./pages/ProviderProfileEditorPage"));
@@ -50,6 +51,7 @@ const AppContent = () => {
           <Route path="/materiales" element={<MaterialsPage />} />
           <Route path="/proyectos" element={<ProjectBuilder />} />
           <Route path="/publicar" element={<PublishService />} />
+          <Route path="/precios" element={<PricingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route
             path="/dashboard"

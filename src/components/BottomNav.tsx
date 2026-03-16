@@ -1,9 +1,10 @@
-import { Search, FolderOpen, User, Home } from "lucide-react";
+import { Search, FolderOpen, User, Home, BadgeDollarSign } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const navItems = [
   { icon: Home, label: "Inicio", path: "/" },
   { icon: Search, label: "Buscar", path: "/buscar" },
+  { icon: BadgeDollarSign, label: "Precios", path: "/precios" },
   { icon: FolderOpen, label: "Proyectos", path: "/proyectos" },
   { icon: User, label: "Perfil", path: "/perfil" },
 ];

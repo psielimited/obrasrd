@@ -47,6 +47,8 @@ declare
   v_owner_user_id uuid;
   v_provider_id uuid;
   v_snapshot record;
+  v_snapshot_json jsonb;
+  v_featured_slots int;
   v_blocked boolean := false;
 begin
   select p.owner_user_id, p.id
@@ -73,8 +75,15 @@ begin
     raise exception 'get_my_provider_plan_snapshot returned no row';
   end if;
 
+  v_snapshot_json := to_jsonb(v_snapshot);
+  if v_snapshot_json ? 'featured_slots' then
+    v_featured_slots := coalesce((v_snapshot_json ->> 'featured_slots')::int, 0);
+  else
+    v_featured_slots := null;
+  end if;
+
   raise notice 'Plan snapshot -> code: %, quota: %, featured_slots: %',
-    v_snapshot.plan_code, v_snapshot.monthly_lead_quota, v_snapshot.featured_slots;
+    v_snapshot.plan_code, v_snapshot.monthly_lead_quota, coalesce(v_featured_slots::text, 'N/A');
 
   -- Featured entitlement check:
   -- force plan with zero featured slots and ensure setting is_featured=true is blocked.

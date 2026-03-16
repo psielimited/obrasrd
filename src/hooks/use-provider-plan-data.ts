@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import { getMyProviderPlanSnapshot } from "@/lib/provider-plan-api";
+import { getMyProviderPlanSnapshot, getPublicProviderPlans } from "@/lib/provider-plan-api";
 
 export const providerPlanQueryKeys = {
   mine: ["provider-plan", "mine"] as const,
+  publicList: ["provider-plan", "public-list"] as const,
 };
 
 export const useMyProviderPlanSnapshot = () => {
@@ -15,3 +16,9 @@ export const useMyProviderPlanSnapshot = () => {
     enabled: Boolean(user),
   });
 };
+
+export const usePublicProviderPlans = () =>
+  useQuery({
+    queryKey: providerPlanQueryKeys.publicList,
+    queryFn: getPublicProviderPlans,
+  });
