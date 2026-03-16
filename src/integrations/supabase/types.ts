@@ -55,6 +55,41 @@ export type Database = {
           },
         ]
       }
+      lead_messages: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          message: string
+          sender_role: string
+          sender_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          message: string
+          sender_role: string
+          sender_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          message?: string
+          sender_role?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           closed_at: string | null
@@ -182,41 +217,6 @@ export type Database = {
           whatsapp?: string
         }
         Relationships: []
-      }
-      lead_messages: {
-        Row: {
-          created_at: string
-          id: string
-          lead_id: string
-          message: string
-          sender_role: string
-          sender_user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          lead_id: string
-          message: string
-          sender_role: string
-          sender_user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          lead_id?: string
-          message?: string
-          sender_role?: string
-          sender_user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lead_messages_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       notifications: {
         Row: {
@@ -663,6 +663,27 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      mark_my_lead_thread_read: {
+        Args: { p_lead_id: string }
+        Returns: undefined
+      }
+      send_lead_message: {
+        Args: { p_lead_id: string; p_message: string }
+        Returns: {
+          created_at: string
+          id: string
+          lead_id: string
+          message: string
+          sender_role: string
+          sender_user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lead_messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_my_lead_state: {
         Args: { p_lead_id: string; p_requester_state: string }
         Returns: {
@@ -671,12 +692,16 @@ export type Database = {
           created_at: string
           estimated_budget: string | null
           id: string
+          last_message_at: string | null
+          last_message_preview: string | null
           message: string
           provider_id: string
+          provider_last_read_at: string | null
           provider_reply: string | null
           requester_archived_at: string | null
           requester_cancelled_at: string | null
           requester_contact: string | null
+          requester_last_read_at: string | null
           requester_name: string | null
           requester_state: string
           requester_user_id: string | null
