@@ -5,6 +5,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import { leadQueryKeys } from "@/hooks/use-leads-data";
 import { leadMessagesQueryKeys } from "@/hooks/use-lead-messages-data";
 import { notificationQueryKeys } from "@/hooks/use-notifications-data";
+import { providerPlanQueryKeys } from "@/hooks/use-provider-plan-data";
 
 interface UseDashboardRealtimeSyncOptions {
   leadId?: string;
@@ -12,6 +13,7 @@ interface UseDashboardRealtimeSyncOptions {
   includeRequests?: boolean;
   includeNotifications?: boolean;
   includeThread?: boolean;
+  includeProviderPlan?: boolean;
 }
 
 export const useDashboardRealtimeSync = (options: UseDashboardRealtimeSyncOptions = {}) => {
@@ -23,6 +25,7 @@ export const useDashboardRealtimeSync = (options: UseDashboardRealtimeSyncOption
     includeRequests = true,
     includeNotifications = true,
     includeThread = true,
+    includeProviderPlan = true,
   } = options;
 
   useEffect(() => {
@@ -54,6 +57,7 @@ export const useDashboardRealtimeSync = (options: UseDashboardRealtimeSyncOption
         () => {
           if (includeLeads) queueInvalidation(leadQueryKeys.myLeads);
           if (includeRequests) queueInvalidation(leadQueryKeys.myRequests);
+          if (includeProviderPlan) queueInvalidation(providerPlanQueryKeys.mine);
         },
       )
       .on(
@@ -93,6 +97,7 @@ export const useDashboardRealtimeSync = (options: UseDashboardRealtimeSyncOption
   }, [
     includeLeads,
     includeNotifications,
+    includeProviderPlan,
     includeRequests,
     includeThread,
     leadId,

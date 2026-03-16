@@ -684,6 +684,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_my_provider_plan_snapshot: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          is_quota_unlimited: boolean
+          leads_remaining_this_month: number | null
+          leads_used_this_month: number
+          monthly_lead_quota: number | null
+          period_end: string
+          period_start: string
+          plan_code: string
+          plan_name: string
+          status: string
+        }[]
+      }
       update_my_lead_state: {
         Args: { p_lead_id: string; p_requester_state: string }
         Returns: {

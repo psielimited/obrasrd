@@ -23,6 +23,7 @@ import { useMyLeads } from "@/hooks/use-leads-data";
 import { useMyNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 import { usePhases } from "@/hooks/use-marketplace-data";
 import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
+import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 
 const calculateProfileCompleteness = (provider: ReturnType<typeof useMyProviderProfile>["data"]) => {
   if (!provider) return 0;
@@ -44,6 +45,13 @@ const calculateProfileCompleteness = (provider: ReturnType<typeof useMyProviderP
   return Math.round((completed / checks.length) * 100);
 };
 
+const PLAN_STATUS_LABELS: Record<string, string> = {
+  active: "Activo",
+  trialing: "Prueba",
+  past_due: "Pago pendiente",
+  cancelled: "Cancelado",
+};
+
 const ProviderDashboard = () => {
   const navigate = useNavigate();
   const { data: profile } = useMyProfile();
@@ -52,6 +60,7 @@ const ProviderDashboard = () => {
   const { data: notifications = [] } = useMyNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
   const { data: phases = [] } = usePhases();
+  const { data: planSnapshot } = useMyProviderPlanSnapshot();
   useDashboardRealtimeSync({ includeRequests: false, includeThread: false });
 
   const profileCompleteness = calculateProfileCompleteness(providerProfile);
@@ -80,6 +89,13 @@ const ProviderDashboard = () => {
   if (!providerProfile?.serviceAreas?.length) warnings.push("Define al menos una area de servicio.");
 
   const greetingName = profile?.displayName || providerProfile?.name || "proveedor";
+  const planProgress =
+    planSnapshot && !planSnapshot.isQuotaUnlimited && planSnapshot.monthlyLeadQuota
+      ? Math.min(
+          100,
+          Math.round((planSnapshot.leadsUsedThisMonth / planSnapshot.monthlyLeadQuota) * 100),
+        )
+      : 0;
 
   if (profile?.role !== "provider") {
     return (
@@ -206,6 +222,53 @@ const ProviderDashboard = () => {
             </div>
           </SectionCard>
         </div>
+
+        <SectionCard
+          title="Tu plan"
+          description="Controla limites y beneficios de tu cuenta de proveedor"
+          right={<Badge variant="outline" className="border-slate-700 text-slate-200">{planSnapshot?.planName || "Gratis"}</Badge>}
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Estado</p>
+              <p className="text-sm text-slate-100 mt-1">{PLAN_STATUS_LABELS[planSnapshot?.status || "active"] || "Activo"}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Leads este mes</p>
+              <p className="text-sm text-slate-100 mt-1">
+                {planSnapshot?.leadsUsedThisMonth ?? 0}
+                {planSnapshot?.isQuotaUnlimited ? " (sin limite)" : ` / ${planSnapshot?.monthlyLeadQuota ?? 25}`}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Leads restantes</p>
+              <p className="text-sm text-slate-100 mt-1">
+                {planSnapshot?.isQuotaUnlimited ? "Ilimitado" : planSnapshot?.leadsRemainingThisMonth ?? 25}
+              </p>
+            </div>
+          </div>
+
+          {!planSnapshot?.isQuotaUnlimited && (
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span>Uso de cuota mensual</span>
+                <span>{planProgress}%</span>
+              </div>
+              <Progress value={planProgress} className="h-2 bg-slate-800" />
+            </div>
+          )}
+
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/40 p-3 flex items-center justify-between gap-3">
+            <p className="text-sm text-slate-300">
+              {planSnapshot?.isQuotaUnlimited
+                ? "Tu plan actual permite leads ilimitados."
+                : "Sube a Pro para ampliar cuota mensual y mejorar visibilidad."}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => navigate("/perfil")}>
+              Mejorar plan
+            </Button>
+          </div>
+        </SectionCard>
 
         <div className="grid gap-6 xl:grid-cols-2">
           <SectionCard
