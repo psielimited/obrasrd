@@ -13,7 +13,7 @@ const CategoryTag = ({ categorySlug, categoryName, className }: CategoryTagProps
   const label = categoryName || theme.label;
 
   return (
-    <Badge variant="outline" className={cn("font-medium", theme.pillClassName, className)}>
+    <Badge variant="outline" className={cn("text-xs font-semibold px-2.5 py-1", theme.pillClassName, className)}>
       {label}
     </Badge>
   );

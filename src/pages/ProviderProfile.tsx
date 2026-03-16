@@ -152,7 +152,7 @@ const ProviderProfile = () => {
                 </p>
               </div>
               {provider.startingPrice && (
-                <Badge variant="outline" className="h-fit text-sm font-bold px-3 py-1.5">
+                <Badge variant="outline" className="h-fit text-sm font-bold px-3 py-1.5 border-slate-700 bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
                   Desde RD${provider.startingPrice.toLocaleString()}
                 </Badge>
               )}

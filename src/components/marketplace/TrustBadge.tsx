@@ -9,17 +9,17 @@ const TRUST_BADGE_CONFIG: Record<
 > = {
   verified: {
     label: "Servicio verificado",
-    className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+    className: "border-emerald-700 bg-emerald-100 text-emerald-950 dark:border-emerald-400/60 dark:bg-emerald-500/20 dark:text-emerald-100",
     icon: ShieldCheck,
   },
   active: {
     label: "Proveedor activo",
-    className: "border-cyan-500/40 bg-cyan-500/10 text-cyan-200",
+    className: "border-cyan-700 bg-cyan-100 text-cyan-950 dark:border-cyan-400/60 dark:bg-cyan-500/20 dark:text-cyan-100",
     icon: CheckCheck,
   },
   registered_project: {
     label: "Proyecto registrado",
-    className: "border-violet-500/40 bg-violet-500/10 text-violet-200",
+    className: "border-violet-700 bg-violet-100 text-violet-950 dark:border-violet-400/60 dark:bg-violet-500/20 dark:text-violet-100",
     icon: ShieldEllipsis,
   },
 };
@@ -34,7 +34,7 @@ const TrustBadge = ({ type, className }: TrustBadgeProps) => {
   const Icon = config.icon;
 
   return (
-    <Badge variant="outline" className={cn("font-medium gap-1.5", config.className, className)}>
+    <Badge variant="outline" className={cn("text-xs font-semibold gap-1.5 px-2.5 py-1", config.className, className)}>
       <Icon className="h-3.5 w-3.5" />
       {config.label}
     </Badge>

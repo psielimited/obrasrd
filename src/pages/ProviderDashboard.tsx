@@ -280,9 +280,9 @@ const ProviderDashboard = () => {
               </div>
 
               {warnings.length > 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 space-y-2">
+                <div className="rounded-xl border border-amber-700/50 bg-amber-100/90 dark:border-amber-500/40 dark:bg-amber-500/15 p-3 space-y-2">
                   {warnings.map((warning) => (
-                    <div key={warning} className="flex items-start gap-2 text-sm text-amber-200">
+                    <div key={warning} className="flex items-start gap-2 text-sm text-amber-900 dark:text-amber-100">
                       <AlertTriangle className="h-4 w-4 mt-0.5" />
                       <span>{warning}</span>
                     </div>
