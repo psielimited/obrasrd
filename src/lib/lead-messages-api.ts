@@ -36,7 +36,7 @@ export const getLeadMessages = async (leadId: string): Promise<LeadMessage[]> =>
 };
 
 export const sendLeadMessage = async (leadId: string, message: string): Promise<void> => {
-  const { error } = await supabase.rpc("send_lead_message", {
+  const { error } = await (supabase.rpc as any)("send_lead_message", {
     p_lead_id: leadId,
     p_message: message,
   });
