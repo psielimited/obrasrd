@@ -327,83 +327,6 @@ export type Database = {
           },
         ]
       }
-      provider_plans: {
-        Row: {
-          code: string
-          created_at: string
-          featured_slots: number
-          monthly_lead_quota: number | null
-          name: string
-          price_dop: number
-          price_usd: number
-          priority_support: boolean
-          updated_at: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          featured_slots?: number
-          monthly_lead_quota?: number | null
-          name: string
-          price_dop?: number
-          price_usd?: number
-          priority_support?: boolean
-          updated_at?: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          featured_slots?: number
-          monthly_lead_quota?: number | null
-          name?: string
-          price_dop?: number
-          price_usd?: number
-          priority_support?: boolean
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      provider_subscriptions: {
-        Row: {
-          created_at: string
-          ends_at: string | null
-          id: number
-          plan_code: string
-          provider_user_id: string
-          starts_at: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          ends_at?: string | null
-          id?: never
-          plan_code: string
-          provider_user_id: string
-          starts_at?: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          ends_at?: string | null
-          id?: never
-          plan_code?: string
-          provider_user_id?: string
-          starts_at?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "provider_subscriptions_plan_code_fkey"
-            columns: ["plan_code"]
-            isOneToOne: false
-            referencedRelation: "provider_plans"
-            referencedColumns: ["code"]
-          },
-        ]
-      }
       phases: {
         Row: {
           created_at: string
@@ -502,6 +425,83 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "phases"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_plans: {
+        Row: {
+          code: string
+          created_at: string
+          featured_slots: number
+          monthly_lead_quota: number | null
+          name: string
+          price_dop: number
+          price_usd: number
+          priority_support: boolean
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          featured_slots?: number
+          monthly_lead_quota?: number | null
+          name: string
+          price_dop?: number
+          price_usd?: number
+          priority_support?: boolean
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          featured_slots?: number
+          monthly_lead_quota?: number | null
+          name?: string
+          price_dop?: number
+          price_usd?: number
+          priority_support?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_subscriptions: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: number
+          plan_code: string
+          provider_user_id: string
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: never
+          plan_code: string
+          provider_user_id: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: never
+          plan_code?: string
+          provider_user_id?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_subscriptions_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "provider_plans"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -743,6 +743,20 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_my_provider_plan_snapshot: {
+        Args: never
+        Returns: {
+          is_quota_unlimited: boolean
+          leads_remaining_this_month: number
+          leads_used_this_month: number
+          monthly_lead_quota: number
+          period_end: string
+          period_start: string
+          plan_code: string
+          plan_name: string
+          status: string
+        }[]
+      }
       mark_my_lead_thread_read: {
         Args: { p_lead_id: string }
         Returns: undefined
@@ -763,21 +777,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      get_my_provider_plan_snapshot: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          featured_slots: number
-          is_quota_unlimited: boolean
-          leads_remaining_this_month: number | null
-          leads_used_this_month: number
-          monthly_lead_quota: number | null
-          period_end: string
-          period_start: string
-          plan_code: string
-          plan_name: string
-          status: string
-        }[]
       }
       update_my_lead_state: {
         Args: { p_lead_id: string; p_requester_state: string }

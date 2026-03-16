@@ -35,9 +35,9 @@ export const getMyProviderPlanSnapshot = async (): Promise<ProviderPlanSnapshot 
   return {
     planCode: row.plan_code,
     planName: row.plan_name,
-    status: row.status,
+    status: row.status as ProviderPlanSnapshot["status"],
     monthlyLeadQuota: row.monthly_lead_quota,
-    featuredSlots: row.featured_slots,
+    featuredSlots: (row as any).featured_slots ?? 0,
     leadsUsedThisMonth: row.leads_used_this_month,
     leadsRemainingThisMonth: row.leads_remaining_this_month,
     isQuotaUnlimited: row.is_quota_unlimited,
