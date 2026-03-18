@@ -105,4 +105,17 @@
   .btn-tap {
     @apply transition-all duration-150 active:scale-[0.98];
   }
+
+  .card-photo-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.08) 0%,
+      rgba(0, 0, 0, 0) 35%,
+      rgba(15, 10, 5, 0.55) 70%,
+      rgba(15, 10, 5, 0.85) 100%
+    );
+    pointer-events: none;
+  }
 }
