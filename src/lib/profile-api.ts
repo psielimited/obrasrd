@@ -156,13 +156,21 @@ export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Pr
     data = response.data;
     error = response.error;
   } else {
-    const insertPayload: TablesInsert<"providers"> = {
+    const insertPayload = {
       ...editableFields,
+      name: payload.name,
+      trade: payload.trade,
+      category_slug: payload.categorySlug,
+      phase_id: payload.phaseId,
+      location: payload.location,
+      city: payload.city,
+      description: payload.description,
+      whatsapp: payload.whatsapp,
       rating: 0,
       review_count: 0,
       completed_projects: 0,
       verified: false,
-    };
+    } satisfies TablesInsert<"providers">;
     const response = await supabase.from("providers").insert(insertPayload).select("id").single();
     data = response.data;
     error = response.error;
