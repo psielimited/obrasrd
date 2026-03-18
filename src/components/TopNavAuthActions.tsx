@@ -36,7 +36,7 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
     if (mobile) {
       return (
         <Link to="/auth">
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg border-[#E3DDD4] bg-transparent px-2.5 text-xs">
             <LogIn className="h-3.5 w-3.5" />
             Entrar
           </Button>
@@ -45,9 +45,9 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
     }
     return (
       <Link to="/auth">
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg border-[#E3DDD4] bg-transparent px-3">
           <LogIn className="h-4 w-4" />
-          Iniciar sesión
+          Iniciar sesion
         </Button>
       </Link>
     );
@@ -82,7 +82,7 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
         <Bell className="mr-2 h-4 w-4" />
         Notificaciones
         {unreadCount > 0 && (
-          <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-accent text-[10px] font-bold text-accent-foreground inline-flex items-center justify-center">
+          <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-accent-foreground">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -93,7 +93,7 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
         className="text-destructive focus:text-destructive focus:bg-destructive/10"
       >
         <LogOut className="mr-2 h-4 w-4" />
-        Cerrar sesión
+        Cerrar sesion
       </DropdownMenuItem>
     </>
   );
@@ -102,20 +102,24 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs bg-accent text-accent-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-9 w-9 rounded-lg border border-[#E3DDD4] bg-transparent hover:bg-[#F5F0E8]"
+          >
+            <Avatar className="h-7 w-7 rounded-md">
+              <AvatarFallback className="rounded-md bg-[#1A1612] text-[10px] text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground inline-flex items-center justify-center">
+              <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C4773B] px-1 text-[9px] font-bold text-white">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-56 border-[#E3DDD4]">
           {menuContent}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -125,22 +129,28 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative gap-2">
-          <Avatar className="h-6 w-6">
-            <AvatarFallback className="text-[10px] bg-accent text-accent-foreground">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="relative h-9 gap-2 rounded-lg border border-[#E3DDD4] bg-transparent px-1.5 pr-2 hover:bg-[#F5F0E8]"
+        >
+          <Avatar className="h-7 w-7 rounded-md">
+            <AvatarFallback className="rounded-md bg-[#1A1612] text-[10px] text-white">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">{displayName}</span>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="hidden max-w-[96px] truncate text-[13px] font-medium text-[#1A1612] lg:inline">
+            {displayName}
+          </span>
+          <ChevronDown className="h-3.5 w-3.5 text-[#7A6E64]" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground inline-flex items-center justify-center">
+            <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C4773B] px-1 text-[9px] font-bold text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 border-[#E3DDD4]">
         {menuContent}
       </DropdownMenuContent>
     </DropdownMenu>

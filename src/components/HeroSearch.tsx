@@ -167,7 +167,7 @@ const HeroSearch = () => {
             <p className="text-[9px] uppercase tracking-[0.07em] text-white/45">Ciudades</p>
           </div>
           <div className="text-center">
-            <p className="text-base font-extrabold text-white">{ratingAvg ? `${ratingAvg.toFixed(1)} ★` : "-"}</p>
+            <p className="text-base font-extrabold text-white">{ratingAvg ? `${ratingAvg.toFixed(1)} *` : "-"}</p>
             <p className="text-[9px] uppercase tracking-[0.07em] text-white/45">Promedio</p>
           </div>
         </div>
