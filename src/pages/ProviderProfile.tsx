@@ -197,7 +197,7 @@ const ProviderProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0EDE7] pb-28 text-[#1A1612]">
+    <div className="min-h-screen bg-[#F0EDE7] pb-40 text-[#1A1612] md:pb-28">
       <section className="relative h-[340px] overflow-hidden bg-[#1A1612] md:h-[430px]">
         {heroImage ? (
           <img
@@ -437,13 +437,14 @@ const ProviderProfile = () => {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[#E3DDD4] bg-white/95 px-4 py-3 backdrop-blur supports-[padding:max(0px)]:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="fixed inset-x-0 bottom-[56px] z-[60] border-t border-[#E3DDD4] bg-white/95 px-4 py-3 backdrop-blur md:bottom-0 supports-[padding:max(0px)]:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="container mx-auto flex max-w-5xl items-center gap-2">
           <Button
             variant="default"
             className="h-11 flex-1 rounded-xl border border-[#1A1612]/15 bg-[#1A1612] uppercase tracking-[0.12em] text-[11px] text-white hover:bg-[#9E5A24]"
             onClick={() => window.open(whatsappUrl, "_blank")}
           >
+            <span className="h-[7px] w-[7px] rounded-full bg-whatsapp shadow-[0_0_0_2px_hsl(var(--whatsapp)/0.25)]" />
             WhatsApp
           </Button>
           <Button
