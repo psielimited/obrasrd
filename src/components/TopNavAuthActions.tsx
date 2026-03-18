@@ -1,6 +1,15 @@
-import { Link } from "react-router-dom";
-import { Bell, LogIn, LogOut, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, ChevronDown, LayoutDashboard, LogIn, LogOut, MessageSquare, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useMyProfile } from "@/hooks/use-profile-data";
@@ -14,103 +23,127 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
   const { user } = useAuthSession();
   const { data: profile } = useMyProfile();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
 
-  if (mobile) {
+  const displayName = profile?.displayName || user?.email?.split("@")[0] || "";
+  const initials = displayName.slice(0, 2).toUpperCase();
+
+  if (!user) {
+    if (mobile) {
+      return (
+        <Link to="/auth">
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <LogIn className="h-3.5 w-3.5" />
+            Entrar
+          </Button>
+        </Link>
+      );
+    }
     return (
-      <>
-        {user && (
-          <Link to="/notificaciones" className="relative">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-4 w-4" />
-            </Button>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-accent text-[9px] font-bold text-accent-foreground inline-flex items-center justify-center">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </Link>
-        )}
-        {user ? (
-          <>
-            <Link to="/perfil">
-              <Button variant="ghost" size="sm">
-                <User className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              aria-label="Cerrar sesion"
-              title="Cerrar sesion"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </>
-        ) : (
-          <Link to="/auth">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <LogIn className="h-3.5 w-3.5" />
-              Entrar
-            </Button>
-          </Link>
-        )}
-      </>
+      <Link to="/auth">
+        <Button variant="outline" size="sm" className="gap-2">
+          <LogIn className="h-4 w-4" />
+          Iniciar sesión
+        </Button>
+      </Link>
     );
   }
 
-  if (!user) {
+  const menuContent = (
+    <>
+      <DropdownMenuLabel className="font-normal">
+        <div className="flex flex-col gap-0.5">
+          <p className="text-sm font-semibold leading-none">{displayName}</p>
+          <p className="text-xs text-muted-foreground leading-none">{user.email}</p>
+        </div>
+      </DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => navigate("/perfil")}>
+        <User className="mr-2 h-4 w-4" />
+        Mi perfil
+      </DropdownMenuItem>
+      {(profile?.role === "provider" || profile?.role === "buyer") && (
+        <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          Dashboard
+        </DropdownMenuItem>
+      )}
+      {profile?.role === "provider" && (
+        <DropdownMenuItem onClick={() => navigate("/dashboard/leads")}>
+          <MessageSquare className="mr-2 h-4 w-4" />
+          Leads
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuItem onClick={() => navigate("/notificaciones")}>
+        <Bell className="mr-2 h-4 w-4" />
+        Notificaciones
+        {unreadCount > 0 && (
+          <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-accent text-[10px] font-bold text-accent-foreground inline-flex items-center justify-center">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={handleSignOut}
+        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+      >
+        <LogOut className="mr-2 h-4 w-4" />
+        Cerrar sesión
+      </DropdownMenuItem>
+    </>
+  );
+
+  if (mobile) {
     return (
-      <>
-        <Link to="/auth">
-          <Button variant="outline" size="sm" className="gap-2">
-            <LogIn className="h-4 w-4" />
-            Iniciar sesion
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="text-xs bg-accent text-accent-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground inline-flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </Button>
-        </Link>
-      </>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {menuContent}
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
 
   return (
-    <>
-      <Link to="/perfil" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-        Perfil
-      </Link>
-      {(profile?.role === "provider" || profile?.role === "buyer") && (
-        <Link to="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-          Dashboard
-        </Link>
-      )}
-      {profile?.role === "provider" && (
-        <Link to="/dashboard/leads" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-          Leads
-        </Link>
-      )}
-      <Link to="/notificaciones" className="relative text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
-        <Bell className="h-4 w-4" />
-        Alertas
-        {unreadCount > 0 && (
-          <span className="absolute -top-2 -right-3 min-w-5 h-5 px-1 rounded-full bg-accent text-[10px] font-bold text-accent-foreground inline-flex items-center justify-center">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        )}
-      </Link>
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <User className="h-3.5 w-3.5" />
-          {profile?.displayName || user.email?.split("@")[0]}
-        </span>
-        <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-1.5">
-          <LogOut className="h-4 w-4" />
-          Cerrar sesion
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="relative gap-2">
+          <Avatar className="h-6 w-6">
+            <AvatarFallback className="text-[10px] bg-accent text-accent-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium">{displayName}</span>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground inline-flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </Button>
-      </div>
-    </>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {menuContent}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
