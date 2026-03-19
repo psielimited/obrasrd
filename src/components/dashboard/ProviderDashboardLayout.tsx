@@ -6,6 +6,7 @@ import {
   Building2,
   FilePlus2,
   LayoutDashboard,
+  LogOut,
   Search,
   Settings,
   UserCircle2,
@@ -16,6 +17,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import SidebarNav, { type ProviderNavItem } from "@/components/dashboard/SidebarNav";
 import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications-data";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProviderDashboardLayoutProps {
   title: string;
@@ -61,6 +63,10 @@ const ProviderDashboardLayout = ({
     navigate("/dashboard/proveedor/perfil");
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-60 border-r border-border bg-background z-30">
@@ -78,6 +84,11 @@ const ProviderDashboardLayout = ({
           </Link>
 
           <SidebarNav items={navItems} />
+
+          <Button variant="outline" className="mt-4 w-full justify-start" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4" />
+            Cerrar sesion
+          </Button>
 
           <div className="mt-auto pt-6 text-xs text-muted-foreground">
             Gestiona tu visibilidad y responde leads rapido.
@@ -108,6 +119,17 @@ const ProviderDashboardLayout = ({
               </div>
             </Link>
             <SidebarNav items={navItems} onNavigate={() => setSidebarOpen(false)} />
+            <Button
+              variant="outline"
+              className="mt-4 w-full justify-start"
+              onClick={async () => {
+                await handleSignOut();
+                setSidebarOpen(false);
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              Cerrar sesion
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
