@@ -1,0 +1,158 @@
+<svg viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Left third: house under construction -->
+  <g stroke-width="4">
+    <path d="M80 650 L220 520 L360 650" />
+    <path d="M96 648 L96 800 L360 800 L360 648" />
+    <path d="M262 548 L262 500 L288 500 L288 566" />
+    <rect x="146" y="690" width="60" height="90" />
+    <rect x="250" y="655" width="54" height="54" />
+    <path d="M277 655 V709 M250 682 H304" />
+    <path d="M360 640 L430 565" />
+    <path d="M370 650 L438 574" />
+    <path d="M383 635 H425 M390 622 H430 M397 609 H435 M404 596 H440 M412 583 H445" />
+    <path d="M308 800 V620 M324 800 V628 M340 800 V640 M356 800 V655" />
+    <circle cx="442" cy="565" r="13" stroke-width="3" />
+    <path d="M431 579 L428 620 M448 579 L454 620 M428 620 L442 644 L454 620 M436 559 Q442 548 449 559" stroke-width="3" />
+  </g>
+
+  <!-- Left labels and arrows -->
+  <g stroke-width="2" font-family="system-ui" font-size="26">
+    <path d="M46 505 L106 535" />
+    <text x="18" y="498">MI CASA</text>
+  </g>
+
+  <!-- Left ground tools -->
+  <g stroke-width="3">
+    <path d="M36 820 L84 804 L100 826 L51 841 Z" />
+    <path d="M27 832 L36 820" />
+    <path d="M152 840 L202 840 L194 880 L160 880 Z" />
+    <path d="M156 840 Q176 818 196 840" />
+    <rect x="220" y="846" width="34" height="20" />
+    <rect x="256" y="846" width="34" height="20" />
+    <rect x="238" y="824" width="34" height="20" />
+    <rect x="274" y="824" width="34" height="20" />
+    <ellipse cx="120" cy="860" rx="11" ry="6" stroke-width="2" />
+    <ellipse cx="136" cy="873" rx="11" ry="6" stroke-width="2" />
+  </g>
+
+  <!-- Center: crane -->
+  <g stroke-width="5">
+    <path d="M760 180 V790" />
+    <path d="M772 180 V790" />
+    <path d="M744 760 H790" />
+    <path d="M766 190 H1160" />
+    <path d="M760 220 L1128 220" stroke-width="3" />
+    <path d="M766 182 L676 790" stroke-width="3" />
+    <path d="M772 182 L862 790" stroke-width="3" />
+    <path d="M1138 190 V330" stroke-width="3" />
+    <path d="M1126 330 H1152" stroke-width="3" />
+    <rect x="1116" y="332" width="46" height="38" stroke-width="3" />
+  </g>
+
+  <!-- Center-right: building skeleton and scaffolding -->
+  <g stroke-width="4">
+    <rect x="890" y="430" width="260" height="360" />
+    <path d="M976 430 V790 M1062 430 V790" />
+    <path d="M890 550 H1150 M890 670 H1150" />
+    <path d="M872 544 H1168 M872 558 H1168" stroke-width="2" />
+    <path d="M868 664 H1168 M868 678 H1168" stroke-width="2" />
+    <path d="M892 432 L976 550 M934 432 L1018 550 M976 432 L1062 550" stroke-width="2" />
+    <path d="M928 790 L956 752 L1020 752 L1042 790" />
+    <circle cx="948" cy="794" r="16" />
+    <path d="M1016 752 L1034 740 M1024 752 L1048 742" stroke-width="2" />
+  </g>
+
+  <!-- Center blueprint scroll -->
+  <g stroke-width="3" font-family="system-ui" font-size="23">
+    <path d="M600 760 Q650 735 716 748 Q768 760 796 792" />
+    <path d="M606 784 Q655 760 716 772 Q760 784 786 810" />
+    <rect x="654" y="730" width="126" height="70" />
+    <rect x="668" y="744" width="48" height="22" />
+    <rect x="722" y="744" width="44" height="42" />
+    <circle cx="782" cy="742" r="15" stroke-width="2" />
+    <path d="M782 727 V757 M772 742 H792 M782 727 L790 733" stroke-width="2" />
+    <text x="610" y="720">PLANOS</text>
+  </g>
+
+  <!-- Right third: skyline, palm, sun -->
+  <g stroke-width="3">
+    <rect x="1195" y="280" width="66" height="230" />
+    <rect x="1266" y="248" width="74" height="262" />
+    <rect x="1346" y="312" width="58" height="198" />
+    <rect x="1408" y="272" width="70" height="238" />
+    <rect x="1482" y="330" width="50" height="180" />
+    <path d="M1210 312 H1246 M1210 352 H1246 M1210 392 H1246 M1210 432 H1246" stroke-width="2" />
+    <path d="M1282 286 H1322 M1282 326 H1322 M1282 366 H1322 M1282 406 H1322 M1282 446 H1322" stroke-width="2" />
+    <path d="M1370 344 H1388 M1370 382 H1388 M1370 420 H1388" stroke-width="2" />
+    <path d="M1430 304 H1456 M1430 344 H1456 M1430 384 H1456 M1430 424 H1456" stroke-width="2" />
+    <path d="M1494 360 H1518 M1494 398 H1518 M1494 436 H1518" stroke-width="2" />
+    <path d="M1328 500 Q1338 445 1364 402" />
+    <path d="M1364 402 Q1392 384 1414 397 M1364 402 Q1389 405 1418 421 M1364 402 Q1354 378 1372 352 M1364 402 Q1338 392 1322 370" stroke-width="2" />
+    <circle cx="1510" cy="108" r="42" />
+    <path d="M1510 46 V22 M1510 170 V194 M1448 108 H1424 M1572 108 H1594 M1468 66 L1450 48 M1552 66 L1570 48 M1468 150 L1448 170 M1552 150 L1570 170" stroke-width="2" />
+  </g>
+
+  <!-- Right: cement mixer truck -->
+  <g stroke-width="4" font-family="system-ui" font-size="20">
+    <rect x="1188" y="704" width="120" height="66" />
+    <path d="M1308 704 H1370 L1396 738 L1396 770 H1308" />
+    <path d="M1334 724 L1372 724 L1385 742 L1334 742" stroke-width="2" />
+    <ellipse cx="1296" cy="740" rx="76" ry="44" />
+    <path d="M1252 740 Q1296 700 1340 740 Q1296 780 1252 740" stroke-width="2" />
+    <circle cx="1230" cy="780" r="24" />
+    <circle cx="1362" cy="780" r="24" />
+    <text x="1242" y="690">MEZCLA</text>
+  </g>
+
+  <!-- Dominican details: flag, sparkles, Hispaniola -->
+  <g stroke-width="2" font-family="system-ui" font-size="20">
+    <path d="M1098 246 V308" />
+    <rect x="1102" y="250" width="56" height="32" />
+    <text x="1118" y="272" font-size="14">RD</text>
+    <path d="M1168 248 L1178 248 M1173 242 L1173 254 M1200 272 L1210 272 M1205 266 L1205 278 M1174 294 L1184 294 M1179 288 L1179 300" stroke-width="1.5" />
+    <path d="M210 160 L256 132 L314 138 L372 160 L396 186 L378 212 L326 230 L262 226 L214 204 L198 180 Z" />
+    <text x="286" y="258">RD</text>
+  </g>
+
+  <!-- Ground line and soil hatching -->
+  <g stroke-width="3">
+    <path d="M0 804 Q140 792 272 802 Q412 816 548 804 Q684 792 818 805 Q954 818 1094 804 Q1228 792 1360 804 Q1488 816 1600 804" />
+  </g>
+  <g stroke-width="1.5" opacity="0.6">
+    <path d="M22 824 L36 850 M56 824 L70 850 M90 824 L104 850 M124 824 L138 850 M158 824 L172 850 M192 824 L206 850 M226 824 L240 850 M260 824 L274 850 M294 824 L308 850 M328 824 L342 850 M362 824 L376 850 M396 824 L410 850 M430 824 L444 850 M464 824 L478 850 M498 824 L512 850 M532 824 L546 850 M566 824 L580 850 M600 824 L614 850 M634 824 L648 850 M668 824 L682 850 M702 824 L716 850 M736 824 L750 850 M770 824 L784 850 M804 824 L818 850 M838 824 L852 850 M872 824 L886 850 M906 824 L920 850 M940 824 L954 850 M974 824 L988 850 M1008 824 L1022 850 M1042 824 L1056 850 M1076 824 L1090 850 M1110 824 L1124 850 M1144 824 L1158 850 M1178 824 L1192 850 M1212 824 L1226 850 M1246 824 L1260 850 M1280 824 L1294 850 M1314 824 L1328 850 M1348 824 L1362 850 M1382 824 L1396 850 M1416 824 L1430 850 M1450 824 L1464 850 M1484 824 L1498 850 M1518 824 L1532 850 M1552 824 L1566 850" />
+  </g>
+
+  <!-- Clouds and birds -->
+  <g stroke-width="2.5">
+    <path d="M520 168 Q548 146 578 168 Q596 148 620 168 Q636 168 646 182 H510 Q516 168 520 168 Z" />
+    <path d="M876 132 Q900 112 926 132 Q948 112 972 132 Q988 132 998 146 H864 Q868 132 876 132 Z" />
+    <path d="M1180 156 Q1202 138 1226 156 Q1242 136 1268 156 Q1282 156 1292 170 H1168 Q1172 156 1180 156 Z" />
+    <path d="M340 304 Q350 292 360 304 Q370 292 380 304" />
+    <path d="M420 266 Q430 254 440 266 Q450 254 460 266" />
+    <path d="M1030 248 Q1040 236 1050 248 Q1060 236 1070 248" />
+  </g>
+
+  <!-- Scattered decorative tools/details -->
+  <g stroke-width="2">
+    <path d="M488 630 L556 610 L570 622 L500 644 Z" />
+    <path d="M570 622 L586 610 L598 622 L582 636 Z" />
+    <rect x="102" y="330" width="86" height="18" />
+    <path d="M112 330 V348 M124 330 V348 M136 330 V348 M148 330 V348 M160 330 V348 M172 330 V348" />
+    <path d="M602 324 V372 M596 324 H608" />
+    <path d="M1450 582 Q1470 560 1490 582 L1490 592 H1450 Z" />
+    <path d="M468 446 L492 430 L514 446 L514 466 H468 Z" />
+    <path d="M560 450 L584 434 L606 450 L606 470 H560 Z" />
+    <path d="M652 454 L676 438 L698 454 L698 474 H652 Z" />
+    <path d="M742 508 H754 M748 502 V514" stroke-width="1.5" />
+    <path d="M1242 206 H1254 M1248 200 V212" stroke-width="1.5" />
+    <path d="M476 246 H488 M482 240 V252" stroke-width="1.5" />
+  </g>
+
+  <!-- Measuring tape and tiny annotations -->
+  <g stroke-width="2" font-family="system-ui" font-size="16">
+    <path d="M418 834 Q470 822 524 832 Q548 836 570 854" />
+    <path d="M432 832 L432 840 M448 828 L448 838 M464 826 L464 836 M480 826 L480 836 M496 828 L496 838 M512 832 L512 842 M528 836 L528 846" />
+    <text x="912" y="414">3m</text>
+    <text x="1068" y="522">2.5m</text>
+  </g>
+</svg>
