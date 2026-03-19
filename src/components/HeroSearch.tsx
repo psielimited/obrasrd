@@ -55,7 +55,7 @@ const HeroSearch = () => {
         />
 
         {/* Category pills */}
-        <div className="no-scrollbar relative z-10 mt-20 flex gap-2 overflow-x-auto px-6 md:mt-24 md:px-8">
+        <div className="relative z-10 mt-20 flex gap-2 overflow-x-auto px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mt-24 md:px-8">
           {CATEGORY_PILLS.map((pill) => (
             <button
               key={pill.label}
