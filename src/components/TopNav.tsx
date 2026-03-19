@@ -1,39 +1,12 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Bell, LogIn, Menu, Plus, X } from "lucide-react";
+import { Bell, Menu, Plus, X } from "lucide-react";
+import TopNavAuthActions from "@/components/TopNavAuthActions";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-const TopNavAuthActions = lazy(() => import("@/components/TopNavAuthActions"));
-
 const TopNav = () => {
-  const [showAuthActions, setShowAuthActions] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const windowWithIdle = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-      cancelIdleCallback?: (handle: number) => void;
-    };
-
-    let timeoutId: number | undefined;
-    let idleId: number | undefined;
-
-    const revealAuthControls = () => setShowAuthActions(true);
-
-    if (windowWithIdle.requestIdleCallback) {
-      idleId = windowWithIdle.requestIdleCallback(revealAuthControls, { timeout: 1200 });
-    } else {
-      timeoutId = window.setTimeout(revealAuthControls, 500);
-    }
-
-    return () => {
-      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
-      if (idleId !== undefined && windowWithIdle.cancelIdleCallback) {
-        windowWithIdle.cancelIdleCallback(idleId);
-      }
-    };
-  }, []);
 
   const mobileNavItems = [
     { to: "/buscar", label: "Buscar" },
@@ -41,24 +14,6 @@ const TopNav = () => {
     { to: "/proyectos", label: "Proyectos" },
     { to: "/precios", label: "Precios" },
   ];
-
-  const desktopFallback = (
-    <Link to="/auth">
-      <Button variant="outline" size="sm" className="gap-2">
-        <LogIn className="h-4 w-4" />
-        Iniciar sesion
-      </Button>
-    </Link>
-  );
-
-  const mobileFallback = (
-    <Link to="/auth">
-      <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-        <LogIn className="h-3.5 w-3.5" />
-        Entrar
-      </Button>
-    </Link>
-  );
 
   const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium transition-colors ${
@@ -99,16 +54,12 @@ const TopNav = () => {
           </Link>
 
           <div className="ml-2">
-            <Suspense fallback={desktopFallback}>
-              {showAuthActions ? <TopNavAuthActions /> : desktopFallback}
-            </Suspense>
+            <TopNavAuthActions />
           </div>
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
-          <Suspense fallback={mobileFallback}>
-            {showAuthActions ? <TopNavAuthActions mobile /> : mobileFallback}
-          </Suspense>
+          <TopNavAuthActions mobile />
 
           <Link to="/notificaciones">
             <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -123,7 +74,7 @@ const TopNav = () => {
       </div>
 
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-[85vw] max-w-sm p-0 bg-background">
+        <SheetContent side="left" className="w-[85vw] max-w-sm bg-background p-0">
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <Link
@@ -147,8 +98,8 @@ const TopNav = () => {
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium transition-colors ${
                       isActive
-                        ? "bg-foreground text-background font-semibold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "bg-foreground font-semibold text-background"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`
                   }
                 >
