@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
@@ -212,7 +212,7 @@ const ProviderProfileEditorPage = () => {
             <div className="space-y-2">
               <Label>Fase</Label>
               <Select value={phaseId ? String(phaseId) : ""} onValueChange={(value) => setPhaseId(Number(value))}>
-                <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+                <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue placeholder="Selecciona fase" />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,7 +228,7 @@ const ProviderProfileEditorPage = () => {
             <div className="space-y-2">
               <Label>Categoria</Label>
               <Select value={categorySlug} onValueChange={setCategorySlug}>
-                <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+                <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue placeholder="Selecciona categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -309,11 +309,11 @@ const ProviderProfileEditorPage = () => {
         </SectionCard>
 
         <SectionCard title="Trabajos realizados" description="Muestra evidencia visual real de tu trabajo">
-          <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
-            <p className="text-sm text-slate-300">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-sm text-foreground">
               En construccion, las imagenes generan mas confianza que una descripcion larga.
             </p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Sube fotos reales de trabajos, procesos y resultados de obra.
             </p>
 
@@ -330,15 +330,15 @@ const ProviderProfileEditorPage = () => {
             </div>
 
             {portfolioImages.length === 0 ? (
-              <div className="mt-4 rounded-lg border border-dashed border-slate-700 p-4 text-center text-sm text-slate-400">
+              <div className="mt-4 rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
                 Aun no has agregado imagenes de portafolio.
               </div>
             ) : (
               <div className="mt-4 space-y-2">
                 {portfolioImages.map((imageUrl, index) => (
-                  <div key={`${imageUrl}-${index}`} className="rounded-lg border border-slate-800 bg-slate-900/60 p-2.5">
+                  <div key={`${imageUrl}-${index}`} className="rounded-lg border border-border bg-card p-2.5">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-xs text-slate-300 break-all">{imageUrl}</p>
+                      <p className="text-xs text-foreground break-all">{imageUrl}</p>
                       <div className="flex items-center gap-1.5">
                         <Button
                           type="button"
@@ -378,11 +378,11 @@ const ProviderProfileEditorPage = () => {
         </SectionCard>
 
         <SectionCard title="Visibilidad premium" description="Configura beneficios segun tu plan actual">
-          <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-slate-100">Perfil destacado</p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-sm font-semibold text-foreground">Perfil destacado</p>
+                <p className="text-xs text-muted-foreground mt-1">
                   {canEnableFeatured
                     ? "Tu plan permite destacar tu perfil en el marketplace."
                     : "Disponible en planes Pro o Elite."}
@@ -394,15 +394,15 @@ const ProviderProfileEditorPage = () => {
                 disabled={featuredToggleDisabled}
               />
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Plan: {planSnapshot?.planName ?? "Gratis"} - Slots destacados: {planSnapshot?.featuredSlots ?? 0}
             </p>
           </div>
         </SectionCard>
 
         <div className="sticky bottom-4 z-20">
-          <div className="bg-slate-900/95 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-lg">
-            <p className="text-sm text-slate-400">Guarda cambios para actualizar tu perfil publico.</p>
+          <div className="bg-background/95 border border-border rounded-2xl p-3 flex items-center justify-between gap-3 shadow-lg">
+            <p className="text-sm text-muted-foreground">Guarda cambios para actualizar tu perfil publico.</p>
             <Button variant="accent" onClick={onSave} disabled={!isValid || isSaving}>
               {isSaving ? "Guardando..." : "Guardar cambios"}
             </Button>
@@ -414,3 +414,4 @@ const ProviderProfileEditorPage = () => {
 };
 
 export default ProviderProfileEditorPage;
+

@@ -1,4 +1,4 @@
-import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
+﻿import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
 import { ImageOff } from "lucide-react";
 import type { TrustBadgeType } from "@/lib/provider-trust";
 import TrustBadge from "@/components/marketplace/TrustBadge";
@@ -24,10 +24,10 @@ const PortfolioGallery = ({
 }: PortfolioGalleryProps) => {
   if (images.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center">
-        <ImageOff className="h-6 w-6 text-slate-500 mx-auto mb-2" />
-        <p className="text-sm font-semibold text-slate-200">{emptyTitle}</p>
-        <p className="text-xs text-slate-400 mt-1">{emptyDescription}</p>
+      <div className="rounded-2xl border border-border bg-card/50 p-8 text-center">
+        <ImageOff className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm font-semibold text-foreground">{emptyTitle}</p>
+        <p className="text-xs text-muted-foreground mt-1">{emptyDescription}</p>
       </div>
     );
   }
@@ -65,3 +65,4 @@ const PortfolioGallery = ({
 };
 
 export default PortfolioGallery;
+

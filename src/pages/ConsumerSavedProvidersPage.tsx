@@ -102,15 +102,15 @@ const ConsumerSavedProvidersPage = () => {
             </Button>
           }
         >
-          <p className="text-sm text-slate-400">
-            Proveedores guardados: <span className="text-slate-100 font-semibold">{savedProviders.length}</span> • Shortlist:{" "}
-            <span className="text-slate-100 font-semibold">{shortlistCount}</span>
+          <p className="text-sm text-muted-foreground">
+            Proveedores guardados: <span className="text-foreground font-semibold">{savedProviders.length}</span> • Shortlist:{" "}
+            <span className="text-foreground font-semibold">{shortlistCount}</span>
           </p>
         </SectionCard>
 
         {isLoading ? (
           <SectionCard title="Cargando" description="Obteniendo tus proveedores guardados...">
-            <p className="text-sm text-slate-400">Cargando...</p>
+            <p className="text-sm text-muted-foreground">Cargando...</p>
           </SectionCard>
         ) : savedProviders.length === 0 ? (
           <EmptyState
@@ -126,16 +126,16 @@ const ConsumerSavedProvidersPage = () => {
                 const noteValue = noteDrafts[savedId] ?? note ?? "";
 
                 return (
-                  <div key={provider.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
+                  <div key={provider.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
                     <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-100">{provider.name}</p>
+                          <p className="text-sm font-semibold text-foreground">{provider.name}</p>
                           {isShortlisted && <Badge variant="outline" className="border-amber-500/40 text-amber-300">Shortlist</Badge>}
                           {provider.verified && <Badge variant="outline" className="border-emerald-500/40 text-emerald-300">Verificado</Badge>}
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">{provider.trade} • {provider.city}</p>
-                        <p className="text-xs text-slate-500 mt-1">Guardado: {new Date(createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{provider.trade} • {provider.city}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Guardado: {new Date(createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/cliente/comparar")}>
@@ -160,7 +160,7 @@ const ConsumerSavedProvidersPage = () => {
                         value={noteValue}
                         onChange={(event) => setNoteDrafts((prev) => ({ ...prev, [savedId]: event.target.value }))}
                         placeholder="Nota personal para comparacion"
-                        className="bg-slate-950 border-slate-700 text-slate-100"
+                        className="bg-background border-border text-foreground"
                       />
                       <Button
                         variant="accent"
@@ -183,3 +183,4 @@ const ConsumerSavedProvidersPage = () => {
 };
 
 export default ConsumerSavedProvidersPage;
+

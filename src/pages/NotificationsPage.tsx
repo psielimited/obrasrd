@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+﻿import { useQueryClient } from "@tanstack/react-query";
 import { BellDot, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
@@ -124,7 +124,7 @@ const NotificationsPage = () => {
           }
         >
           {isLoading ? (
-            <p className="text-sm text-slate-400">Cargando notificaciones...</p>
+            <p className="text-sm text-muted-foreground">Cargando notificaciones...</p>
           ) : notifications.length === 0 ? (
             <EmptyState
               title="Sin notificaciones"
@@ -138,18 +138,18 @@ const NotificationsPage = () => {
                   key={notification.id}
                   className={`rounded-xl border p-4 ${
                     notification.readAt
-                      ? "border-slate-800 bg-slate-950/50"
+                      ? "border-border bg-card"
                       : "border-accent/40 bg-accent/10"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-bold">
                         {getNotificationLabel(notification)}
                       </p>
-                      <h3 className="text-sm font-semibold text-slate-100 mt-1">{notification.title}</h3>
-                      <p className="text-sm text-slate-300 mt-1">{notification.body}</p>
-                      <p className="text-xs text-slate-500 mt-2">{new Date(notification.createdAt).toLocaleString()}</p>
+                      <h3 className="text-sm font-semibold text-foreground mt-1">{notification.title}</h3>
+                      <p className="text-sm text-foreground mt-1">{notification.body}</p>
+                      <p className="text-xs text-muted-foreground mt-2">{new Date(notification.createdAt).toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {notification.leadId && (
@@ -175,3 +175,4 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+

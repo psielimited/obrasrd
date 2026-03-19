@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MessageSquare, MessageSquareWarning } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,7 +42,7 @@ const REQUESTER_STATE_LABELS: Record<RequesterState, string> = {
 const REQUESTER_STATE_CLASSES: Record<RequesterState, string> = {
   active: "border-emerald-500/40 text-emerald-300",
   cancelled: "border-rose-500/40 text-rose-300",
-  archived: "border-slate-500/40 text-slate-300",
+  archived: "border-border text-muted-foreground",
 };
 
 const ACTIONABLE_FILTER_STORAGE_KEY = "provider-leads-show-only-actionable";
@@ -195,10 +195,10 @@ const ProviderLeadsPage = () => {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar lead..."
-              className="bg-slate-950 border-slate-700 text-slate-100"
+              className="bg-background border-border text-foreground"
             />
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | LeadStatus)}>
-              <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+              <SelectTrigger className="bg-background border-border text-foreground">
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
@@ -208,29 +208,29 @@ const ProviderLeadsPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 px-3">
+            <div className="flex items-center gap-2 rounded-md border border-border px-3">
               <Switch checked={showOnlyActionable} onCheckedChange={setShowOnlyActionable} />
-              <span className="text-sm text-slate-300">Solo accionables</span>
+              <span className="text-sm text-foreground">Solo accionables</span>
             </div>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 px-3">
+            <div className="flex items-center gap-2 rounded-md border border-border px-3">
               <Switch checked={showOnlyUnread} onCheckedChange={setShowOnlyUnread} />
-              <span className="text-sm text-slate-300">Solo no leidos</span>
+              <span className="text-sm text-foreground">Solo no leidos</span>
             </div>
-            <div className="text-sm text-slate-400 flex items-center">Mostrando {filteredLeads.length} resultados</div>
+            <div className="text-sm text-muted-foreground flex items-center">Mostrando {filteredLeads.length} resultados</div>
           </div>
         </SectionCard>
 
         <SectionCard title="Bandeja" description="Actualiza estado, agrega nota y contacta por WhatsApp">
           {isLoading ? (
-            <p className="text-sm text-slate-400">Cargando leads...</p>
+            <p className="text-sm text-muted-foreground">Cargando leads...</p>
           ) : filteredLeads.length === 0 ? (
-            <p className="text-sm text-slate-400">No hay resultados para tu filtro actual.</p>
+            <p className="text-sm text-muted-foreground">No hay resultados para tu filtro actual.</p>
           ) : (
             <>
               <div className="hidden lg:block">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
+                    <TableRow className="border-border hover:bg-transparent">
                       <TableHead>Solicitante</TableHead>
                       <TableHead>Mensaje</TableHead>
                       <TableHead>Estado</TableHead>
@@ -253,21 +253,21 @@ const ProviderLeadsPage = () => {
                           Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt));
 
                       return (
-                        <TableRow key={lead.id} className={`border-slate-800 hover:bg-slate-900/40 ${lead.requesterState !== "active" ? "opacity-70" : ""}`}>
+                        <TableRow key={lead.id} className={`border-border hover:bg-card/40 ${lead.requesterState !== "active" ? "opacity-70" : ""}`}>
                           <TableCell>
-                            <p className="font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
-                            <p className="text-xs text-slate-500">{lead.requesterContact || "Sin contacto"}</p>
-                            <p className="text-xs text-slate-500">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                            <p className="font-semibold text-foreground">{lead.requesterName || "Solicitante"}</p>
+                            <p className="text-xs text-muted-foreground">{lead.requesterContact || "Sin contacto"}</p>
+                            <p className="text-xs text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</p>
                           </TableCell>
                           <TableCell>
-                            <p className="text-sm text-slate-300 line-clamp-2">{lead.message}</p>
-                            <p className="text-xs text-slate-500 mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
+                            <p className="text-sm text-foreground line-clamp-2">{lead.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2">
                               <StatusBadge status={lead.status} />
                               <Select value={status} onValueChange={(value) => setDraftStatuses((prev) => ({ ...prev, [lead.id]: value as LeadStatus }))}>
-                                <SelectTrigger className="h-8 bg-slate-950 border-slate-700 text-slate-100 text-xs">
+                                <SelectTrigger className="h-8 bg-background border-border text-foreground text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -289,7 +289,7 @@ const ProviderLeadsPage = () => {
                                 <MessageSquare className="h-3.5 w-3.5 mr-1" />
                                 Chat
                               </Button>
-                              <p className="text-[11px] text-slate-500 line-clamp-2">{lead.lastMessagePreview || "Sin mensajes"}</p>
+                              <p className="text-[11px] text-muted-foreground line-clamp-2">{lead.lastMessagePreview || "Sin mensajes"}</p>
                               {unreadForProvider && (
                                 <Badge variant="outline" className="border-accent/40 text-accent w-fit">No leido</Badge>
                               )}
@@ -300,7 +300,7 @@ const ProviderLeadsPage = () => {
                               value={reply}
                               onChange={(event) => setDraftReplies((prev) => ({ ...prev, [lead.id]: event.target.value }))}
                               placeholder="Nota de seguimiento"
-                              className="h-8 bg-slate-950 border-slate-700 text-slate-100"
+                              className="h-8 bg-background border-border text-foreground"
                             />
                           </TableCell>
                           <TableCell className="text-right">
@@ -335,11 +335,11 @@ const ProviderLeadsPage = () => {
                       Date.parse(lead.lastMessageAt) > Date.parse(lead.providerLastReadAt));
 
                   return (
-                    <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 space-y-3">
+                    <div key={lead.id} className="rounded-xl border border-border bg-card p-3 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div>
-                          <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
-                          <p className="text-xs text-slate-500">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm font-semibold text-foreground">{lead.requesterName || "Solicitante"}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <StatusBadge status={lead.status} />
@@ -349,14 +349,14 @@ const ProviderLeadsPage = () => {
                         </div>
                       </div>
 
-                      <p className="text-sm text-slate-300">{lead.message}</p>
+                      <p className="text-sm text-foreground">{lead.message}</p>
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs text-slate-500 line-clamp-1">{lead.lastMessagePreview || "Sin mensajes"}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{lead.lastMessagePreview || "Sin mensajes"}</p>
                         {unreadForProvider && <Badge variant="outline" className="border-accent/40 text-accent">No leido</Badge>}
                       </div>
 
                       <Select value={status} onValueChange={(value) => setDraftStatuses((prev) => ({ ...prev, [lead.id]: value as LeadStatus }))}>
-                        <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+                        <SelectTrigger className="bg-background border-border text-foreground">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -370,7 +370,7 @@ const ProviderLeadsPage = () => {
                         value={reply}
                         onChange={(event) => setDraftReplies((prev) => ({ ...prev, [lead.id]: event.target.value }))}
                         placeholder="Nota de seguimiento"
-                        className="bg-slate-950 border-slate-700 text-slate-100"
+                        className="bg-background border-border text-foreground"
                       />
 
                       <div className="flex gap-2">
@@ -399,3 +399,4 @@ const ProviderLeadsPage = () => {
 };
 
 export default ProviderLeadsPage;
+

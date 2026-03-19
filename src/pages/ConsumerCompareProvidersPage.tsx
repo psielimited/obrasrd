@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { ArrowRightLeft, Scale, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
@@ -49,7 +49,7 @@ const ConsumerCompareProvidersPage = () => {
       <div className="space-y-6">
         {isLoading ? (
           <SectionCard title="Cargando comparador" description="Preparando tus proveedores guardados">
-            <p className="text-sm text-slate-400">Cargando...</p>
+            <p className="text-sm text-muted-foreground">Cargando...</p>
           </SectionCard>
         ) : savedProviders.length === 0 ? (
           <EmptyState
@@ -77,14 +77,14 @@ const ConsumerCompareProvidersPage = () => {
                       className={`rounded-xl border p-3 ${
                         selected
                           ? "border-accent/40 bg-accent/10"
-                          : "border-slate-800 bg-slate-950/40"
+                          : "border-border bg-card"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div>
-                          <p className="text-sm font-semibold text-slate-100">{provider.name}</p>
-                          <p className="text-xs text-slate-400">
-                            {provider.trade} • {provider.city}
+                          <p className="text-sm font-semibold text-foreground">{provider.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {provider.trade} â€¢ {provider.city}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -114,12 +114,12 @@ const ConsumerCompareProvidersPage = () => {
               description={`Comparando ${selectedProviders.length} proveedor(es)`}
             >
               {selectedProviders.length === 0 ? (
-                <p className="text-sm text-slate-400">Selecciona al menos un proveedor para comparar.</p>
+                <p className="text-sm text-muted-foreground">Selecciona al menos un proveedor para comparar.</p>
               ) : (
                 <div className="overflow-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-slate-800 text-slate-400">
+                      <tr className="border-b border-border text-muted-foreground">
                         <th className="text-left py-2 pr-4">Proveedor</th>
                         <th className="text-left py-2 pr-4">Especialidad</th>
                         <th className="text-left py-2 pr-4">Ciudad</th>
@@ -132,8 +132,8 @@ const ConsumerCompareProvidersPage = () => {
                     </thead>
                     <tbody>
                       {selectedProviders.map(({ provider }) => (
-                        <tr key={provider.id} className="border-b border-slate-900">
-                          <td className="py-2 pr-4 text-slate-100 font-semibold">
+                        <tr key={provider.id} className="border-b border-border">
+                          <td className="py-2 pr-4 text-foreground font-semibold">
                             <div className="flex items-center gap-2">
                               <span>{provider.name}</span>
                               {provider.verified && (
@@ -143,16 +143,16 @@ const ConsumerCompareProvidersPage = () => {
                               )}
                             </div>
                           </td>
-                          <td className="py-2 pr-4 text-slate-300">{provider.trade}</td>
-                          <td className="py-2 pr-4 text-slate-300">{provider.city}</td>
-                          <td className="py-2 pr-4 text-slate-300">{provider.rating.toFixed(1)}</td>
-                          <td className="py-2 pr-4 text-slate-300">{provider.yearsExperience} anos</td>
-                          <td className="py-2 pr-4 text-slate-300">
+                          <td className="py-2 pr-4 text-foreground">{provider.trade}</td>
+                          <td className="py-2 pr-4 text-foreground">{provider.city}</td>
+                          <td className="py-2 pr-4 text-foreground">{provider.rating.toFixed(1)}</td>
+                          <td className="py-2 pr-4 text-foreground">{provider.yearsExperience} anos</td>
+                          <td className="py-2 pr-4 text-foreground">
                             {provider.startingPrice
                               ? `RD$${provider.startingPrice.toLocaleString()}`
                               : "N/D"}
                           </td>
-                          <td className="py-2 pr-4 text-slate-300">
+                          <td className="py-2 pr-4 text-foreground">
                             {provider.serviceAreas.length} zonas
                           </td>
                           <td className="py-2">
@@ -179,3 +179,4 @@ const ConsumerCompareProvidersPage = () => {
 };
 
 export default ConsumerCompareProvidersPage;
+

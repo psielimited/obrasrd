@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Bell, ClipboardList, Heart, MessageSquare, Scale, Search } from "lucide-react";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
@@ -78,13 +78,13 @@ const ConsumerDashboardPage = () => {
             }
           >
             {recentLeads.length === 0 ? (
-              <p className="text-sm text-slate-400">Aun no tienes solicitudes activas.</p>
+              <p className="text-sm text-muted-foreground">Aun no tienes solicitudes activas.</p>
             ) : (
               <div className="space-y-3">
                 {recentLeads.map((lead) => (
-                  <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                  <div key={lead.id} className="rounded-xl border border-border bg-card p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitud"}</p>
+                      <p className="text-sm font-semibold text-foreground">{lead.requesterName || "Solicitud"}</p>
                       <div className="flex items-center gap-2">
                         <StatusBadge status={lead.status} />
                         {Boolean(lead.lastMessageAt) &&
@@ -96,8 +96,8 @@ const ConsumerDashboardPage = () => {
                           )}
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-2">{lead.message}</p>
-                    <p className="text-xs text-slate-500 mt-1">{new Date(lead.lastMessageAt || lead.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{lead.message}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{new Date(lead.lastMessageAt || lead.createdAt).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -110,13 +110,13 @@ const ConsumerDashboardPage = () => {
             right={<Link to="/notificaciones" className="text-xs font-semibold text-accent hover:underline">Ver todas</Link>}
           >
             {recentNotifications.length === 0 ? (
-              <p className="text-sm text-slate-400">No hay notificaciones recientes.</p>
+              <p className="text-sm text-muted-foreground">No hay notificaciones recientes.</p>
             ) : (
               <div className="space-y-3">
                 {recentNotifications.map((notification) => (
-                  <div key={notification.id} className={`rounded-xl border p-3 ${notification.readAt ? "border-slate-800 bg-slate-950/50" : "border-accent/30 bg-accent/10"}`}>
-                    <p className="text-sm font-semibold text-slate-100">{notification.title}</p>
-                    <p className="text-xs text-slate-400 mt-1">{notification.body}</p>
+                  <div key={notification.id} className={`rounded-xl border p-3 ${notification.readAt ? "border-border bg-card" : "border-accent/30 bg-accent/10"}`}>
+                    <p className="text-sm font-semibold text-foreground">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.body}</p>
                   </div>
                 ))}
               </div>
@@ -129,3 +129,4 @@ const ConsumerDashboardPage = () => {
 };
 
 export default ConsumerDashboardPage;
+

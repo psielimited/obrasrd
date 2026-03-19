@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { MessageSquare, MessageSquareWarning, RotateCcw, XCircle, Archive } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ConsumerDashboardLayout from "@/components/dashboard/ConsumerDashboardLayout";
@@ -32,7 +32,7 @@ const REQUESTER_STATE_LABELS: Record<RequesterState, string> = {
 const REQUESTER_STATE_CLASSES: Record<RequesterState, string> = {
   active: "border-emerald-500/40 text-emerald-300",
   cancelled: "border-rose-500/40 text-rose-300",
-  archived: "border-slate-500/40 text-slate-300",
+  archived: "border-border text-muted-foreground",
 };
 
 type RequestPresetFilter = "all" | "today" | "week" | "archived";
@@ -106,9 +106,9 @@ const ConsumerRequestsPage = () => {
         <SectionCard title="Resumen" description="Flujo actual de tus solicitudes">
           <div className="grid gap-3 md:grid-cols-5">
             {(Object.keys(LEAD_STATUS_LABELS) as LeadStatus[]).map((status) => (
-              <div key={status} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">{LEAD_STATUS_LABELS[status]}</p>
-                <p className="text-xl font-bold text-slate-100 mt-1">{requests.filter((item) => item.status === status).length}</p>
+              <div key={status} className="rounded-xl border border-border bg-card p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{LEAD_STATUS_LABELS[status]}</p>
+                <p className="text-xl font-bold text-foreground mt-1">{requests.filter((item) => item.status === status).length}</p>
               </div>
             ))}
           </div>
@@ -128,14 +128,14 @@ const ConsumerRequestsPage = () => {
                 </Button>
               ))}
             </div>
-            <div className="flex items-center justify-between gap-2 rounded-md border border-slate-800 px-3 py-2">
-              <span className="text-sm text-slate-300">Solo no leidos</span>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+              <span className="text-sm text-foreground">Solo no leidos</span>
               <Switch checked={showOnlyUnread} onCheckedChange={setShowOnlyUnread} />
             </div>
-            <p className="text-xs text-slate-500">Mostrando {sorted.length} solicitudes</p>
+            <p className="text-xs text-muted-foreground">Mostrando {sorted.length} solicitudes</p>
           </div>
           {isLoading ? (
-            <p className="text-sm text-slate-400">Cargando solicitudes...</p>
+            <p className="text-sm text-muted-foreground">Cargando solicitudes...</p>
           ) : sorted.length === 0 ? (
             <EmptyState
               title="No tienes solicitudes"
@@ -145,7 +145,7 @@ const ConsumerRequestsPage = () => {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
+                <TableRow className="border-border hover:bg-transparent">
                   <TableHead>Solicitud</TableHead>
                   <TableHead>Estado proveedor</TableHead>
                   <TableHead>Estado cliente</TableHead>
@@ -162,11 +162,11 @@ const ConsumerRequestsPage = () => {
                       Date.parse(lead.lastMessageAt) > Date.parse(lead.requesterLastReadAt));
 
                   return (
-                    <TableRow key={lead.id} className="border-slate-800 hover:bg-slate-900/40">
+                    <TableRow key={lead.id} className="border-border hover:bg-card/40">
                       <TableCell>
-                        <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitud"}</p>
-                        <p className="text-xs text-slate-400 line-clamp-2 mt-1">{lead.message}</p>
-                        <p className="text-xs text-slate-500 mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
+                        <p className="text-sm font-semibold text-foreground">{lead.requesterName || "Solicitud"}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{lead.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{lead.estimatedBudget || "Sin presupuesto"}</p>
                       </TableCell>
                       <TableCell><StatusBadge status={lead.status} /></TableCell>
                       <TableCell>
@@ -180,18 +180,18 @@ const ConsumerRequestsPage = () => {
                             <MessageSquare className="h-3.5 w-3.5 mr-1" />
                             Chat
                           </Button>
-                          <p className="text-[11px] text-slate-500 line-clamp-2">{lead.lastMessagePreview || "Sin mensajes"}</p>
+                          <p className="text-[11px] text-muted-foreground line-clamp-2">{lead.lastMessagePreview || "Sin mensajes"}</p>
                           {unreadForRequester && <Badge variant="outline" className="border-accent/40 text-accent w-fit">No leido</Badge>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1.5">
-                          <Badge variant="outline" className="border-slate-700 text-slate-300">Creada</Badge>
-                          {lead.contactedAt && <Badge variant="outline" className="border-slate-700 text-slate-300">Contactada</Badge>}
-                          {lead.providerReply && <Badge variant="outline" className="border-slate-700 text-slate-300">Respuesta</Badge>}
-                          {lead.closedAt && <Badge variant="outline" className="border-slate-700 text-slate-300">Cerrada</Badge>}
+                          <Badge variant="outline" className="border-border text-foreground">Creada</Badge>
+                          {lead.contactedAt && <Badge variant="outline" className="border-border text-foreground">Contactada</Badge>}
+                          {lead.providerReply && <Badge variant="outline" className="border-border text-foreground">Respuesta</Badge>}
+                          {lead.closedAt && <Badge variant="outline" className="border-border text-foreground">Cerrada</Badge>}
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-1">{new Date(lead.createdAt).toLocaleString()}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1">{new Date(lead.createdAt).toLocaleString()}</p>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-2">
@@ -228,3 +228,4 @@ const ConsumerRequestsPage = () => {
 };
 
 export default ConsumerRequestsPage;
+

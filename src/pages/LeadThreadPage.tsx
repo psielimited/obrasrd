@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send } from "lucide-react";
@@ -120,7 +120,7 @@ const LeadThreadPage = () => {
           }
         >
           {isLoading ? (
-            <p className="text-sm text-slate-400">Cargando mensajes...</p>
+            <p className="text-sm text-muted-foreground">Cargando mensajes...</p>
           ) : messages.length === 0 ? (
             <EmptyState
               title="Sin mensajes"
@@ -139,15 +139,15 @@ const LeadThreadPage = () => {
                     key={message.id}
                     className={`max-w-[85%] rounded-2xl px-3 py-2 border ${
                       mine
-                        ? "ml-auto bg-accent/15 border-accent/40 text-slate-100"
-                        : "mr-auto bg-slate-900 border-slate-700 text-slate-200"
+                        ? "ml-auto bg-accent/15 border-accent/40 text-foreground"
+                        : "mr-auto bg-card border-border text-foreground"
                     }`}
                   >
                     <p className="text-xs font-semibold opacity-70 mb-1">
                       {message.senderRole === "provider" ? "Proveedor" : "Cliente"}
                     </p>
                     <p className="text-sm whitespace-pre-wrap">{message.message}</p>
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-muted-foreground mt-1">
                       {new Date(message.createdAt).toLocaleString()}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ const LeadThreadPage = () => {
               onChange={(event) => setDraft(event.target.value)}
               rows={3}
               placeholder="Escribe un mensaje..."
-              className="bg-slate-950 border-slate-700 text-slate-100"
+              className="bg-background border-border text-foreground"
             />
             <div className="flex justify-end">
               <Button variant="accent" onClick={onSend} disabled={!draft.trim() || sending}>
@@ -178,3 +178,4 @@ const LeadThreadPage = () => {
 };
 
 export default LeadThreadPage;
+

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   Bell,
@@ -175,10 +175,10 @@ const ProviderDashboard = () => {
         <SectionCard title="Confianza visual" description="Tu evidencia visual y consistencia de actividad elevan conversiones">
           <div className="grid gap-6 xl:grid-cols-3">
             <div className="space-y-3">
-              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Imagenes de portafolio</p>
-                <p className="mt-1 text-lg font-bold text-slate-100">{portfolioImageCount}</p>
-                <p className="text-xs text-slate-400">
+              <div className="rounded-xl border border-border bg-card p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Imagenes de portafolio</p>
+                <p className="mt-1 text-lg font-bold text-foreground">{portfolioImageCount}</p>
+                <p className="text-xs text-muted-foreground">
                   {portfolioImageCount === 0
                     ? "Sube fotos reales de tus trabajos"
                     : portfolioImageCount < 3
@@ -186,38 +186,38 @@ const ProviderDashboard = () => {
                       : "Buen nivel de evidencia visual"}
                 </p>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Verificacion</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">{providerProfile?.verified ? "Servicio verificado" : "Pendiente de verificacion"}</p>
+              <div className="rounded-xl border border-border bg-card p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Verificacion</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{providerProfile?.verified ? "Servicio verificado" : "Pendiente de verificacion"}</p>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Estado de actividad</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">{providerActive ? "Proveedor activo" : "Actividad por mejorar"}</p>
+              <div className="rounded-xl border border-border bg-card p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Estado de actividad</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{providerActive ? "Proveedor activo" : "Actividad por mejorar"}</p>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Completitud</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">{profileCompleteness}%</p>
+              <div className="rounded-xl border border-border bg-card p-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Completitud</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{profileCompleteness}%</p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
-              <p className="text-sm font-semibold text-slate-100 mb-3">Checklist de confianza</p>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-sm font-semibold text-foreground mb-3">Checklist de confianza</p>
               <div className="space-y-2">
                 {trustChecklist.map((item) => (
                   <div key={item.label} className="flex items-start gap-2 text-sm">
-                    <span className={`mt-0.5 h-2.5 w-2.5 rounded-full ${item.done ? "bg-emerald-400" : "bg-slate-600"}`} />
-                    <span className={item.done ? "text-slate-200" : "text-slate-400"}>{item.label}</span>
+                    <span className={`mt-0.5 h-2.5 w-2.5 rounded-full ${item.done ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    <span className={item.done ? "text-foreground" : "text-muted-foreground"}>{item.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-slate-100">Como te ve el cliente</p>
+              <p className="text-sm font-semibold text-foreground">Como te ve el cliente</p>
               <MarketplaceVisualFrame
                 categorySlug={providerProfile?.categorySlug}
                 categoryLabel={currentCategory?.name}
-                badgeRow={<Badge variant="outline" className="border-slate-700 text-slate-200">Vista previa</Badge>}
+                badgeRow={<Badge variant="outline" className="border-border text-foreground">Vista previa</Badge>}
               >
                 {providerProfile?.portfolioImages[0] ? (
                   <img
@@ -228,14 +228,14 @@ const ProviderDashboard = () => {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="h-40 grid place-items-center text-xs text-slate-400">
+                  <div className="h-40 grid place-items-center text-xs text-muted-foreground">
                     Agrega tu primera imagen para destacar tu trabajo.
                   </div>
                 )}
               </MarketplaceVisualFrame>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 space-y-2">
-                <p className="text-sm font-semibold text-slate-100">{providerProfile?.name || "Tu nombre comercial"}</p>
-                <p className="text-xs text-slate-400">{providerProfile?.trade || "Tu especialidad"}</p>
+              <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+                <p className="text-sm font-semibold text-foreground">{providerProfile?.name || "Tu nombre comercial"}</p>
+                <p className="text-xs text-muted-foreground">{providerProfile?.trade || "Tu especialidad"}</p>
                 <CategoryTag categorySlug={providerProfile?.categorySlug} categoryName={currentCategory?.name} />
                 <TrustBadgeRow badges={trustBadges} />
               </div>
@@ -252,30 +252,30 @@ const ProviderDashboard = () => {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-slate-300">Completitud del perfil</span>
-                  <span className="font-semibold text-slate-100">{profileCompleteness}%</span>
+                  <span className="text-foreground">Completitud del perfil</span>
+                  <span className="font-semibold text-foreground">{profileCompleteness}%</span>
                 </div>
-                <Progress value={profileCompleteness} className="h-2 bg-slate-800" />
+                <Progress value={profileCompleteness} className="h-2 bg-muted" />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Fase / categoria</p>
-                  <p className="text-sm text-slate-100 mt-1">{currentPhase?.name || "Sin fase"}</p>
-                  <p className="text-xs text-slate-400">{currentCategory?.name || "Sin categoria"}</p>
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Fase / categoria</p>
+                  <p className="text-sm text-foreground mt-1">{currentPhase?.name || "Sin fase"}</p>
+                  <p className="text-xs text-muted-foreground">{currentCategory?.name || "Sin categoria"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Cobertura</p>
-                  <p className="text-sm text-slate-100 mt-1">{providerProfile?.city || "Sin ciudad"}</p>
-                  <p className="text-xs text-slate-400">{providerProfile?.serviceAreas.length || 0} areas de servicio</p>
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Cobertura</p>
+                  <p className="text-sm text-foreground mt-1">{providerProfile?.city || "Sin ciudad"}</p>
+                  <p className="text-xs text-muted-foreground">{providerProfile?.serviceAreas.length || 0} areas de servicio</p>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Experiencia</p>
-                  <p className="text-sm text-slate-100 mt-1">{providerProfile?.yearsExperience || 0} anos</p>
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Experiencia</p>
+                  <p className="text-sm text-foreground mt-1">{providerProfile?.yearsExperience || 0} anos</p>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">WhatsApp</p>
-                  <p className="text-sm text-slate-100 mt-1">{providerProfile?.whatsapp || "Sin registrar"}</p>
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">WhatsApp</p>
+                  <p className="text-sm text-foreground mt-1">{providerProfile?.whatsapp || "Sin registrar"}</p>
                 </div>
               </div>
 
@@ -294,16 +294,16 @@ const ProviderDashboard = () => {
 
           <SectionCard title="Insights marketplace" description="Sugerencias practicas para mejorar visibilidad">
             <div className="space-y-3 text-sm">
-              <p className="text-slate-300">
-                Fase activa: <span className="text-slate-100 font-semibold">{currentPhase?.name || "No definida"}</span>
+              <p className="text-foreground">
+                Fase activa: <span className="text-foreground font-semibold">{currentPhase?.name || "No definida"}</span>
               </p>
-              <p className="text-slate-300">
-                Categoria: <span className="text-slate-100 font-semibold">{currentCategory?.name || "No definida"}</span>
+              <p className="text-foreground">
+                Categoria: <span className="text-foreground font-semibold">{currentCategory?.name || "No definida"}</span>
               </p>
-              <p className="text-slate-300">
-                Zonas: <span className="text-slate-100 font-semibold">{providerProfile?.serviceAreas.join(", ") || "No definidas"}</span>
+              <p className="text-foreground">
+                Zonas: <span className="text-foreground font-semibold">{providerProfile?.serviceAreas.join(", ") || "No definidas"}</span>
               </p>
-              <ul className="text-slate-400 space-y-1.5 pt-2 border-t border-slate-800">
+              <ul className="text-muted-foreground space-y-1.5 pt-2 border-t border-border">
                 <li>- Responde leads nuevos en menos de 1 hora para mejorar cierre.</li>
                 <li>- Mantener WhatsApp actualizado aumenta contactos directos.</li>
                 <li>- Un perfil con descripcion clara mejora la confianza del cliente.</li>
@@ -315,29 +315,29 @@ const ProviderDashboard = () => {
         <SectionCard
           title="Tu plan"
           description="Controla limites y beneficios de tu cuenta de proveedor"
-          right={<Badge variant="outline" className="border-slate-700 text-slate-200">{planSnapshot?.planName || "Gratis"}</Badge>}
+          right={<Badge variant="outline" className="border-border text-foreground">{planSnapshot?.planName || "Gratis"}</Badge>}
         >
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Estado</p>
-              <p className="text-sm text-slate-100 mt-1">{PLAN_STATUS_LABELS[planSnapshot?.status || "active"] || "Activo"}</p>
+            <div className="rounded-xl border border-border bg-card p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Estado</p>
+              <p className="text-sm text-foreground mt-1">{PLAN_STATUS_LABELS[planSnapshot?.status || "active"] || "Activo"}</p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Leads este mes</p>
-              <p className="text-sm text-slate-100 mt-1">
+            <div className="rounded-xl border border-border bg-card p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Leads este mes</p>
+              <p className="text-sm text-foreground mt-1">
                 {planSnapshot?.leadsUsedThisMonth ?? 0}
                 {planSnapshot?.isQuotaUnlimited ? " (sin limite)" : ` / ${planSnapshot?.monthlyLeadQuota ?? 25}`}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Leads restantes</p>
-              <p className="text-sm text-slate-100 mt-1">
+            <div className="rounded-xl border border-border bg-card p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Leads restantes</p>
+              <p className="text-sm text-foreground mt-1">
                 {planSnapshot?.isQuotaUnlimited ? "Ilimitado" : planSnapshot?.leadsRemainingThisMonth ?? 25}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3 md:col-span-3">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Slots destacados</p>
-              <p className="text-sm text-slate-100 mt-1">
+            <div className="rounded-xl border border-border bg-card p-3 md:col-span-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Slots destacados</p>
+              <p className="text-sm text-foreground mt-1">
                 {planSnapshot?.featuredSlots ?? 0} disponibles en tu plan actual
               </p>
             </div>
@@ -345,16 +345,16 @@ const ProviderDashboard = () => {
 
           {!planSnapshot?.isQuotaUnlimited && (
             <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Uso de cuota mensual</span>
                 <span>{planProgress}%</span>
               </div>
-              <Progress value={planProgress} className="h-2 bg-slate-800" />
+              <Progress value={planProgress} className="h-2 bg-muted" />
             </div>
           )}
 
-          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/40 p-3 flex items-center justify-between gap-3">
-            <p className="text-sm text-slate-300">
+          <div className="mt-4 rounded-xl border border-border bg-card p-3 flex items-center justify-between gap-3">
+            <p className="text-sm text-foreground">
               {planSnapshot?.isQuotaUnlimited
                 ? "Tu plan actual permite leads ilimitados."
                 : "Sube a Pro para ampliar cuota mensual y mejorar visibilidad."}
@@ -384,13 +384,13 @@ const ProviderDashboard = () => {
             }
           >
             {recentLeads.length === 0 ? (
-              <p className="text-sm text-slate-400">No tienes leads todavia.</p>
+              <p className="text-sm text-muted-foreground">No tienes leads todavia.</p>
             ) : (
               <div className="space-y-3">
                 {recentLeads.map((lead) => (
-                  <div key={lead.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+                  <div key={lead.id} className="rounded-xl border border-border bg-card p-3">
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <p className="text-sm font-semibold text-slate-100">{lead.requesterName || "Solicitante"}</p>
+                      <p className="text-sm font-semibold text-foreground">{lead.requesterName || "Solicitante"}</p>
                       <div className="flex items-center gap-2">
                         <StatusBadge status={lead.status} />
                         {Boolean(lead.lastMessageAt) &&
@@ -402,8 +402,8 @@ const ProviderDashboard = () => {
                           )}
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400">{lead.estimatedBudget ? `Presupuesto: ${lead.estimatedBudget}` : "Sin presupuesto"}</p>
-                    <p className="text-xs text-slate-500 mt-1">{new Date(lead.lastMessageAt || lead.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">{lead.estimatedBudget ? `Presupuesto: ${lead.estimatedBudget}` : "Sin presupuesto"}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{new Date(lead.lastMessageAt || lead.createdAt).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -420,17 +420,17 @@ const ProviderDashboard = () => {
             }
           >
             {recentNotifications.length === 0 ? (
-              <p className="text-sm text-slate-400">No tienes notificaciones.</p>
+              <p className="text-sm text-muted-foreground">No tienes notificaciones.</p>
             ) : (
               <div className="space-y-3">
                 {recentNotifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`rounded-xl border p-3 ${notification.readAt ? "border-slate-800 bg-slate-950/40" : "border-accent/30 bg-accent/10"}`}
+                    className={`rounded-xl border p-3 ${notification.readAt ? "border-border bg-card" : "border-accent/30 bg-accent/10"}`}
                   >
-                    <p className="text-sm font-semibold text-slate-100">{notification.title}</p>
-                    <p className="text-xs text-slate-400 mt-1">{notification.body}</p>
-                    <p className="text-xs text-slate-500 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-foreground">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.body}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -443,3 +443,4 @@ const ProviderDashboard = () => {
 };
 
 export default ProviderDashboard;
+
