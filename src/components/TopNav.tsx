@@ -34,39 +34,35 @@ const TopNav = () => {
   }, []);
 
   const desktopFallback = (
-    <>
-      <Link to="/auth">
-        <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg border-[#E3DDD4] bg-transparent px-3">
-          <LogIn className="h-4 w-4" />
-          Iniciar sesion
-        </Button>
-      </Link>
-    </>
+    <Link to="/auth">
+      <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg px-3">
+        <LogIn className="h-4 w-4" />
+        Iniciar sesión
+      </Button>
+    </Link>
   );
 
   const mobileFallback = (
-    <>
-      <Link to="/auth">
-        <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg border-[#E3DDD4] bg-transparent px-2.5 text-xs">
-          <LogIn className="h-3.5 w-3.5" />
-          Entrar
-        </Button>
-      </Link>
-    </>
+    <Link to="/auth">
+      <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg px-2.5 text-xs">
+        <LogIn className="h-3.5 w-3.5" />
+        Entrar
+      </Button>
+    </Link>
   );
 
   const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `relative inline-flex h-[60px] items-center rounded-md px-3 text-[13px] font-medium transition ${
+    `relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium transition ${
       isActive
-        ? "text-[#1A1612] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded after:bg-[#C4773B]"
-        : "text-[#7A6E64] hover:bg-[#F5F0E8] hover:text-[#1A1612]"
+        ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-foreground"
+        : "text-muted-foreground hover:text-foreground"
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#E3DDD4] bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-[60px] max-w-5xl items-center justify-between px-3 md:px-4">
-        <Link to="/" className="text-[22px] font-black tracking-tight text-[#1A1612]">
-          Obras<span className="text-[#C4773B]">RD</span>
+        <Link to="/" className="text-[22px] font-black tracking-tight text-foreground">
+          Obras<span className="text-accent">RD</span>
         </Link>
         <nav className="hidden items-center gap-0 md:flex">
           <NavLink to="/buscar" className={desktopLinkClass}>
@@ -74,7 +70,7 @@ const TopNav = () => {
           </NavLink>
           <NavLink to="/materiales" className={desktopLinkClass}>
             Materiales
-            <span className="ml-1.5 rounded bg-[#C4773B] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
+            <span className="ml-1.5 rounded bg-accent px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-accent-foreground">
               Nuevo
             </span>
           </NavLink>
@@ -87,7 +83,7 @@ const TopNav = () => {
           <Link to="/publicar">
             <Button
               size="sm"
-              className="ml-1 h-9 rounded-lg border border-[#C4773B]/85 bg-[#C4773B] px-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white hover:bg-[#9E5A24]"
+              className="ml-2 h-9 rounded-lg px-3.5 text-[11px] font-bold uppercase tracking-[0.08em]"
             >
               <Plus className="h-3.5 w-3.5" />
               Publicar
@@ -102,7 +98,7 @@ const TopNav = () => {
           <Link to="/publicar">
             <Button
               size="sm"
-              className="h-9 rounded-lg border border-[#C4773B]/85 bg-[#C4773B] px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white hover:bg-[#9E5A24]"
+              className="h-9 rounded-lg px-2.5 text-[10px] font-bold uppercase tracking-[0.08em]"
             >
               <Plus className="h-3.5 w-3.5" />
               Publicar

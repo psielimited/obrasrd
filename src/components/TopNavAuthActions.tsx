@@ -36,7 +36,7 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
     if (mobile) {
       return (
         <Link to="/auth">
-          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg border-[#E3DDD4] bg-transparent px-2.5 text-xs">
+          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg px-2.5 text-xs">
             <LogIn className="h-3.5 w-3.5" />
             Entrar
           </Button>
@@ -45,9 +45,9 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
     }
     return (
       <Link to="/auth">
-        <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg border-[#E3DDD4] bg-transparent px-3">
+        <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg px-3">
           <LogIn className="h-4 w-4" />
-          Iniciar sesion
+          Iniciar sesión
         </Button>
       </Link>
     );
@@ -93,7 +93,7 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
         className="text-destructive focus:text-destructive focus:bg-destructive/10"
       >
         <LogOut className="mr-2 h-4 w-4" />
-        Cerrar sesion
+        Cerrar sesión
       </DropdownMenuItem>
     </>
   );
@@ -103,23 +103,23 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="relative h-9 w-9 rounded-lg border border-[#E3DDD4] bg-transparent hover:bg-[#F5F0E8]"
+            className="relative h-9 w-9 rounded-lg"
           >
             <Avatar className="h-7 w-7 rounded-md">
-              <AvatarFallback className="rounded-md bg-[#1A1612] text-[10px] text-white">
+              <AvatarFallback className="rounded-md bg-foreground text-[10px] text-background">
                 {initials}
               </AvatarFallback>
             </Avatar>
             {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C4773B] px-1 text-[9px] font-bold text-white">
+              <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 border-[#E3DDD4]">
+        <DropdownMenuContent align="end" className="w-56">
           {menuContent}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -130,27 +130,27 @@ const TopNavAuthActions = ({ mobile = false }: TopNavAuthActionsProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="relative h-9 gap-2 rounded-lg border border-[#E3DDD4] bg-transparent px-1.5 pr-2 hover:bg-[#F5F0E8]"
+          className="relative h-9 gap-2 rounded-lg px-1.5 pr-2"
         >
           <Avatar className="h-7 w-7 rounded-md">
-            <AvatarFallback className="rounded-md bg-[#1A1612] text-[10px] text-white">
+            <AvatarFallback className="rounded-md bg-foreground text-[10px] text-background">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden max-w-[96px] truncate text-[13px] font-medium text-[#1A1612] lg:inline">
+          <span className="hidden max-w-[96px] truncate text-[13px] font-medium lg:inline">
             {displayName}
           </span>
-          <ChevronDown className="h-3.5 w-3.5 text-[#7A6E64]" />
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C4773B] px-1 text-[9px] font-bold text-white">
+            <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 border-[#E3DDD4]">
+      <DropdownMenuContent align="end" className="w-56">
         {menuContent}
       </DropdownMenuContent>
     </DropdownMenu>

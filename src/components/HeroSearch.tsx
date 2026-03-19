@@ -4,9 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProviders } from "@/hooks/use-marketplace-data";
 
-const HERO_BG =
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80&auto=format&fit=crop";
-
 const CATEGORY_PILLS = [
   { label: "Todos", slug: null },
   { label: "Arquitectos", slug: "arquitectos" },
@@ -53,122 +50,110 @@ const HeroSearch = () => {
   };
 
   return (
-    <section className="relative h-[100svh] min-h-[100svh] overflow-hidden bg-[#1A1612]">
-      <div className="relative h-full overflow-hidden bg-[#1A1612]">
+    <section className="relative min-h-[100svh] overflow-hidden bg-foreground">
+      <div className="relative flex min-h-[100svh] flex-col">
+        {/* Subtle texture overlay */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-cover bg-center opacity-30 saturate-50"
-          style={{ backgroundImage: `url('${HERO_BG}')` }}
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,10,5,0.74)_0%,rgba(15,10,5,0.14)_30%,rgba(15,10,5,0.2)_45%,rgba(15,10,5,0.84)_68%,rgba(15,10,5,0.97)_100%)]"
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
         />
 
-        <div className="relative z-10 flex h-full min-h-[640px] flex-col">
-          <div className="flex items-center justify-between px-6 pt-6 md:px-8 md:pt-7">
-            <span className="text-lg font-extrabold tracking-tight text-white">
-              Obras<span className="text-[#C4773B]">RD</span>
-            </span>
-            <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-white/20 bg-[#C4773B] text-[11px] font-bold text-white">
-              OB
-            </span>
-          </div>
-
-          <div className="no-scrollbar relative mt-5 flex gap-2 overflow-x-auto px-6 md:px-8">
-            {CATEGORY_PILLS.map((pill) => {
-              const isActive = activeCategory === pill.slug;
-              return (
-                <button
-                  key={pill.label}
-                  type="button"
-                  onClick={() => setActiveCategory(pill.slug)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
-                    isActive
-                      ? "border-[#C4773B] bg-[#C4773B] text-white"
-                      : "border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
-                  }`}
-                >
-                  {pill.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-auto px-6 pb-6 md:px-8 md:pb-7">
-            <div className="mb-4 flex items-center gap-2">
-              <span className="h-[2px] w-6 rounded bg-[#C4773B]" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#C4773B]">
-                Republica Dominicana
-              </span>
-            </div>
-
-            <h1 className="text-[36px] font-extrabold leading-[1.03] tracking-tight text-white md:text-[48px]">
-              Encuentra
-              <br />
-              profesionales
-              <br />
-              para tu <span className="text-[#E8945A]">obra.</span>
-            </h1>
-
-            <p className="mb-6 mt-3 max-w-[32rem] text-sm leading-relaxed text-white/60">
-              Arquitectos, ingenieros, contratistas y suplidores verificados en un solo lugar.
-            </p>
-
-            <form onSubmit={handleSearch} className="mb-3">
-              <div className="flex items-center overflow-hidden rounded-xl bg-white shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                <Search className="ml-4 h-4 w-4 shrink-0 text-[#7A6E64]" />
-                <input
-                  type="text"
-                  placeholder="Ej: Arquitecto, ingeniero..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="h-12 w-full bg-transparent px-3 text-sm text-[#1A1612] outline-none placeholder:text-[#7A6E64]"
-                />
-                <Button
-                  type="submit"
-                  className="mr-1.5 h-9 rounded-lg bg-[#1A1612] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white hover:bg-[#9E5A24]"
-                >
-                  Buscar
-                </Button>
-              </div>
-            </form>
-
-            <div className="flex gap-2.5">
-              <Button
-                variant="accent"
-                className="h-12 flex-1 rounded-xl bg-[#C4773B] text-[11px] uppercase tracking-[0.08em] text-white hover:bg-[#9E5A24]"
-                onClick={handleViewServices}
+        {/* Category pills */}
+        <div className="no-scrollbar relative z-10 mt-20 flex gap-2 overflow-x-auto px-6 md:mt-24 md:px-8">
+          {CATEGORY_PILLS.map((pill) => {
+            const isActive = activeCategory === pill.slug;
+            return (
+              <button
+                key={pill.label}
+                type="button"
+                onClick={() => setActiveCategory(pill.slug)}
+                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[11px] font-medium tracking-wide transition ${
+                  isActive
+                    ? "border-background bg-background text-foreground"
+                    : "border-background/20 bg-transparent text-background/60 hover:border-background/40 hover:text-background/80"
+                }`}
               >
-                Ver servicios
-              </Button>
+                {pill.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Main content */}
+        <div className="relative z-10 mt-auto px-6 pb-6 md:px-8 md:pb-8">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/30">
+            República Dominicana
+          </p>
+
+          <h1 className="text-[38px] font-black leading-[1.02] tracking-tight text-background md:text-[52px]">
+            Encuentra
+            <br />
+            profesionales
+            <br />
+            para tu <span className="text-accent">obra.</span>
+          </h1>
+
+          <p className="mb-7 mt-3 max-w-[30rem] text-[15px] leading-relaxed text-background/50">
+            Arquitectos, ingenieros, contratistas y suplidores verificados en un solo lugar.
+          </p>
+
+          <form onSubmit={handleSearch} className="mb-3">
+            <div className="flex items-center overflow-hidden rounded-xl bg-background shadow-2xl">
+              <Search className="ml-4 h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Ej: Arquitecto, ingeniero..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="h-12 w-full bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
               <Button
-                variant="outline"
-                className="h-12 flex-1 rounded-xl border-white/20 bg-white/10 text-[11px] uppercase tracking-[0.08em] text-white/80 hover:bg-white/15 hover:text-white"
-                onClick={() => navigate("/publicar")}
+                type="submit"
+                size="sm"
+                className="mr-1.5 h-9 rounded-lg px-4 text-[11px] font-bold uppercase tracking-[0.08em]"
               >
-                Publicar servicio
+                Buscar
               </Button>
             </div>
+          </form>
+
+          <div className="flex gap-2.5">
+            <Button
+              className="h-12 flex-1 rounded-xl border border-background/20 bg-background text-[11px] font-bold uppercase tracking-[0.08em] text-foreground hover:bg-background/90"
+              onClick={handleViewServices}
+            >
+              Ver servicios
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 flex-1 rounded-xl border-background/20 bg-transparent text-[11px] font-bold uppercase tracking-[0.08em] text-background/70 hover:bg-background/10 hover:text-background"
+              onClick={() => navigate("/publicar")}
+            >
+              Publicar servicio
+            </Button>
           </div>
         </div>
 
-        <div className="relative z-10 grid grid-cols-4 items-center border-t border-white/10 bg-black/25 px-3 py-3 backdrop-blur-sm">
+        {/* Stats bar */}
+        <div className="relative z-10 grid grid-cols-4 items-center border-t border-background/10 px-3 py-3">
           <div className="text-center">
-            <p className="text-base font-extrabold text-white">{providerCount || "-"}</p>
-            <p className="text-[9px] uppercase tracking-[0.07em] text-white/45">Profesionales</p>
+            <p className="text-base font-extrabold text-background">{providerCount || "-"}</p>
+            <p className="text-[9px] uppercase tracking-[0.07em] text-background/40">Profesionales</p>
           </div>
           <div className="text-center">
-            <p className="text-base font-extrabold text-white">{totalProjects || "-"}</p>
-            <p className="text-[9px] uppercase tracking-[0.07em] text-white/45">Proyectos</p>
+            <p className="text-base font-extrabold text-background">{totalProjects || "-"}</p>
+            <p className="text-[9px] uppercase tracking-[0.07em] text-background/40">Proyectos</p>
           </div>
           <div className="text-center">
-            <p className="text-base font-extrabold text-white">{uniqueCities || "-"}</p>
-            <p className="text-[9px] uppercase tracking-[0.07em] text-white/45">Ciudades</p>
+            <p className="text-base font-extrabold text-background">{uniqueCities || "-"}</p>
+            <p className="text-[9px] uppercase tracking-[0.07em] text-background/40">Ciudades</p>
           </div>
           <div className="text-center">
-            <p className="text-base font-extrabold text-white">{ratingAvg ? `${ratingAvg.toFixed(1)} *` : "-"}</p>
-            <p className="text-[9px] uppercase tracking-[0.07em] text-white/45">Promedio</p>
+            <p className="text-base font-extrabold text-background">{ratingAvg ? `${ratingAvg.toFixed(1)} ★` : "-"}</p>
+            <p className="text-[9px] uppercase tracking-[0.07em] text-background/40">Promedio</p>
           </div>
         </div>
       </div>
