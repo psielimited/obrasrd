@@ -167,48 +167,6 @@ export type Database = {
           },
         ]
       }
-      media_assets: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          entity_id: string | null
-          entity_type: string
-          file_size_bytes: number | null
-          id: string
-          mime_type: string | null
-          object_path: string
-          owner_user_id: string
-          public_url: string | null
-          updated_at: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          entity_id?: string | null
-          entity_type: string
-          file_size_bytes?: number | null
-          id?: string
-          mime_type?: string | null
-          object_path: string
-          owner_user_id: string
-          public_url?: string | null
-          updated_at?: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          entity_id?: string | null
-          entity_type?: string
-          file_size_bytes?: number | null
-          id?: string
-          mime_type?: string | null
-          object_path?: string
-          owner_user_id?: string
-          public_url?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       materials: {
         Row: {
           bulk_price: number | null
@@ -257,6 +215,48 @@ export type Database = {
           unit?: string
           updated_at?: string
           whatsapp?: string
+        }
+        Relationships: []
+      }
+      media_assets: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          object_path: string
+          owner_user_id: string
+          public_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          object_path: string
+          owner_user_id: string
+          public_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          object_path?: string
+          owner_user_id?: string
+          public_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
