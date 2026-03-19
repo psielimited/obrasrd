@@ -55,51 +55,33 @@ const TopNav = () => {
     </>
   );
 
+  const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `relative inline-flex h-[60px] items-center rounded-md px-3 text-[13px] font-medium transition ${
+      isActive
+        ? "text-[#1A1612] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded after:bg-[#C4773B]"
+        : "text-[#7A6E64] hover:bg-[#F5F0E8] hover:text-[#1A1612]"
+    }`;
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#E3DDD4] bg-white/95 backdrop-blur">
       <div className="container mx-auto flex h-[60px] max-w-5xl items-center justify-between px-3 md:px-4">
         <Link to="/" className="text-[22px] font-black tracking-tight text-[#1A1612]">
           Obras<span className="text-[#C4773B]">RD</span>
         </Link>
-        <nav className="hidden items-center gap-1 md:flex">
-          <NavLink
-            to="/buscar"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1.5 text-[13px] font-medium transition ${
-                isActive ? "text-[#1A1612] bg-[#F5F0E8]" : "text-[#7A6E64] hover:bg-[#F5F0E8] hover:text-[#1A1612]"
-              }`
-            }
-          >
+        <nav className="hidden items-center gap-0 md:flex">
+          <NavLink to="/buscar" className={desktopLinkClass}>
             Buscar
           </NavLink>
-          <NavLink
-            to="/materiales"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1.5 text-[13px] font-medium transition ${
-                isActive ? "text-[#1A1612] bg-[#F5F0E8]" : "text-[#7A6E64] hover:bg-[#F5F0E8] hover:text-[#1A1612]"
-              }`
-            }
-          >
+          <NavLink to="/materiales" className={desktopLinkClass}>
             Materiales
+            <span className="ml-1.5 rounded bg-[#C4773B] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
+              Nuevo
+            </span>
           </NavLink>
-          <NavLink
-            to="/proyectos"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1.5 text-[13px] font-medium transition ${
-                isActive ? "text-[#1A1612] bg-[#F5F0E8]" : "text-[#7A6E64] hover:bg-[#F5F0E8] hover:text-[#1A1612]"
-              }`
-            }
-          >
+          <NavLink to="/proyectos" className={desktopLinkClass}>
             Proyectos
           </NavLink>
-          <NavLink
-            to="/precios"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1.5 text-[13px] font-medium transition ${
-                isActive ? "text-[#1A1612] bg-[#F5F0E8]" : "text-[#7A6E64] hover:bg-[#F5F0E8] hover:text-[#1A1612]"
-              }`
-            }
-          >
+          <NavLink to="/precios" className={desktopLinkClass}>
             Precios
           </NavLink>
           <Link to="/publicar">
