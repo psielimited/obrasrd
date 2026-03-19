@@ -32,10 +32,10 @@ const SidebarNav = ({ items, onNavigate }: SidebarNavProps) => {
             to={item.to}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               active
-                ? "bg-slate-800 text-slate-100 border border-slate-700"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-900",
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
             <item.icon className="h-4 w-4" />

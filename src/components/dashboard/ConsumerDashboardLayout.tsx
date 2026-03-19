@@ -61,37 +61,49 @@ const ConsumerDashboardLayout = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-72 border-r border-slate-800 bg-slate-950 z-30">
+    <div className="min-h-screen bg-background text-foreground">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-60 border-r border-border bg-background z-30">
         <div className="w-full p-5 flex flex-col">
-          <Link to="/dashboard/cliente" className="inline-flex items-center gap-2 text-slate-100 mb-7">
-            <div className="h-9 w-9 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-accent" />
+          <Link to="/dashboard/cliente" className="inline-flex items-center gap-2.5 mb-7">
+            <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0">
+              <Building2 className="h-4 w-4 text-background" />
             </div>
             <div>
-              <p className="text-sm font-bold leading-none">ObrasRD</p>
-              <p className="text-xs text-slate-400 mt-1">Panel de cliente</p>
+              <p className="text-sm font-black tracking-tight leading-none">
+                Obras<span className="text-accent">RD</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Panel de cliente</p>
             </div>
           </Link>
 
           <SidebarNav items={navItems} />
 
-          <div className="mt-auto pt-6 text-xs text-slate-500">
+          <div className="mt-auto pt-6 text-xs text-muted-foreground">
             Compara opciones y organiza tus solicitudes de cotizacion.
+          </div>
+          <div className="mt-3 flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">
+            <div className="h-7 w-7 rounded-md bg-foreground text-background text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+              {identity.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold leading-none truncate">{identity}</p>
+            </div>
           </div>
         </div>
       </aside>
 
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-slate-950 border-r border-slate-800">
+        <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-background border-r border-border">
           <div className="p-5">
-            <Link to="/dashboard/cliente" className="inline-flex items-center gap-2 text-slate-100 mb-6" onClick={() => setSidebarOpen(false)}>
-              <div className="h-9 w-9 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center">
-                <Building2 className="h-4 w-4 text-accent" />
+            <Link to="/dashboard/cliente" className="inline-flex items-center gap-2.5 mb-7" onClick={() => setSidebarOpen(false)}>
+              <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0">
+                <Building2 className="h-4 w-4 text-background" />
               </div>
               <div>
-                <p className="text-sm font-bold leading-none">ObrasRD</p>
-                <p className="text-xs text-slate-400 mt-1">Panel de cliente</p>
+                <p className="text-sm font-black tracking-tight leading-none">
+                  Obras<span className="text-accent">RD</span>
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Panel de cliente</p>
               </div>
             </Link>
             <SidebarNav items={navItems} onNavigate={() => setSidebarOpen(false)} />
@@ -99,7 +111,7 @@ const ConsumerDashboardLayout = ({
         </SheetContent>
       </Sheet>
 
-      <div className="lg:pl-72">
+      <div className="lg:pl-60">
         <DashboardHeader
           title={title}
           subtitle={subtitle}

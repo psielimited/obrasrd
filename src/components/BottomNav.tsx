@@ -1,10 +1,10 @@
-import { Search, FolderOpen, User, Home, BadgeDollarSign } from "lucide-react";
+import { Search, FolderOpen, User, Home, LayoutGrid } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const navItems = [
   { icon: Home, label: "Inicio", path: "/" },
   { icon: Search, label: "Buscar", path: "/buscar" },
-  { icon: BadgeDollarSign, label: "Precios", path: "/precios" },
+  { icon: LayoutGrid, label: "Materiales", path: "/materiales" },
   { icon: FolderOpen, label: "Proyectos", path: "/proyectos" },
   { icon: User, label: "Perfil", path: "/perfil" },
 ];
@@ -22,12 +22,17 @@ const BottomNav = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`flex-1 flex flex-col items-center py-2 gap-0.5 min-h-[56px] transition-colors ${
+              className={`relative flex-1 flex flex-col items-center py-2 gap-0.5 min-h-[56px] transition-colors ${
                 isActive ? "text-foreground" : "text-muted-foreground"
               }`}
             >
-              <item.icon className="h-5 w-5" />
-              <span className="text-[10px] font-semibold">{item.label}</span>
+              {isActive && (
+                <span className="absolute top-1.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-foreground" />
+              )}
+              <item.icon className={`h-5 w-5 ${isActive ? "stroke-[2.5]" : ""}`} />
+              <span className={`text-[10px] ${isActive ? "font-bold" : "font-semibold"}`}>
+                {item.label}
+              </span>
             </button>
           );
         })}

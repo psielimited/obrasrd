@@ -4,11 +4,11 @@ import type { LeadStatus } from "@/lib/leads-api";
 import { LEAD_STATUS_LABELS } from "@/components/dashboard/dashboard-constants";
 
 const STATUS_STYLES: Record<LeadStatus, string> = {
-  new: "bg-blue-500/15 text-blue-300 border-blue-500/30",
-  contacted: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-  qualified: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30",
-  closed_won: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-  closed_lost: "bg-rose-500/15 text-rose-300 border-rose-500/30",
+  new: "bg-foreground/8 text-foreground border-border font-semibold",
+  contacted: "bg-muted text-muted-foreground border-border",
+  qualified: "bg-muted text-foreground border-foreground/20 font-semibold",
+  closed_won: "bg-foreground text-background border-foreground font-semibold",
+  closed_lost: "bg-muted text-muted-foreground border-border line-through",
 };
 
 interface StatusBadgeProps {

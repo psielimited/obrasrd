@@ -12,12 +12,12 @@ interface SectionCardProps {
 
 const SectionCard = ({ title, description, right, children, className }: SectionCardProps) => {
   return (
-    <Card className={cn("bg-slate-900 border-slate-800 rounded-2xl shadow-lg", className)}>
+    <Card className={cn("rounded-2xl border-border bg-card shadow-sm", className)}>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-lg text-slate-100">{title}</CardTitle>
-            {description && <CardDescription className="text-slate-400 mt-1">{description}</CardDescription>}
+            <CardTitle className="text-lg text-foreground">{title}</CardTitle>
+            {description && <CardDescription className="mt-1 text-muted-foreground">{description}</CardDescription>}
           </div>
           {right}
         </div>

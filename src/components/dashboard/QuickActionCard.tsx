@@ -15,18 +15,18 @@ interface QuickActionCardProps {
 const QuickActionCard = ({ to, title, description, icon, className }: QuickActionCardProps) => {
   return (
     <Link to={to} className="block">
-      <Card className={cn("bg-slate-900 border-slate-800 rounded-2xl hover:border-slate-700 transition-colors", className)}>
+      <Card className={cn("rounded-2xl border-border bg-card transition-colors hover:bg-muted/40", className)}>
         <CardContent className="p-4 flex items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted text-foreground">
               {icon}
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-100">{title}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+              <p className="text-sm font-semibold text-foreground">{title}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
             </div>
           </div>
-          <ArrowRight className="h-4 w-4 text-slate-500" />
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </CardContent>
       </Card>
     </Link>

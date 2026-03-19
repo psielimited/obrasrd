@@ -11,13 +11,13 @@ interface EmptyStateProps {
 
 const EmptyState = ({ title, description, icon: Icon, action }: EmptyStateProps) => {
   return (
-    <Card className="bg-slate-900 border-slate-800 rounded-2xl">
+    <Card className="rounded-2xl border-border bg-card">
       <CardContent className="p-8 text-center">
-        <div className="mx-auto h-12 w-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-4">
-          <Icon className="h-5 w-5 text-slate-300" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-muted">
+          <Icon className="h-5 w-5 text-muted-foreground" />
         </div>
-        <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
-        <p className="text-sm text-slate-400 mt-2">{description}</p>
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         {action && <div className="mt-5">{action}</div>}
       </CardContent>
     </Card>

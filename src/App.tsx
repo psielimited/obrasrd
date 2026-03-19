@@ -34,7 +34,6 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const isHomeRoute = location.pathname === "/";
   const isDashboardShellRoute =
     location.pathname.startsWith("/dashboard") ||
     location.pathname === "/notificaciones" ||
@@ -42,7 +41,7 @@ const AppContent = () => {
 
   return (
     <>
-      {!isDashboardShellRoute && !isHomeRoute && <TopNav />}
+      {!isDashboardShellRoute && <TopNav />}
       <Suspense fallback={<div className="px-4 py-10 text-center text-sm text-slate-400">Cargando...</div>}>
         <Routes>
           <Route path="/" element={<Index />} />
