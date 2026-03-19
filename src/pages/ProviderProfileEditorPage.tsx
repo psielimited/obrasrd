@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
@@ -20,7 +20,8 @@ import { usePhases } from "@/hooks/use-marketplace-data";
 import { useMyProfile, useMyProviderProfile, profileQueryKeys } from "@/hooks/use-profile-data";
 import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 import { upsertMyProviderProfile } from "@/lib/profile-api";
-import { ArrowDown, ArrowUp, ImagePlus, Trash2, UserRoundCog } from "lucide-react";
+import { deleteProviderPortfolioImageByUrl, linkMyProviderProfileMedia, uploadImageAsset } from "@/lib/media-api";
+import { ArrowDown, ArrowUp, ImagePlus, Loader2, Trash2, Upload, UserRoundCog } from "lucide-react";
 
 const ProviderProfileEditorPage = () => {
   const queryClient = useQueryClient();
@@ -45,6 +46,8 @@ const ProviderProfileEditorPage = () => {
   const [portfolioImageUrl, setPortfolioImageUrl] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedPhase = phases.find((phase) => phase.id === phaseId);
   const availableCategories = useMemo(() => selectedPhase?.categories ?? [], [selectedPhase]);
@@ -110,7 +113,21 @@ const ProviderProfileEditorPage = () => {
     setPortfolioImageUrl("");
   };
 
-  const removePortfolioImage = (index: number) => {
+  const removePortfolioImage = async (index: number) => {
+    const imageUrl = portfolioImages[index];
+    if (!imageUrl) return;
+
+    try {
+      await deleteProviderPortfolioImageByUrl(imageUrl);
+    } catch (error) {
+      toast({
+        title: "No se pudo eliminar la imagen",
+        description: error instanceof Error ? error.message : "Intenta nuevamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setPortfolioImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -125,12 +142,50 @@ const ProviderProfileEditorPage = () => {
     });
   };
 
+  const onUploadPortfolioImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || isUploadingImage) return;
+
+    setIsUploadingImage(true);
+    try {
+      const uploaded = await uploadImageAsset({
+        file,
+        entityType: "provider_profile",
+        entityId: providerProfile?.id,
+      });
+
+      if (!uploaded.publicUrl) {
+        throw new Error("No se pudo generar la URL publica del archivo.");
+      }
+
+      setPortfolioImages((prev) =>
+        prev.includes(uploaded.publicUrl as string)
+          ? prev
+          : [...prev, uploaded.publicUrl as string],
+      );
+
+      toast({
+        title: "Imagen subida",
+        description: "La imagen se agrego a tu portafolio.",
+      });
+    } catch (error) {
+      toast({
+        title: "No se pudo subir la imagen",
+        description: error instanceof Error ? error.message : "Intenta nuevamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const onSave = async () => {
     if (!isValid || isSaving) return;
 
     setIsSaving(true);
     try {
-      await upsertMyProviderProfile({
+      const providerId = await upsertMyProviderProfile({
         id: providerProfile?.id,
         name: name.trim(),
         trade: trade.trim(),
@@ -146,6 +201,7 @@ const ProviderProfileEditorPage = () => {
         portfolioImages,
         isFeatured,
       });
+      await linkMyProviderProfileMedia(providerId);
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["marketplace", "providers"] }),
@@ -318,14 +374,34 @@ const ProviderProfileEditorPage = () => {
             </p>
 
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={onUploadPortfolioImage}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isUploadingImage}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploadingImage ? (
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-1.5" />
+                )}
+                Subir desde dispositivo
+              </Button>
               <Input
                 value={portfolioImageUrl}
                 onChange={(event) => setPortfolioImageUrl(event.target.value)}
                 placeholder="https://..."
               />
-              <Button type="button" variant="outline" onClick={addPortfolioImage}>
+              <Button type="button" variant="outline" onClick={addPortfolioImage} disabled={isUploadingImage}>
                 <ImagePlus className="h-4 w-4 mr-1.5" />
-                Agregar imagen
+                Agregar URL
               </Button>
             </div>
 
@@ -358,7 +434,7 @@ const ProviderProfileEditorPage = () => {
                         >
                           <ArrowDown className="h-4 w-4" />
                         </Button>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removePortfolioImage(index)}>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => void removePortfolioImage(index)}>
                           <Trash2 className="h-4 w-4 text-rose-300" />
                         </Button>
                       </div>
@@ -414,4 +490,6 @@ const ProviderProfileEditorPage = () => {
 };
 
 export default ProviderProfileEditorPage;
+
+
 
