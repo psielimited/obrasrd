@@ -15,7 +15,6 @@ const CATEGORY_PILLS = [
 
 const HeroSearch = () => {
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const navigate = useNavigate();
   const { data: providers = [] } = useProviders();
 
@@ -42,10 +41,6 @@ const HeroSearch = () => {
   };
 
   const handleViewServices = () => {
-    if (activeCategory) {
-      navigate(`/buscar?categoria=${encodeURIComponent(activeCategory)}`);
-      return;
-    }
     navigate("/buscar");
   };
 
@@ -61,23 +56,22 @@ const HeroSearch = () => {
 
         {/* Category pills */}
         <div className="no-scrollbar relative z-10 mt-20 flex gap-2 overflow-x-auto px-6 md:mt-24 md:px-8">
-          {CATEGORY_PILLS.map((pill) => {
-            const isActive = activeCategory === pill.slug;
-            return (
-              <button
-                key={pill.label}
-                type="button"
-                onClick={() => setActiveCategory(pill.slug)}
-                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[11px] font-medium tracking-wide transition ${
-                  isActive
-                    ? "border-background bg-background text-foreground"
-                    : "border-background/20 bg-transparent text-background/60 hover:border-background/40 hover:text-background/80"
-                }`}
-              >
-                {pill.label}
-              </button>
-            );
-          })}
+          {CATEGORY_PILLS.map((pill) => (
+            <button
+              key={pill.label}
+              type="button"
+              onClick={() => {
+                if (pill.slug) {
+                  navigate(`/buscar?categoria=${encodeURIComponent(pill.slug)}`);
+                } else {
+                  navigate("/buscar");
+                }
+              }}
+              className="shrink-0 rounded-full border border-background/20 bg-transparent px-3.5 py-1.5 text-[11px] font-medium tracking-wide text-background/60 transition active:scale-95 active:border-background/60 active:bg-background/15 active:text-background hover:border-background/40 hover:text-background/80"
+            >
+              {pill.label}
+            </button>
+          ))}
         </div>
 
         {/* Main content */}
