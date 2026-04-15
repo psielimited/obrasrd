@@ -51,6 +51,7 @@ const HeroSearch = () => {
           aria-hidden
           src="/hero-doodle-kids.svg"
           alt=""
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover object-bottom opacity-[0.17] mix-blend-luminosity pointer-events-none select-none"
         />
 
