@@ -1,6 +1,14 @@
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const HERO_HEADLINES = [
+  "Contrata con criterio.\nConstruye con confianza.",
+  "Tu obra, con profesionales\nque rinden cuentas.",
+  "El equipo correcto\npara cada etapa de tu obra.",
+  "Compara, verifica\ny contrata en un solo lugar.",
+  "Menos improvisación.\nMás obra bien hecha.",
+] as const;
 import { Button } from "@/components/ui/button";
 import { useProviders } from "@/hooks/use-marketplace-data";
 
@@ -15,6 +23,11 @@ const CATEGORY_PILLS = [
 
 const HeroSearch = () => {
   const [query, setQuery] = useState("");
+  const [headlineIndex, setHeadlineIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setHeadlineIndex((i) => (i + 1) % HERO_HEADLINES.length), 4000);
+    return () => clearInterval(id);
+  }, []);
   const navigate = useNavigate();
   const { data: providers = [] } = useProviders();
 
@@ -81,12 +94,11 @@ const HeroSearch = () => {
             República Dominicana
           </p>
 
-          <h1 className="text-[38px] font-black leading-[1.02] tracking-tight text-background md:text-[52px]">
-            Encuentra
-            <br />
-            profesionales
-            <br />
-            para tu <span className="text-accent">obra.</span>
+          <h1
+            key={headlineIndex}
+            className="min-h-[4.5em] text-[38px] font-black leading-[1.02] tracking-tight text-background md:min-h-[3em] md:text-[52px] animate-hero-headline-in whitespace-pre-line"
+          >
+            {HERO_HEADLINES[headlineIndex]}
           </h1>
 
           <p className="mb-7 mt-3 max-w-[30rem] text-[15px] leading-relaxed text-background/50">
