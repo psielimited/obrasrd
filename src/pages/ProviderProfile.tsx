@@ -79,6 +79,71 @@ const ProviderProfile = () => {
     }
   }, [profile, user, requesterName]);
 
+  const fallback = getLegacyCategoryDisplayFallback(provider?.categorySlug ?? "");
+  const theme = getCategoryTheme(provider?.categorySlug ?? "");
+  const phase = phases.find((item) => item.id === provider?.phaseId);
+
+  const disciplines = taxonomyCatalog?.disciplines ?? [];
+  const services = taxonomyCatalog?.services ?? [];
+  const workTypes = taxonomyCatalog?.workTypes ?? [];
+
+  const primaryDiscipline = disciplines.find((item) => item.id === provider?.primaryDisciplineId);
+  const primaryService = services.find((item) => item.id === provider?.primaryServiceId);
+
+  const serviceLabels = useMemo(() => {
+    if (!provider) return [];
+    const labels = new Set<string>();
+
+    for (const serviceId of provider.serviceIds ?? []) {
+      const item = services.find((service) => service.id === serviceId);
+      if (item?.name) labels.add(item.name);
+    }
+
+    if (primaryService?.name) labels.add(primaryService.name);
+    if (labels.size === 0 && fallback?.serviceLabel) labels.add(fallback.serviceLabel);
+
+    return Array.from(labels);
+  }, [provider, primaryService?.name, services, fallback?.serviceLabel]);
+
+  const disciplineLabels = useMemo(() => {
+    if (!provider) return [];
+    const labels = new Set<string>();
+
+    if (primaryDiscipline?.name) labels.add(primaryDiscipline.name);
+
+    for (const serviceId of provider.serviceIds ?? []) {
+      const serviceItem = services.find((item) => item.id === serviceId);
+      if (!serviceItem) continue;
+      const disciplineItem = disciplines.find((item) => item.id === serviceItem.disciplineId);
+      if (disciplineItem?.name) labels.add(disciplineItem.name);
+    }
+
+    if (labels.size === 0 && fallback?.disciplineLabel) labels.add(fallback.disciplineLabel);
+
+    return Array.from(labels);
+  }, [provider, primaryDiscipline?.name, disciplines, services, fallback?.disciplineLabel]);
+
+  const workTypeLabels = useMemo(() => {
+    if (!provider) return [];
+    const labels = new Set<string>();
+
+    for (const workTypeId of provider.workTypeIds ?? []) {
+      const item = workTypes.find((workType) => workType.id === workTypeId);
+      if (item?.name) labels.add(item.name);
+    }
+
+    if (labels.size === 0 && fallback?.workTypeLabel) labels.add(fallback.workTypeLabel);
+
+    return Array.from(labels);
+  }, [provider, workTypes, fallback?.workTypeLabel]);
+
+  const stageLabels = useMemo(() => {
+    const labels = new Set<string>();
+    if (phase?.name) labels.add(phase.name);
+    if (labels.size === 0 && fallback?.stageLabel) labels.add(fallback.stageLabel);
+    return Array.from(labels);
+  }, [phase?.name, fallback?.stageLabel]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -94,68 +159,6 @@ const ProviderProfile = () => {
       </div>
     );
   }
-
-  const fallback = getLegacyCategoryDisplayFallback(provider.categorySlug);
-  const theme = getCategoryTheme(provider.categorySlug);
-  const phase = phases.find((item) => item.id === provider.phaseId);
-
-  const disciplines = taxonomyCatalog?.disciplines ?? [];
-  const services = taxonomyCatalog?.services ?? [];
-  const workTypes = taxonomyCatalog?.workTypes ?? [];
-
-  const primaryDiscipline = disciplines.find((item) => item.id === provider.primaryDisciplineId);
-  const primaryService = services.find((item) => item.id === provider.primaryServiceId);
-
-  const serviceLabels = useMemo(() => {
-    const labels = new Set<string>();
-
-    for (const serviceId of provider.serviceIds ?? []) {
-      const item = services.find((service) => service.id === serviceId);
-      if (item?.name) labels.add(item.name);
-    }
-
-    if (primaryService?.name) labels.add(primaryService.name);
-    if (labels.size === 0 && fallback?.serviceLabel) labels.add(fallback.serviceLabel);
-
-    return Array.from(labels);
-  }, [provider.serviceIds, primaryService?.name, services, fallback?.serviceLabel]);
-
-  const disciplineLabels = useMemo(() => {
-    const labels = new Set<string>();
-
-    if (primaryDiscipline?.name) labels.add(primaryDiscipline.name);
-
-    for (const serviceId of provider.serviceIds ?? []) {
-      const serviceItem = services.find((item) => item.id === serviceId);
-      if (!serviceItem) continue;
-      const disciplineItem = disciplines.find((item) => item.id === serviceItem.disciplineId);
-      if (disciplineItem?.name) labels.add(disciplineItem.name);
-    }
-
-    if (labels.size === 0 && fallback?.disciplineLabel) labels.add(fallback.disciplineLabel);
-
-    return Array.from(labels);
-  }, [provider.serviceIds, primaryDiscipline?.name, disciplines, services, fallback?.disciplineLabel]);
-
-  const workTypeLabels = useMemo(() => {
-    const labels = new Set<string>();
-
-    for (const workTypeId of provider.workTypeIds ?? []) {
-      const item = workTypes.find((workType) => workType.id === workTypeId);
-      if (item?.name) labels.add(item.name);
-    }
-
-    if (labels.size === 0 && fallback?.workTypeLabel) labels.add(fallback.workTypeLabel);
-
-    return Array.from(labels);
-  }, [provider.workTypeIds, workTypes, fallback?.workTypeLabel]);
-
-  const stageLabels = useMemo(() => {
-    const labels = new Set<string>();
-    if (phase?.name) labels.add(phase.name);
-    if (labels.size === 0 && fallback?.stageLabel) labels.add(fallback.stageLabel);
-    return Array.from(labels);
-  }, [phase?.name, fallback?.stageLabel]);
 
   const categoryName =
     phase?.categories.find((item) => item.slug === provider.categorySlug)?.name ||

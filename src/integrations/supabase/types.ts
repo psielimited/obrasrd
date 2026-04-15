@@ -53,6 +53,64 @@ export type Database = {
             referencedRelation: "phases"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "categories_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disciplines: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          stage_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          stage_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          stage_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disciplines_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disciplines_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lead_messages: {
@@ -103,6 +161,10 @@ export type Database = {
           provider_id: string
           provider_last_read_at: string | null
           provider_reply: string | null
+          requested_discipline_id: number | null
+          requested_service_id: number | null
+          requested_stage_id: number | null
+          requested_work_type_id: number | null
           requester_archived_at: string | null
           requester_cancelled_at: string | null
           requester_contact: string | null
@@ -125,6 +187,10 @@ export type Database = {
           provider_id: string
           provider_last_read_at?: string | null
           provider_reply?: string | null
+          requested_discipline_id?: number | null
+          requested_service_id?: number | null
+          requested_stage_id?: number | null
+          requested_work_type_id?: number | null
           requester_archived_at?: string | null
           requester_cancelled_at?: string | null
           requester_contact?: string | null
@@ -147,6 +213,10 @@ export type Database = {
           provider_id?: string
           provider_last_read_at?: string | null
           provider_reply?: string | null
+          requested_discipline_id?: number | null
+          requested_service_id?: number | null
+          requested_stage_id?: number | null
+          requested_work_type_id?: number | null
           requester_archived_at?: string | null
           requester_cancelled_at?: string | null
           requester_contact?: string | null
@@ -163,6 +233,139 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_requested_discipline_id_fkey"
+            columns: ["requested_discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_requested_service_id_fkey"
+            columns: ["requested_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_requested_stage_id_fkey"
+            columns: ["requested_stage_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_requested_stage_id_fkey"
+            columns: ["requested_stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_requested_work_type_id_fkey"
+            columns: ["requested_work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legacy_category_mappings: {
+        Row: {
+          ambiguity_reason: string | null
+          confidence: number
+          created_at: string
+          discipline_id: number
+          id: number
+          is_ambiguous: boolean
+          legacy_category_slug: string
+          legacy_phase_id: number | null
+          mapping_source: string
+          notes: string | null
+          service_id: number
+          updated_at: string
+          work_type_id: number | null
+        }
+        Insert: {
+          ambiguity_reason?: string | null
+          confidence?: number
+          created_at?: string
+          discipline_id: number
+          id?: never
+          is_ambiguous?: boolean
+          legacy_category_slug: string
+          legacy_phase_id?: number | null
+          mapping_source?: string
+          notes?: string | null
+          service_id: number
+          updated_at?: string
+          work_type_id?: number | null
+        }
+        Update: {
+          ambiguity_reason?: string | null
+          confidence?: number
+          created_at?: string
+          discipline_id?: number
+          id?: never
+          is_ambiguous?: boolean
+          legacy_category_slug?: string
+          legacy_phase_id?: number | null
+          mapping_source?: string
+          notes?: string | null
+          service_id?: number
+          updated_at?: string
+          work_type_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legacy_category_mappings_discipline_id_fkey"
+            columns: ["discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legacy_category_mappings_legacy_category_slug_fkey"
+            columns: ["legacy_category_slug"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "legacy_category_mappings_legacy_category_slug_fkey"
+            columns: ["legacy_category_slug"]
+            isOneToOne: false
+            referencedRelation: "legacy_category_mapping_report"
+            referencedColumns: ["legacy_category_slug"]
+          },
+          {
+            foreignKeyName: "legacy_category_mappings_legacy_phase_id_fkey"
+            columns: ["legacy_phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legacy_category_mappings_legacy_phase_id_fkey"
+            columns: ["legacy_phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legacy_category_mappings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legacy_category_mappings_work_type_id_fkey"
+            columns: ["work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
             referencedColumns: ["id"]
           },
         ]
@@ -399,6 +602,116 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_projects: {
+        Row: {
+          budget_range: string | null
+          completed_on: string | null
+          cover_media_asset_id: string | null
+          created_at: string
+          discipline_id: number | null
+          id: string
+          is_featured: boolean
+          location: string | null
+          primary_service_id: number | null
+          primary_work_type_id: number | null
+          provider_id: string
+          stage_id: number | null
+          started_on: string | null
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          budget_range?: string | null
+          completed_on?: string | null
+          cover_media_asset_id?: string | null
+          created_at?: string
+          discipline_id?: number | null
+          id?: string
+          is_featured?: boolean
+          location?: string | null
+          primary_service_id?: number | null
+          primary_work_type_id?: number | null
+          provider_id: string
+          stage_id?: number | null
+          started_on?: string | null
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          budget_range?: string | null
+          completed_on?: string | null
+          cover_media_asset_id?: string | null
+          created_at?: string
+          discipline_id?: number | null
+          id?: string
+          is_featured?: boolean
+          location?: string | null
+          primary_service_id?: number | null
+          primary_work_type_id?: number | null
+          provider_id?: string
+          stage_id?: number | null
+          started_on?: string | null
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_projects_cover_media_asset_id_fkey"
+            columns: ["cover_media_asset_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_discipline_id_fkey"
+            columns: ["discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_primary_service_id_fkey"
+            columns: ["primary_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_primary_work_type_id_fkey"
+            columns: ["primary_work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_phases: {
         Row: {
           created_at: string
@@ -424,6 +737,13 @@ export type Database = {
             columns: ["phase_id"]
             isOneToOne: false
             referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_phases_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
             referencedColumns: ["id"]
           },
           {
@@ -468,6 +788,13 @@ export type Database = {
             referencedRelation: "phases"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "projects_current_phase_fkey"
+            columns: ["current_phase"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
         ]
       }
       provider_plans: {
@@ -505,6 +832,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      provider_services: {
+        Row: {
+          created_at: string
+          id: number
+          is_primary: boolean
+          min_price: number | null
+          provider_id: string
+          service_id: number
+          updated_at: string
+          years_experience: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          is_primary?: boolean
+          min_price?: number | null
+          provider_id: string
+          service_id: number
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          is_primary?: boolean
+          min_price?: number | null
+          provider_id?: string
+          service_id?: number
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_subscriptions: {
         Row: {
@@ -547,6 +922,102 @@ export type Database = {
           },
         ]
       }
+      provider_verifications: {
+        Row: {
+          created_at: string
+          evidence_media_asset_id: string | null
+          expires_at: string | null
+          id: string
+          metadata: Json
+          notes: string | null
+          provider_id: string
+          status: string
+          updated_at: string
+          verification_type: string
+          verified_at: string | null
+          verified_by_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          evidence_media_asset_id?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          provider_id: string
+          status?: string
+          updated_at?: string
+          verification_type: string
+          verified_at?: string | null
+          verified_by_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          evidence_media_asset_id?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          provider_id?: string
+          status?: string
+          updated_at?: string
+          verification_type?: string
+          verified_at?: string | null
+          verified_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_verifications_evidence_media_asset_id_fkey"
+            columns: ["evidence_media_asset_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_verifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_work_types: {
+        Row: {
+          created_at: string
+          id: number
+          provider_id: string
+          work_type_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          provider_id: string
+          work_type_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          provider_id?: string
+          work_type_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_work_types_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_work_types_work_type_id_fkey"
+            columns: ["work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
           category_slug: string
@@ -561,6 +1032,8 @@ export type Database = {
           owner_user_id: string | null
           phase_id: number
           portfolio_images: string[]
+          primary_discipline_id: number | null
+          primary_service_id: number | null
           rating: number
           review_count: number
           service_areas: string[]
@@ -584,6 +1057,8 @@ export type Database = {
           owner_user_id?: string | null
           phase_id: number
           portfolio_images?: string[]
+          primary_discipline_id?: number | null
+          primary_service_id?: number | null
           rating?: number
           review_count?: number
           service_areas?: string[]
@@ -607,6 +1082,8 @@ export type Database = {
           owner_user_id?: string | null
           phase_id?: number
           portfolio_images?: string[]
+          primary_discipline_id?: number | null
+          primary_service_id?: number | null
           rating?: number
           review_count?: number
           service_areas?: string[]
@@ -626,10 +1103,38 @@ export type Database = {
             referencedColumns: ["slug"]
           },
           {
+            foreignKeyName: "providers_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "legacy_category_mapping_report"
+            referencedColumns: ["legacy_category_slug"]
+          },
+          {
             foreignKeyName: "providers_phase_id_fkey"
             columns: ["phase_id"]
             isOneToOne: false
             referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "providers_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "providers_primary_discipline_id_fkey"
+            columns: ["primary_discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "providers_primary_service_id_fkey"
+            columns: ["primary_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -680,6 +1185,10 @@ export type Database = {
           id: string
           location: string
           post_type: string
+          requested_discipline_id: number | null
+          requested_service_id: number | null
+          requested_stage_id: number | null
+          requested_work_type_id: number | null
           status: string
           title: string
           updated_at: string
@@ -692,6 +1201,10 @@ export type Database = {
           id?: string
           location: string
           post_type: string
+          requested_discipline_id?: number | null
+          requested_service_id?: number | null
+          requested_stage_id?: number | null
+          requested_work_type_id?: number | null
           status?: string
           title: string
           updated_at?: string
@@ -704,12 +1217,120 @@ export type Database = {
           id?: string
           location?: string
           post_type?: string
+          requested_discipline_id?: number | null
+          requested_service_id?: number | null
+          requested_stage_id?: number | null
+          requested_work_type_id?: number | null
           status?: string
           title?: string
           updated_at?: string
           whatsapp?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "service_posts_requested_discipline_id_fkey"
+            columns: ["requested_discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_posts_requested_service_id_fkey"
+            columns: ["requested_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_posts_requested_stage_id_fkey"
+            columns: ["requested_stage_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_posts_requested_stage_id_fkey"
+            columns: ["requested_stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_posts_requested_work_type_id_fkey"
+            columns: ["requested_work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          description: string | null
+          discipline_id: number
+          id: number
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          stage_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discipline_id: number
+          id?: never
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          stage_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discipline_id?: number
+          id?: never
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          stage_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_discipline_id_fkey"
+            columns: ["discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_discipline_stage_fkey"
+            columns: ["discipline_id", "stage_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id", "stage_id"]
+          },
+          {
+            foreignKeyName: "services_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {
@@ -744,9 +1365,104 @@ export type Database = {
         }
         Relationships: []
       }
+      work_types: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: never
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: never
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      legacy_category_mapping_report: {
+        Row: {
+          legacy_category_name: string | null
+          legacy_category_slug: string | null
+          mapping_count: number | null
+          mapping_status: string | null
+          max_confidence: number | null
+          phase_id: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legacy_category_mapping_summary: {
+        Row: {
+          category_count: number | null
+          mapping_status: string | null
+        }
+        Relationships: []
+      }
+      project_stages: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number | null
+          name: string | null
+          slug: string | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: number | null
+          name?: string | null
+          slug?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: number | null
+          name?: string | null
+          slug?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       complete_outbound_message: {
@@ -834,6 +1550,10 @@ export type Database = {
           provider_id: string
           provider_last_read_at: string | null
           provider_reply: string | null
+          requested_discipline_id: number | null
+          requested_service_id: number | null
+          requested_stage_id: number | null
+          requested_work_type_id: number | null
           requester_archived_at: string | null
           requester_cancelled_at: string | null
           requester_contact: string | null
