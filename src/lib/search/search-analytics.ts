@@ -2,6 +2,7 @@ interface UnmatchedQueryPayload {
   hash: string;
   tokenCount: number;
   characterCount: number;
+  [key: string]: unknown;
 }
 
 const hashFnv1a = (value: string) => {
