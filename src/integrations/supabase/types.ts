@@ -232,6 +232,13 @@ export type Database = {
             foreignKeyName: "leads_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_trust_signals"
+            referencedColumns: ["provider_id"]
+          },
+          {
+            foreignKeyName: "leads_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
@@ -693,6 +700,13 @@ export type Database = {
             foreignKeyName: "portfolio_projects_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_trust_signals"
+            referencedColumns: ["provider_id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
@@ -869,6 +883,13 @@ export type Database = {
             foreignKeyName: "provider_services_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_trust_signals"
+            referencedColumns: ["provider_id"]
+          },
+          {
+            foreignKeyName: "provider_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
@@ -977,6 +998,13 @@ export type Database = {
             foreignKeyName: "provider_verifications_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_trust_signals"
+            referencedColumns: ["provider_id"]
+          },
+          {
+            foreignKeyName: "provider_verifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
@@ -1002,6 +1030,13 @@ export type Database = {
           work_type_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "provider_work_types_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_trust_signals"
+            referencedColumns: ["provider_id"]
+          },
           {
             foreignKeyName: "provider_work_types_provider_id_fkey"
             columns: ["provider_id"]
@@ -1168,6 +1203,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "saved_providers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_trust_signals"
+            referencedColumns: ["provider_id"]
+          },
           {
             foreignKeyName: "saved_providers_provider_id_fkey"
             columns: ["provider_id"]
@@ -1460,6 +1502,18 @@ export type Database = {
           slug?: string | null
           sort_order?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      provider_trust_signals: {
+        Row: {
+          active_this_month: boolean | null
+          identity_confirmed: boolean | null
+          portfolio_validated: boolean | null
+          project_registered: boolean | null
+          provider_id: string | null
+          provider_verified: boolean | null
+          rapid_response: boolean | null
         }
         Relationships: []
       }
