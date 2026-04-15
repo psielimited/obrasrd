@@ -25,9 +25,35 @@ const hasSupabaseConfig = Boolean(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
 );
 
+type TrustSignalsRow = {
+  provider_id: string;
+  provider_verified: boolean;
+  identity_confirmed: boolean;
+  portfolio_validated: boolean;
+  project_registered: boolean;
+  rapid_response: boolean;
+  active_this_month: boolean;
+};
+
+const getMonthWindowStartIso = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+};
+
+const toPortfolioProject = (row: Tables<"portfolio_projects">) => ({
+  id: row.id,
+  title: row.title,
+  summary: row.summary ?? undefined,
+  location: row.location ?? undefined,
+  status: row.status,
+  completedOn: row.completed_on ?? undefined,
+});
+
 const toProvider = (
   row: Tables<"providers">,
   taxonomy?: { serviceIds?: number[]; workTypeIds?: number[] },
+  trustSignals?: TrustSignalsRow,
+  portfolioProjects?: Tables<"portfolio_projects">[],
 ): Provider => ({
   id: row.id,
   name: row.name,
@@ -51,6 +77,24 @@ const toProvider = (
   serviceAreas: row.service_areas ?? [],
   serviceIds: taxonomy?.serviceIds ?? [],
   workTypeIds: taxonomy?.workTypeIds ?? [],
+  trustSnapshot: trustSignals
+    ? {
+        providerVerified: trustSignals.provider_verified,
+        identityConfirmed: trustSignals.identity_confirmed,
+        portfolioValidated: trustSignals.portfolio_validated,
+        projectRegistered: trustSignals.project_registered,
+        rapidResponse: trustSignals.rapid_response,
+        activeThisMonth: trustSignals.active_this_month,
+      }
+    : {
+        providerVerified: row.verified,
+        identityConfirmed: false,
+        portfolioValidated: false,
+        projectRegistered: false,
+        rapidResponse: false,
+        activeThisMonth: Boolean(row.updated_at && row.updated_at >= getMonthWindowStartIso()),
+      },
+  portfolioProjects: (portfolioProjects ?? []).map(toPortfolioProject),
 });
 
 const toMaterial = (row: Tables<"materials">): Material => ({
@@ -70,7 +114,17 @@ const toMaterial = (row: Tables<"materials">): Material => ({
 
 export const fetchProviders = async (): Promise<Provider[]> => {
   if (!hasSupabaseConfig) {
-    return PROVIDERS;
+    return PROVIDERS.map((provider) => ({
+      ...provider,
+      trustSnapshot: provider.trustSnapshot ?? {
+        providerVerified: provider.verified,
+        identityConfirmed: false,
+        portfolioValidated: false,
+        projectRegistered: provider.completedProjects > 0,
+        rapidResponse: false,
+        activeThisMonth: false,
+      },
+    }));
   }
 
   const { data, error } = await supabase
@@ -85,17 +139,21 @@ export const fetchProviders = async (): Promise<Provider[]> => {
   }
 
   const providerIds = data.map((item) => item.id);
-  const [{ data: providerServices }, { data: providerWorkTypes }] = await Promise.all([
+  const [{ data: providerServices }, { data: providerWorkTypes }, { data: trustSignalsRows }] = await Promise.all([
     (supabase.from as any)("provider_services")
       .select("provider_id,service_id")
       .in("provider_id", providerIds),
     (supabase.from as any)("provider_work_types")
       .select("provider_id,work_type_id")
       .in("provider_id", providerIds),
+    (supabase.from as any)("provider_trust_signals")
+      .select("provider_id,provider_verified,identity_confirmed,portfolio_validated,project_registered,rapid_response,active_this_month")
+      .in("provider_id", providerIds),
   ]);
 
   const serviceMap = new Map<string, number[]>();
   const workTypeMap = new Map<string, number[]>();
+  const trustSignalsMap = new Map<string, TrustSignalsRow>();
 
   for (const row of providerServices ?? []) {
     const key = String((row as any).provider_id);
@@ -111,17 +169,34 @@ export const fetchProviders = async (): Promise<Provider[]> => {
     workTypeMap.set(key, current);
   }
 
+  for (const row of trustSignalsRows ?? []) {
+    const item = row as TrustSignalsRow;
+    trustSignalsMap.set(item.provider_id, item);
+  }
+
   return data.map((row) =>
     toProvider(row, {
       serviceIds: serviceMap.get(row.id) ?? [],
       workTypeIds: workTypeMap.get(row.id) ?? [],
-    }),
+    }, trustSignalsMap.get(row.id)),
   );
 };
 
 export const fetchProviderById = async (id: string): Promise<Provider | null> => {
   if (!hasSupabaseConfig) {
-    return PROVIDERS.find((provider) => provider.id === id) ?? null;
+    const provider = PROVIDERS.find((item) => item.id === id);
+    if (!provider) return null;
+    return {
+      ...provider,
+      trustSnapshot: provider.trustSnapshot ?? {
+        providerVerified: provider.verified,
+        identityConfirmed: false,
+        portfolioValidated: false,
+        projectRegistered: provider.completedProjects > 0,
+        rapidResponse: false,
+        activeThisMonth: false,
+      },
+    };
   }
 
   const { data, error } = await supabase.from("providers").select("*").eq("id", id).maybeSingle();
@@ -139,10 +214,21 @@ export const fetchProviderById = async (id: string): Promise<Provider | null> =>
       .eq("provider_id", data.id),
   ]);
 
+  const [{ data: trustSignalsRows }, { data: portfolioProjectRows }] = await Promise.all([
+    (supabase.from as any)("provider_trust_signals")
+      .select("provider_id,provider_verified,identity_confirmed,portfolio_validated,project_registered,rapid_response,active_this_month")
+      .eq("provider_id", data.id)
+      .limit(1),
+    (supabase.from as any)("portfolio_projects")
+      .select("id,title,summary,location,status,completed_on")
+      .eq("provider_id", data.id)
+      .order("completed_on", { ascending: false }),
+  ]);
+
   return toProvider(data, {
     serviceIds: (providerServices ?? []).map((item: any) => Number(item.service_id)),
     workTypeIds: (providerWorkTypes ?? []).map((item: any) => Number(item.work_type_id)),
-  });
+  }, (trustSignalsRows?.[0] as TrustSignalsRow | undefined), portfolioProjectRows as Tables<"portfolio_projects">[] | undefined);
 };
 
 export const fetchMaterials = async (): Promise<Material[]> => {

@@ -46,7 +46,7 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
       locationLabel={provider.location || provider.city || "Ubicacion no indicada"}
       providerNameLabel={provider.name}
       onCardClick={() => navigate(`/proveedor/${provider.id}`)}
-      topRightBadge={provider.isFeatured ? <Badge className="bg-accent text-accent-foreground">Destacado</Badge> : undefined}
+      topRightBadge={provider.isFeatured ? <Badge className="bg-accent text-accent-foreground">Destacado (Plan)</Badge> : undefined}
       trustContent={
         trustBadges.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
@@ -56,7 +56,7 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
           </div>
         ) : (
           <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            Sin verificacion todavia
+            Sin insignias de confianza verificadas
           </Badge>
         )
       }

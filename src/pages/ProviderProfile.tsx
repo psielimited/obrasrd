@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
 import PortfolioGallery from "@/components/marketplace/PortfolioGallery";
+import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard";
 import { useProvider, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { createLead } from "@/lib/leads-api";
@@ -316,7 +317,7 @@ const ProviderProfile = () => {
           </span>
           <div className="flex items-center gap-2">
             {provider.isFeatured && (
-              <Badge className="bg-accent text-accent-foreground">Destacado</Badge>
+              <Badge className="bg-accent text-accent-foreground">Destacado (Plan)</Badge>
             )}
             {active && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-[10px] text-white/85 backdrop-blur">
@@ -390,6 +391,21 @@ const ProviderProfile = () => {
             )}
           </div>
         </section>
+
+        {provider.portfolioProjects && provider.portfolioProjects.length > 0 && (
+          <section className="rounded-2xl border border-[#E3DDD4] bg-white p-5 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Proyectos registrados</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {provider.portfolioProjects.map((project) => (
+                <PortfolioProjectCard
+                  key={project.id}
+                  project={project}
+                  trustSnapshot={provider.trustSnapshot}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="rounded-2xl border border-[#E3DDD4] bg-white p-5 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Capacidades tecnicas</p>

@@ -1,3 +1,21 @@
+export interface ProviderTrustSnapshot {
+  providerVerified: boolean;
+  identityConfirmed: boolean;
+  portfolioValidated: boolean;
+  projectRegistered: boolean;
+  rapidResponse: boolean;
+  activeThisMonth: boolean;
+}
+
+export interface ProviderPortfolioProject {
+  id: string;
+  title: string;
+  summary?: string;
+  location?: string;
+  status: string;
+  completedOn?: string;
+}
+
 export interface Phase {
   id: number;
   slug: string;
@@ -35,6 +53,8 @@ export interface Provider {
   startingPrice?: number;
   portfolioImages: string[];
   serviceAreas: string[];
+  trustSnapshot?: ProviderTrustSnapshot;
+  portfolioProjects?: ProviderPortfolioProject[];
 }
 
 export interface Material {

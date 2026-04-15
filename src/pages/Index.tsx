@@ -96,7 +96,7 @@ const Index = () => {
   const { data: providers = [] } = useProviders();
   const { data: phases = [] } = usePhases();
 
-  const featuredProviders = providers.filter((provider) => provider.verified).slice(0, 4);
+  const featuredProviders = providers.filter((provider) => provider.isFeatured).slice(0, 4);
   const phaseSlugSet = new Set(phases.map((phase) => phase.slug));
 
   const intentCards = INTENT_DEFINITIONS.map((intent) => {

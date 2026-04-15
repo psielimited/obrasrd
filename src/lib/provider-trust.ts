@@ -1,6 +1,12 @@
 import type { Provider } from "@/data/marketplace";
 
-export type TrustBadgeType = "verified" | "active" | "registered_project";
+export type TrustBadgeType =
+  | "provider_verified"
+  | "identity_confirmed"
+  | "portfolio_validated"
+  | "project_registered"
+  | "rapid_response"
+  | "active_this_month";
 
 interface ProviderActivityContext {
   profileCompleteness?: number;
@@ -34,6 +40,7 @@ export const isProviderActive = (
   context?: ProviderActivityContext,
 ): boolean => {
   if (!provider) return false;
+  if (provider.trustSnapshot) return provider.trustSnapshot.activeThisMonth;
 
   const completeness = context?.profileCompleteness ?? calculateProviderProfileCompleteness(provider);
   const hasWorkHistory = provider.completedProjects > 0 || provider.reviewCount > 0;
@@ -46,15 +53,20 @@ export const isProviderActive = (
 
 export const getProviderTrustBadges = (
   provider: Provider | null | undefined,
-  context?: ProviderActivityContext,
+  _context?: ProviderActivityContext,
 ): TrustBadgeType[] => {
   if (!provider) return [];
 
   const badges: TrustBadgeType[] = [];
+  const trust = provider.trustSnapshot;
 
-  if (provider.verified) badges.push("verified");
-  if (isProviderActive(provider, context)) badges.push("active");
-  if (provider.completedProjects > 0) badges.push("registered_project");
+  if (trust?.providerVerified || provider.verified) badges.push("provider_verified");
+  if (trust?.identityConfirmed) badges.push("identity_confirmed");
+  if (trust?.portfolioValidated) badges.push("portfolio_validated");
+  if (trust?.projectRegistered) badges.push("project_registered");
+  if (trust?.rapidResponse) badges.push("rapid_response");
+
+  if (trust?.activeThisMonth) badges.push("active_this_month");
 
   return badges;
 };
