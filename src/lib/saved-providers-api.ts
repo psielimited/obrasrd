@@ -8,6 +8,8 @@ const toProvider = (row: Tables<"providers">): Provider => ({
   trade: row.trade,
   categorySlug: row.category_slug,
   phaseId: row.phase_id,
+  primaryDisciplineId: (row as any).primary_discipline_id ?? undefined,
+  primaryServiceId: (row as any).primary_service_id ?? undefined,
   location: row.location,
   city: row.city,
   yearsExperience: row.years_experience,

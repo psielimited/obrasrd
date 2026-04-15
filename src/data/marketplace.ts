@@ -18,6 +18,10 @@ export interface Provider {
   trade: string;
   categorySlug: string;
   phaseId: number;
+  primaryDisciplineId?: number;
+  primaryServiceId?: number;
+  serviceIds?: number[];
+  workTypeIds?: number[];
   location: string;
   city: string;
   yearsExperience: number;

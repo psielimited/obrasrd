@@ -128,6 +128,9 @@ const ProviderProfile = () => {
         requesterContact: requesterContact.trim(),
         estimatedBudget: estimatedBudget.trim() || undefined,
         message: message.trim(),
+        requestedStageId: provider.phaseId,
+        requestedDisciplineId: provider.primaryDisciplineId,
+        requestedServiceId: provider.primaryServiceId,
       });
 
       toast({

@@ -15,18 +15,27 @@ export interface PublishServiceInput {
   description: string;
   estimatedBudget?: string;
   whatsapp: string;
+  requestedStageId?: number;
+  requestedDisciplineId?: number;
+  requestedServiceId?: number;
+  requestedWorkTypeId?: number;
 }
 
 const hasSupabaseConfig = Boolean(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
 );
 
-const toProvider = (row: Tables<"providers">): Provider => ({
+const toProvider = (
+  row: Tables<"providers">,
+  taxonomy?: { serviceIds?: number[]; workTypeIds?: number[] },
+): Provider => ({
   id: row.id,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,
   phaseId: row.phase_id,
+  primaryDisciplineId: (row as any).primary_discipline_id ?? undefined,
+  primaryServiceId: (row as any).primary_service_id ?? undefined,
   location: row.location,
   city: row.city,
   yearsExperience: row.years_experience,
@@ -40,6 +49,8 @@ const toProvider = (row: Tables<"providers">): Provider => ({
   startingPrice: row.starting_price ? Number(row.starting_price) : undefined,
   portfolioImages: row.portfolio_images ?? [],
   serviceAreas: row.service_areas ?? [],
+  serviceIds: taxonomy?.serviceIds ?? [],
+  workTypeIds: taxonomy?.workTypeIds ?? [],
 });
 
 const toMaterial = (row: Tables<"materials">): Material => ({
@@ -65,6 +76,7 @@ export const fetchProviders = async (): Promise<Provider[]> => {
   const { data, error } = await supabase
     .from("providers")
     .select("*")
+    .order("is_featured", { ascending: false })
     .order("verified", { ascending: false })
     .order("rating", { ascending: false });
 
@@ -72,7 +84,39 @@ export const fetchProviders = async (): Promise<Provider[]> => {
     return PROVIDERS;
   }
 
-  return data.map(toProvider);
+  const providerIds = data.map((item) => item.id);
+  const [{ data: providerServices }, { data: providerWorkTypes }] = await Promise.all([
+    (supabase.from as any)("provider_services")
+      .select("provider_id,service_id")
+      .in("provider_id", providerIds),
+    (supabase.from as any)("provider_work_types")
+      .select("provider_id,work_type_id")
+      .in("provider_id", providerIds),
+  ]);
+
+  const serviceMap = new Map<string, number[]>();
+  const workTypeMap = new Map<string, number[]>();
+
+  for (const row of providerServices ?? []) {
+    const key = String((row as any).provider_id);
+    const current = serviceMap.get(key) ?? [];
+    current.push(Number((row as any).service_id));
+    serviceMap.set(key, current);
+  }
+
+  for (const row of providerWorkTypes ?? []) {
+    const key = String((row as any).provider_id);
+    const current = workTypeMap.get(key) ?? [];
+    current.push(Number((row as any).work_type_id));
+    workTypeMap.set(key, current);
+  }
+
+  return data.map((row) =>
+    toProvider(row, {
+      serviceIds: serviceMap.get(row.id) ?? [],
+      workTypeIds: workTypeMap.get(row.id) ?? [],
+    }),
+  );
 };
 
 export const fetchProviderById = async (id: string): Promise<Provider | null> => {
@@ -86,7 +130,19 @@ export const fetchProviderById = async (id: string): Promise<Provider | null> =>
     return PROVIDERS.find((provider) => provider.id === id) ?? null;
   }
 
-  return toProvider(data);
+  const [{ data: providerServices }, { data: providerWorkTypes }] = await Promise.all([
+    (supabase.from as any)("provider_services")
+      .select("service_id")
+      .eq("provider_id", data.id),
+    (supabase.from as any)("provider_work_types")
+      .select("work_type_id")
+      .eq("provider_id", data.id),
+  ]);
+
+  return toProvider(data, {
+    serviceIds: (providerServices ?? []).map((item: any) => Number(item.service_id)),
+    workTypeIds: (providerWorkTypes ?? []).map((item: any) => Number(item.work_type_id)),
+  });
 };
 
 export const fetchMaterials = async (): Promise<Material[]> => {
@@ -168,13 +224,19 @@ export const createServicePost = async (payload: PublishServiceInput): Promise<v
     return;
   }
 
-  const { error } = await supabase.from("service_posts").insert({
+  const { error } = await (supabase.from("service_posts") as any).insert({
     post_type: payload.postType,
     title: payload.title,
     location: payload.location,
     description: payload.description,
     estimated_budget: payload.estimatedBudget?.trim() ? payload.estimatedBudget : null,
     whatsapp: payload.whatsapp,
+    ...(payload.requestedStageId !== undefined ? { requested_stage_id: payload.requestedStageId } : {}),
+    ...(payload.requestedDisciplineId !== undefined
+      ? { requested_discipline_id: payload.requestedDisciplineId }
+      : {}),
+    ...(payload.requestedServiceId !== undefined ? { requested_service_id: payload.requestedServiceId } : {}),
+    ...(payload.requestedWorkTypeId !== undefined ? { requested_work_type_id: payload.requestedWorkTypeId } : {}),
   });
 
   if (error) {

@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import { createServicePost } from "@/hooks/use-marketplace-data";
+import { createServicePost, usePhases } from "@/hooks/use-marketplace-data";
 import { useToast } from "@/hooks/use-toast";
+import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 
 const PublishService = () => {
   const navigate = useNavigate();
@@ -16,8 +17,22 @@ const PublishService = () => {
   const [description, setDescription] = useState("");
   const [estimatedBudget, setEstimatedBudget] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [requestedStageId, setRequestedStageId] = useState<number | undefined>(undefined);
+  const [requestedDisciplineId, setRequestedDisciplineId] = useState<number | undefined>(undefined);
+  const [requestedServiceId, setRequestedServiceId] = useState<number | undefined>(undefined);
+  const [requestedWorkTypeId, setRequestedWorkTypeId] = useState<number | undefined>(undefined);
+  const { data: taxonomyCatalog } = useTaxonomyCatalog();
+  const { data: phases = [] } = usePhases();
 
   const isValid = title.trim() && location.trim() && description.trim() && whatsapp.trim();
+  const filteredDisciplines = (taxonomyCatalog?.disciplines ?? []).filter((item) =>
+    requestedStageId ? item.stageId === requestedStageId : true,
+  );
+  const filteredServices = (taxonomyCatalog?.services ?? []).filter((item) => {
+    if (requestedStageId && item.stageId !== requestedStageId) return false;
+    if (requestedDisciplineId && item.disciplineId !== requestedDisciplineId) return false;
+    return true;
+  });
 
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) {
@@ -33,6 +48,10 @@ const PublishService = () => {
         description: description.trim(),
         estimatedBudget: estimatedBudget.trim(),
         whatsapp: whatsapp.trim(),
+        requestedStageId,
+        requestedDisciplineId,
+        requestedServiceId,
+        requestedWorkTypeId,
       });
       setSubmitted(true);
     } catch (error) {
@@ -130,6 +149,87 @@ const PublishService = () => {
                 onChange={(event) => setDescription(event.target.value)}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent resize-none"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Etapa del proyecto (opcional)
+              </label>
+              <select
+                value={requestedStageId ? String(requestedStageId) : ""}
+                onChange={(event) => {
+                  const next = event.target.value ? Number(event.target.value) : undefined;
+                  setRequestedStageId(next);
+                  setRequestedDisciplineId(undefined);
+                  setRequestedServiceId(undefined);
+                }}
+                className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">Sin especificar</option>
+                {phases.map((phase) => (
+                  <option key={phase.id} value={String(phase.id)}>
+                    {phase.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Disciplina tecnica (opcional)
+              </label>
+              <select
+                value={requestedDisciplineId ? String(requestedDisciplineId) : ""}
+                onChange={(event) => {
+                  const next = event.target.value ? Number(event.target.value) : undefined;
+                  setRequestedDisciplineId(next);
+                  setRequestedServiceId(undefined);
+                }}
+                className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">Sin especificar</option>
+                {filteredDisciplines.map((item) => (
+                  <option key={item.id} value={String(item.id)}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Servicio especifico (opcional)
+              </label>
+              <select
+                value={requestedServiceId ? String(requestedServiceId) : ""}
+                onChange={(event) => setRequestedServiceId(event.target.value ? Number(event.target.value) : undefined)}
+                className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">Sin especificar</option>
+                {filteredServices.map((item) => (
+                  <option key={item.id} value={String(item.id)}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Tipo de trabajo (opcional)
+              </label>
+              <select
+                value={requestedWorkTypeId ? String(requestedWorkTypeId) : ""}
+                onChange={(event) => setRequestedWorkTypeId(event.target.value ? Number(event.target.value) : undefined)}
+                className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">Sin especificar</option>
+                {(taxonomyCatalog?.workTypes ?? []).map((item) => (
+                  <option key={item.id} value={String(item.id)}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

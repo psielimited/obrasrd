@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { usePhases } from "@/hooks/use-marketplace-data";
+import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { useMyProfile, useMyProviderProfile, profileQueryKeys } from "@/hooks/use-profile-data";
 import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 import { upsertMyProviderProfile } from "@/lib/profile-api";
@@ -27,6 +28,7 @@ const ProviderProfileEditorPage = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: phases = [] } = usePhases();
+  const { data: taxonomyCatalog } = useTaxonomyCatalog();
   const { data: profile } = useMyProfile();
   const { data: providerProfile } = useMyProviderProfile();
   const { data: planSnapshot } = useMyProviderPlanSnapshot();
@@ -47,10 +49,25 @@ const ProviderProfileEditorPage = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [primaryDisciplineId, setPrimaryDisciplineId] = useState<number | undefined>(undefined);
+  const [primaryServiceId, setPrimaryServiceId] = useState<number | undefined>(undefined);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
+  const [selectedWorkTypeIds, setSelectedWorkTypeIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedPhase = phases.find((phase) => phase.id === phaseId);
   const availableCategories = useMemo(() => selectedPhase?.categories ?? [], [selectedPhase]);
+  const allDisciplines = taxonomyCatalog?.disciplines ?? [];
+  const allServices = taxonomyCatalog?.services ?? [];
+  const allWorkTypes = taxonomyCatalog?.workTypes ?? [];
+  const disciplinesForPhase = useMemo(() => {
+    const filtered = allDisciplines.filter((item) => item.stageId === phaseId);
+    return filtered.length > 0 ? filtered : allDisciplines;
+  }, [allDisciplines, phaseId]);
+  const servicesForDiscipline = useMemo(() => {
+    if (!primaryDisciplineId) return allServices;
+    return allServices.filter((item) => item.disciplineId === primaryDisciplineId);
+  }, [allServices, primaryDisciplineId]);
 
   useEffect(() => {
     if (!providerProfile) return;
@@ -68,6 +85,10 @@ const ProviderProfileEditorPage = () => {
     setServiceAreasRaw(providerProfile.serviceAreas.join(", "));
     setPortfolioImages(providerProfile.portfolioImages);
     setIsFeatured(Boolean(providerProfile.isFeatured));
+    setPrimaryDisciplineId(providerProfile.primaryDisciplineId);
+    setPrimaryServiceId(providerProfile.primaryServiceId);
+    setSelectedServiceIds(providerProfile.serviceIds ?? []);
+    setSelectedWorkTypeIds(providerProfile.workTypeIds ?? []);
   }, [providerProfile]);
 
   useEffect(() => {
@@ -82,6 +103,19 @@ const ProviderProfileEditorPage = () => {
       setCategorySlug(availableCategories[0]?.slug ?? "");
     }
   }, [availableCategories, categorySlug]);
+
+  useEffect(() => {
+    if (primaryServiceId == null) return;
+    const service = allServices.find((item) => item.id === primaryServiceId);
+    if (service && primaryDisciplineId !== service.disciplineId) {
+      setPrimaryDisciplineId(service.disciplineId);
+    }
+  }, [allServices, primaryDisciplineId, primaryServiceId]);
+
+  useEffect(() => {
+    if (primaryServiceId == null) return;
+    setSelectedServiceIds((prev) => (prev.includes(primaryServiceId) ? prev : [...prev, primaryServiceId]));
+  }, [primaryServiceId]);
 
   const serviceAreas = useMemo(
     () =>
@@ -200,6 +234,10 @@ const ProviderProfileEditorPage = () => {
         serviceAreas,
         portfolioImages,
         isFeatured,
+        primaryDisciplineId,
+        primaryServiceId,
+        serviceIds: selectedServiceIds,
+        workTypeIds: selectedWorkTypeIds,
       });
       await linkMyProviderProfileMedia(providerId);
 
@@ -306,6 +344,89 @@ const ProviderProfileEditorPage = () => {
                 value={yearsExperience}
                 onChange={(event) => setYearsExperience(Number(event.target.value) || 0)}
               />
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Disciplina tecnica principal</Label>
+              <Select
+                value={primaryDisciplineId ? String(primaryDisciplineId) : ""}
+                onValueChange={(value) => {
+                  const next = value ? Number(value) : undefined;
+                  setPrimaryDisciplineId(next);
+                  setPrimaryServiceId(undefined);
+                }}
+              >
+                <SelectTrigger className="bg-background border-border text-foreground">
+                  <SelectValue placeholder="Selecciona disciplina" />
+                </SelectTrigger>
+                <SelectContent>
+                  {disciplinesForPhase.map((item) => (
+                    <SelectItem key={item.id} value={String(item.id)}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Servicio principal</Label>
+              <Select
+                value={primaryServiceId ? String(primaryServiceId) : ""}
+                onValueChange={(value) => setPrimaryServiceId(value ? Number(value) : undefined)}
+              >
+                <SelectTrigger className="bg-background border-border text-foreground">
+                  <SelectValue placeholder="Selecciona servicio principal" />
+                </SelectTrigger>
+                <SelectContent>
+                  {servicesForDiscipline.map((item) => (
+                    <SelectItem key={item.id} value={String(item.id)}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <Label>Servicios que ofreces</Label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {servicesForDiscipline.map((item) => (
+                <label key={item.id} className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedServiceIds.includes(item.id)}
+                    onChange={(event) =>
+                      setSelectedServiceIds((prev) =>
+                        event.target.checked ? [...new Set([...prev, item.id])] : prev.filter((id) => id !== item.id),
+                      )
+                    }
+                  />
+                  <span>{item.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <Label>Tipos de trabajo</Label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {allWorkTypes.map((item) => (
+                <label key={item.id} className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedWorkTypeIds.includes(item.id)}
+                    onChange={(event) =>
+                      setSelectedWorkTypeIds((prev) =>
+                        event.target.checked ? [...new Set([...prev, item.id])] : prev.filter((id) => id !== item.id),
+                      )
+                    }
+                  />
+                  <span>{item.name}</span>
+                </label>
+              ))}
             </div>
           </div>
         </SectionCard>

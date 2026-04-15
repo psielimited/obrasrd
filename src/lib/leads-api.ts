@@ -33,6 +33,10 @@ export interface CreateLeadInput {
   requesterContact?: string;
   message: string;
   estimatedBudget?: string;
+  requestedStageId?: number;
+  requestedDisciplineId?: number;
+  requestedServiceId?: number;
+  requestedWorkTypeId?: number;
 }
 
 const toLead = (row: Tables<"leads">): Lead => ({
@@ -72,9 +76,15 @@ export const createLead = async (payload: CreateLeadInput): Promise<void> => {
     message: payload.message.trim(),
     estimated_budget: payload.estimatedBudget?.trim() ? payload.estimatedBudget.trim() : null,
     status: "new",
+    ...(payload.requestedStageId !== undefined ? { requested_stage_id: payload.requestedStageId } : {}),
+    ...(payload.requestedDisciplineId !== undefined
+      ? { requested_discipline_id: payload.requestedDisciplineId }
+      : {}),
+    ...(payload.requestedServiceId !== undefined ? { requested_service_id: payload.requestedServiceId } : {}),
+    ...(payload.requestedWorkTypeId !== undefined ? { requested_work_type_id: payload.requestedWorkTypeId } : {}),
   };
 
-  const { error } = await supabase.from("leads").insert(insertPayload);
+  const { error } = await (supabase.from("leads") as any).insert(insertPayload);
   if (error) {
     throw error;
   }

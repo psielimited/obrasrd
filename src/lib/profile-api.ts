@@ -19,6 +19,10 @@ export interface ProviderProfileInput {
   trade: string;
   categorySlug: string;
   phaseId: number;
+  primaryDisciplineId?: number;
+  primaryServiceId?: number;
+  serviceIds?: number[];
+  workTypeIds?: number[];
   location: string;
   city: string;
   yearsExperience: number;
@@ -36,6 +40,8 @@ const toProvider = (row: Tables<"providers">): Provider => ({
   trade: row.trade,
   categorySlug: row.category_slug,
   phaseId: row.phase_id,
+  primaryDisciplineId: (row as any).primary_discipline_id ?? undefined,
+  primaryServiceId: (row as any).primary_service_id ?? undefined,
   location: row.location,
   city: row.city,
   yearsExperience: row.years_experience,
@@ -50,6 +56,82 @@ const toProvider = (row: Tables<"providers">): Provider => ({
   portfolioImages: row.portfolio_images ?? [],
   serviceAreas: row.service_areas ?? [],
 });
+
+const syncProviderTaxonomyRelations = async (
+  providerId: string,
+  payload: Pick<ProviderProfileInput, "primaryServiceId" | "serviceIds" | "workTypeIds">,
+): Promise<void> => {
+  const desiredServiceIds = Array.from(
+    new Set([...(payload.serviceIds ?? []), ...(payload.primaryServiceId ? [payload.primaryServiceId] : [])]),
+  ).filter((item) => Number.isFinite(item));
+
+  const desiredWorkTypeIds = Array.from(new Set(payload.workTypeIds ?? [])).filter((item) =>
+    Number.isFinite(item),
+  );
+
+  const providerServicesTable = (supabase.from as any)("provider_services");
+  const providerWorkTypesTable = (supabase.from as any)("provider_work_types");
+
+  const { data: existingServices, error: existingServicesError } = await providerServicesTable
+    .select("service_id")
+    .eq("provider_id", providerId);
+  if (existingServicesError) throw existingServicesError;
+
+  const existingServiceIds = new Set<number>((existingServices ?? []).map((item: any) => Number(item.service_id)));
+  const desiredServiceSet = new Set<number>(desiredServiceIds);
+  const serviceIdsToDelete = Array.from(existingServiceIds).filter((item) => !desiredServiceSet.has(item));
+
+  if (serviceIdsToDelete.length > 0) {
+    const { error } = await providerServicesTable
+      .delete()
+      .eq("provider_id", providerId)
+      .in("service_id", serviceIdsToDelete);
+    if (error) throw error;
+  }
+
+  if (desiredServiceIds.length > 0) {
+    const rows = desiredServiceIds.map((serviceId) => ({
+      provider_id: providerId,
+      service_id: serviceId,
+      is_primary: payload.primaryServiceId === serviceId,
+    }));
+
+    const { error } = await providerServicesTable.upsert(rows, {
+      onConflict: "provider_id,service_id",
+    });
+    if (error) throw error;
+  }
+
+  const { data: existingWorkTypes, error: existingWorkTypesError } = await providerWorkTypesTable
+    .select("work_type_id")
+    .eq("provider_id", providerId);
+  if (existingWorkTypesError) throw existingWorkTypesError;
+
+  const existingWorkTypeIds = new Set<number>(
+    (existingWorkTypes ?? []).map((item: any) => Number(item.work_type_id)),
+  );
+  const desiredWorkTypeSet = new Set<number>(desiredWorkTypeIds);
+  const workTypeIdsToDelete = Array.from(existingWorkTypeIds).filter((item) => !desiredWorkTypeSet.has(item));
+
+  if (workTypeIdsToDelete.length > 0) {
+    const { error } = await providerWorkTypesTable
+      .delete()
+      .eq("provider_id", providerId)
+      .in("work_type_id", workTypeIdsToDelete);
+    if (error) throw error;
+  }
+
+  if (desiredWorkTypeIds.length > 0) {
+    const rows = desiredWorkTypeIds.map((workTypeId) => ({
+      provider_id: providerId,
+      work_type_id: workTypeId,
+    }));
+    const { error } = await providerWorkTypesTable.upsert(rows, {
+      onConflict: "provider_id,work_type_id",
+    });
+    if (error) throw error;
+  }
+};
 
 const requireUserId = async (): Promise<string> => {
   const {
@@ -119,7 +201,20 @@ export const getMyProviderProfile = async (): Promise<Provider | null> => {
     return null;
   }
 
-  return toProvider(data);
+  const provider = toProvider(data);
+  const providerServicesTable = (supabase.from as any)("provider_services");
+  const providerWorkTypesTable = (supabase.from as any)("provider_work_types");
+
+  const [{ data: providerServices }, { data: providerWorkTypes }] = await Promise.all([
+    providerServicesTable.select("service_id").eq("provider_id", provider.id),
+    providerWorkTypesTable.select("work_type_id").eq("provider_id", provider.id),
+  ]);
+
+  return {
+    ...provider,
+    serviceIds: (providerServices ?? []).map((item: any) => Number(item.service_id)),
+    workTypeIds: (providerWorkTypes ?? []).map((item: any) => Number(item.work_type_id)),
+  };
 };
 
 export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Promise<string> => {
@@ -131,6 +226,10 @@ export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Pr
     trade: payload.trade,
     category_slug: payload.categorySlug,
     phase_id: payload.phaseId,
+    ...(payload.primaryDisciplineId !== undefined
+      ? { primary_discipline_id: payload.primaryDisciplineId }
+      : {}),
+    ...(payload.primaryServiceId !== undefined ? { primary_service_id: payload.primaryServiceId } : {}),
     location: payload.location,
     city: payload.city,
     years_experience: payload.yearsExperience,
@@ -179,6 +278,12 @@ export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Pr
   if (error || !data) {
     throw error ?? new Error("No se pudo guardar el perfil de proveedor");
   }
+
+  await syncProviderTaxonomyRelations(data.id, {
+    primaryServiceId: payload.primaryServiceId,
+    serviceIds: payload.serviceIds,
+    workTypeIds: payload.workTypeIds,
+  });
 
   return data.id;
 };
