@@ -1,28 +1,25 @@
 
 
-## Fix: UI Not Loading Due to Missing ThemeProvider for Sonner
+## Rotating Hero Headlines
 
-### Root Cause
+Add a cycling animation to the hero heading in `HeroSearch.tsx` that rotates through all 5 headline options with a smooth fade transition.
 
-`src/components/ui/sonner.tsx` calls `useTheme()` from `next-themes`, but the app has **no `ThemeProvider`** wrapper. When React lazy-loads and renders the `Sonner` component, `useTheme()` fails because there's no context provider above it. This crashes the `Suspense` boundary silently, potentially cascading into a blank screen.
+### Headlines to rotate
+1. "Contrata con criterio. Construye con confianza."
+2. "Tu obra, con profesionales que rinden cuentas."
+3. "El equipo correcto para cada etapa de tu obra."
+4. "Compara, verifica y contrata en un solo lugar."
+5. "Menos improvisación. Más obra bien hecha."
 
-### Fix (1 file)
+### Implementation
 
-**`src/components/ui/sonner.tsx`** — Remove the `next-themes` dependency entirely. Hardcode the theme to `"light"` (the app has no dark mode toggle) instead of relying on a missing provider:
+**`src/components/HeroSearch.tsx`**
+- Add a `useState` index + `useEffect` interval (every ~4s) to cycle through the array
+- Apply a CSS fade transition (opacity + translateY) on heading change using a key-based re-render or a transition class
+- Keep the subtitle static: "Arquitectos, ingenieros, contratistas y suplidores verificados en un solo lugar."
 
-```tsx
-// Remove: import { useTheme } from "next-themes";
-// Replace useTheme() call with a static "light" value
+**`src/index.css`** (or inline)
+- Add a simple `@keyframes fadeInUp` animation applied to the heading on each cycle
 
-const Toaster = ({ ...props }: ToasterProps) => {
-  return (
-    <Sonner
-      theme="light"
-      // ... rest stays the same
-    />
-  );
-};
-```
-
-This is a one-line effective change. No visual or behavioral difference since the app already uses light mode exclusively.
+No new dependencies. Pure React state + CSS animation. ~20 lines of change.
 
