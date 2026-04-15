@@ -1,202 +1,306 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePhases } from "@/hooks/use-marketplace-data";
-import ProjectPhaseCard from "@/components/ProjectPhaseCard";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ProjectIntakeForm from "@/components/project-intake/ProjectIntakeForm";
+import ProviderMatchSelector from "@/components/project-intake/ProviderMatchSelector";
+import { usePhases, useProviders } from "@/hooks/use-marketplace-data";
+import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { useMyProfile } from "@/hooks/use-profile-data";
+import { createLead } from "@/lib/leads-api";
+import {
+  buildProjectIntakeLeadMessage,
+  getMatchingProvidersForIntake,
+  type ProjectIntakeDraft,
+  validateTaxonomyDependency,
+} from "@/lib/project-intake";
+import { createRequestMediaSignedUrl, uploadImageAsset } from "@/lib/media-api";
+import { useToast } from "@/hooks/use-toast";
+
+type IntakeStep = "intake" | "matching" | "confirmation";
+
+interface RequestAttachment {
+  name: string;
+  objectPath: string;
+  signedUrl: string;
+}
 
 const ProjectBuilder = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
-  const [projectName, setProjectName] = useState("");
-  const [projectType, setProjectType] = useState("");
-  const [selectedPhases, setSelectedPhases] = useState<number[]>([]);
+  const { toast } = useToast();
+  const { user } = useAuthSession();
+  const { data: profile } = useMyProfile();
   const { data: phases = [] } = usePhases();
+  const { data: providers = [] } = useProviders();
+  const { data: taxonomyCatalog } = useTaxonomyCatalog();
 
-  const projectTypes = [
-    "Casa Residencial",
-    "Apartamento",
-    "Villa Turística",
-    "Local Comercial",
-    "Edificio Multifamiliar",
-    "Nave Industrial",
-  ];
+  const [step, setStep] = useState<IntakeStep>("intake");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedProviderIds, setSelectedProviderIds] = useState<string[]>([]);
+  const [createdLeadsCount, setCreatedLeadsCount] = useState(0);
+  const [failedLeadsCount, setFailedLeadsCount] = useState(0);
+  const [attachments, setAttachments] = useState<RequestAttachment[]>([]);
+  const [draft, setDraft] = useState<ProjectIntakeDraft>({
+    projectTypeId: undefined,
+    projectTypeLabel: undefined,
+    stageId: undefined,
+    disciplineId: undefined,
+    serviceId: undefined,
+    location: "",
+    budget: "",
+    estimatedDate: "",
+    description: "",
+    urgency: "media",
+    requesterName: "",
+    requesterContact: "",
+    attachmentUrls: [],
+  });
 
-  const togglePhase = (id: number) => {
-    setSelectedPhases((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+  useEffect(() => {
+    if (!user) return;
+    if (!draft.requesterName.trim() && profile?.displayName) {
+      setDraft((prev) => ({ ...prev, requesterName: profile.displayName ?? prev.requesterName }));
+    }
+    if (!draft.requesterContact.trim() && profile?.phone) {
+      setDraft((prev) => ({ ...prev, requesterContact: profile.phone ?? prev.requesterContact }));
+    }
+  }, [draft.requesterContact, draft.requesterName, profile?.displayName, profile?.phone, user]);
+
+  const matchingProviders = useMemo(
+    () =>
+      getMatchingProvidersForIntake(providers, {
+        stageId: draft.stageId,
+        disciplineId: draft.disciplineId,
+        serviceId: draft.serviceId,
+        projectTypeId: draft.projectTypeId,
+        location: draft.location,
+      }),
+    [draft.disciplineId, draft.location, draft.projectTypeId, draft.serviceId, draft.stageId, providers],
+  );
+
+  const intakeProgress = step === "intake" ? 1 : step === "matching" ? 2 : 3;
+  const intakeReady =
+    Boolean(draft.stageId) &&
+    Boolean(draft.location.trim()) &&
+    Boolean(draft.description.trim()) &&
+    Boolean(draft.requesterContact.trim());
+
+  const onPatchDraft = (patch: Partial<ProjectIntakeDraft>) => {
+    setDraft((prev) => ({ ...prev, ...patch }));
+  };
+
+  const onUploadImage = async (file: File) => {
+    if (!user) {
+      toast({
+        title: "Inicia sesion para adjuntar",
+        description: "Los adjuntos de solicitud requieren autenticacion.",
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const uploaded = await uploadImageAsset({
+        file,
+        entityType: "lead_request",
+      });
+      const signedUrl = await createRequestMediaSignedUrl(uploaded.objectPath);
+
+      setAttachments((prev) => [...prev, { name: file.name, objectPath: uploaded.objectPath, signedUrl }]);
+      setDraft((prev) => ({ ...prev, attachmentUrls: [...prev.attachmentUrls, signedUrl] }));
+    } catch (error) {
+      toast({
+        title: "No se pudo subir el adjunto",
+        description: error instanceof Error ? error.message : "Intenta nuevamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const onRemoveAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+    setDraft((prev) => ({
+      ...prev,
+      attachmentUrls: prev.attachmentUrls.filter((_, i) => i !== index),
+    }));
+  };
+
+  const onContinueToMatching = () => {
+    const taxonomyError = validateTaxonomyDependency(draft, taxonomyCatalog);
+    if (taxonomyError) {
+      toast({
+        title: "Revisa la taxonomia seleccionada",
+        description: taxonomyError,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!intakeReady) {
+      toast({
+        title: "Completa los campos clave",
+        description: "Etapa, ubicacion, descripcion y contacto son obligatorios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const initialSelection = matchingProviders.slice(0, 5).map((provider) => provider.id);
+    setSelectedProviderIds(initialSelection);
+    setStep("matching");
+  };
+
+  const onToggleProvider = (providerId: string) => {
+    setSelectedProviderIds((prev) =>
+      prev.includes(providerId) ? prev.filter((id) => id !== providerId) : [...prev, providerId],
     );
+  };
+
+  const onSubmitLeads = async () => {
+    if (selectedProviderIds.length === 0 || isSubmitting) return;
+
+    setIsSubmitting(true);
+    let created = 0;
+    let failed = 0;
+
+    for (const providerId of selectedProviderIds) {
+      try {
+        await createLead({
+          providerId,
+          requesterName: draft.requesterName.trim() || undefined,
+          requesterContact: draft.requesterContact.trim(),
+          estimatedBudget: draft.budget.trim() || undefined,
+          message: buildProjectIntakeLeadMessage(draft),
+          requestedStageId: draft.stageId,
+          requestedDisciplineId: draft.disciplineId,
+          requestedServiceId: draft.serviceId,
+          requestedWorkTypeId: draft.projectTypeId,
+        });
+        created += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+
+    setCreatedLeadsCount(created);
+    setFailedLeadsCount(failed);
+    setIsSubmitting(false);
+    setStep("confirmation");
+
+    if (created > 0) {
+      toast({
+        title: "Solicitud enviada",
+        description: `Enviamos tu solicitud a ${created} proveedor(es).`,
+      });
+    } else {
+      toast({
+        title: "No se pudo enviar",
+        description: "No fue posible crear leads. Revisa los datos e intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
-      <div className="px-4 py-6">
-        <div className="container max-w-2xl mx-auto">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver
+      <div className="px-4 py-5 md:py-6">
+        <div className="container mx-auto max-w-2xl">
+          <Button variant="ghost" size="sm" onClick={() => (step === "intake" ? navigate(-1) : setStep("intake"))} className="mb-4">
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            {step === "intake" ? "Volver" : "Regresar al formulario"}
           </Button>
 
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">
-            Crear Proyecto
-          </h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Organiza tu construcción por fases y encuentra los proveedores que necesitas.
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Intake de proyecto</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Crea una solicitud estructurada y conectala directamente al flujo actual de leads.
           </p>
 
-          {/* Progress */}
-          <div className="flex gap-1 mb-8">
-            {[0, 1, 2, 3].map((s) => (
+          <div className="my-5 flex gap-1">
+            {[1, 2, 3].map((index) => (
               <div
-                key={s}
-                className={`h-1 flex-1 rounded-full transition-colors ${
-                  s <= step ? "bg-accent" : "bg-muted"
-                }`}
+                key={index}
+                className={`h-1 flex-1 rounded-full ${index <= intakeProgress ? "bg-accent" : "bg-muted"}`}
               />
             ))}
           </div>
 
-          {step === 0 && (
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                Nombre del proyecto
-              </label>
-              <input
-                type="text"
-                placeholder="Ej: Casa en Jarabacoa"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-card obra-shadow focus:ring-2 focus:ring-accent outline-none transition-all text-foreground placeholder:text-muted-foreground mb-6"
-              />
-              <Button
-                variant="accent"
-                size="lg"
-                className="w-full"
-                disabled={!projectName.trim()}
-                onClick={() => setStep(1)}
-              >
-                Continuar
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
+          {step === "intake" && (
+            <ProjectIntakeForm
+              draft={draft}
+              phases={phases}
+              taxonomy={taxonomyCatalog}
+              isAuthenticated={Boolean(user)}
+              isUploadingImage={isUploadingImage}
+              attachmentNames={attachments.map((item) => item.name)}
+              onChange={onPatchDraft}
+              onUploadImage={onUploadImage}
+              onRemoveAttachment={onRemoveAttachment}
+              onContinue={onContinueToMatching}
+              continueDisabled={!intakeReady || isUploadingImage}
+            />
           )}
 
-          {step === 1 && (
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-                Tipo de proyecto
-              </label>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {projectTypes.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setProjectType(type)}
-                    className={`p-4 rounded-xl text-left text-sm font-semibold transition-all ${
-                      projectType === type
-                        ? "bg-foreground text-background"
-                        : "bg-card obra-shadow text-foreground hover:obra-shadow-md"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-              <Button
-                variant="accent"
-                size="lg"
-                className="w-full"
-                disabled={!projectType}
-                onClick={() => setStep(2)}
-              >
-                Continuar
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
+          {step === "matching" && (
+            <ProviderMatchSelector
+              providers={matchingProviders}
+              selectedProviderIds={selectedProviderIds}
+              onToggleProvider={onToggleProvider}
+              onBack={() => setStep("intake")}
+              onSubmit={onSubmitLeads}
+              isSubmitting={isSubmitting}
+            />
           )}
 
-          {step === 2 && (
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-                Selecciona las fases necesarias
-              </label>
-              <div className="grid grid-cols-1 gap-3 mb-6">
-                {phases.map((phase) => (
-                  <ProjectPhaseCard
-                    key={phase.id}
-                    phaseId={phase.id}
-                    phaseName={phase.name}
-                    description={phase.description}
-                    disciplineLabel={phase.categories[0]?.name ?? "Sin disciplina"}
-                    selected={selectedPhases.includes(phase.id)}
-                    onToggle={() => togglePhase(phase.id)}
-                  />
-                ))}
-              </div>
-              <Button
-                variant="accent"
-                size="lg"
-                className="w-full"
-                disabled={selectedPhases.length === 0}
-                onClick={() => setStep(3)}
-              >
-                Ver resumen
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div>
-              <div className="bg-card p-6 rounded-xl obra-shadow mb-6">
-                <h2 className="text-lg font-bold text-foreground mb-4">{projectName}</h2>
-                <p className="text-sm text-muted-foreground mb-4">{projectType}</p>
-
-                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-                  Fases seleccionadas
-                </h3>
-                <div className="space-y-3">
-                  {selectedPhases.sort().map((phaseId) => {
-                    const phase = phases.find((item) => item.id === phaseId);
-                    if (!phase) return null;
-                    return (
-                      <div key={phase.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <span className="text-xs font-bold text-muted-foreground">
-                            {String(phase.id).padStart(2, "0")}
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground">{phase.name}</h4>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {phase.categories.map((cat) => (
-                            <span
-                              key={cat.slug}
-                              className="text-[10px] font-bold px-2 py-0.5 bg-muted rounded text-muted-foreground"
-                            >
-                              {cat.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+          {step === "confirmation" && (
+            <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-500" />
+                <div>
+                  <p className="text-base font-semibold text-foreground">Solicitud procesada</p>
+                  <p className="text-sm text-muted-foreground">
+                    Leads creados: {createdLeadsCount}
+                    {failedLeadsCount > 0 ? ` • Fallidos: ${failedLeadsCount}` : ""}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="accent"
-                  size="lg"
-                  className="flex-1"
-                  onClick={() => navigate(`/buscar`)}
-                >
-                  Ver proveedores recomendados
-                </Button>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  Tu solicitud ya entro al flujo de contacto existente. Los proveedores recibiran las notificaciones y podras continuar por chat donde aplique.
+                </p>
+                {failedLeadsCount > 0 && (
+                  <p>
+                    Algunas entregas fallaron (por ejemplo, disponibilidad/cuota del proveedor). Puedes ajustar y reenviar a otros perfiles.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                {user ? (
+                  <Button className="flex-1" onClick={() => navigate("/dashboard/cliente/solicitudes")}>
+                    Ir a mis solicitudes
+                  </Button>
+                ) : (
+                  <Button className="flex-1" onClick={() => navigate("/auth", { state: { from: "/proyectos" } })}>
+                    Crear cuenta para seguimiento
+                  </Button>
+                )}
                 <Button
                   variant="outline"
-                  size="lg"
-                  onClick={() => setStep(0)}
+                  className="flex-1"
+                  onClick={() => {
+                    const params = new URLSearchParams();
+                    const stageSlug = phases.find((phase) => phase.id === draft.stageId)?.slug;
+                    if (stageSlug) params.set("etapa", stageSlug);
+                    if (draft.location.trim()) params.set("q", draft.location.trim());
+                    navigate(`/buscar?${params.toString()}`);
+                  }}
                 >
-                  Nuevo proyecto
+                  Ver proveedores
                 </Button>
               </div>
             </div>

@@ -153,3 +153,14 @@ export const linkMyProviderProfileMedia = async (providerId: string): Promise<vo
     throw error;
   }
 };
+
+export const createRequestMediaSignedUrl = async (
+  objectPath: string,
+  expiresInSeconds = 60 * 60 * 24 * 14,
+): Promise<string> => {
+  const { data, error } = await supabase.storage.from("request-media").createSignedUrl(objectPath, expiresInSeconds);
+  if (error || !data?.signedUrl) {
+    throw error ?? new Error("No se pudo crear enlace firmado para adjunto.");
+  }
+  return data.signedUrl;
+};
