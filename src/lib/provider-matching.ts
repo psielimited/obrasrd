@@ -1,10 +1,13 @@
 import type { Provider } from "@/data/marketplace";
+import { getLegacyCategoryTaxonomyMapping } from "@/lib/legacy-taxonomy-compat";
+import type { CanonicalWorkTypeSlug } from "@/lib/taxonomy";
 
 export interface ProviderMatchRequest {
   stageId?: number;
   disciplineId?: number;
   serviceId?: number;
   workTypeId?: number;
+  workTypeCode?: CanonicalWorkTypeSlug | string;
   location?: string;
 }
 
@@ -52,6 +55,7 @@ const hasPortfolioPresence = (provider: Provider): boolean =>
 const getSignals = (provider: Provider, request: ProviderMatchRequest): ProviderMatchSignals => {
   const serviceIds = new Set(provider.serviceIds ?? []);
   const workTypeIds = new Set(provider.workTypeIds ?? []);
+  const fallbackWorkTypeCode = getLegacyCategoryTaxonomyMapping(provider.categorySlug)?.workTypeSlug;
 
   const exactServiceMatch = Boolean(
     request.serviceId &&
@@ -64,7 +68,10 @@ const getSignals = (provider: Provider, request: ProviderMatchRequest): Provider
 
   const stageMatch = Boolean(request.stageId && provider.phaseId === request.stageId);
 
-  const workTypeMatch = Boolean(request.workTypeId && workTypeIds.has(request.workTypeId));
+  const workTypeMatch = Boolean(
+    (request.workTypeId && workTypeIds.has(request.workTypeId)) ||
+      (request.workTypeCode && fallbackWorkTypeCode === request.workTypeCode),
+  );
 
   const verificationPresence = Boolean(provider.trustSnapshot?.providerVerified || provider.verified);
   const portfolioPresence = hasPortfolioPresence(provider);

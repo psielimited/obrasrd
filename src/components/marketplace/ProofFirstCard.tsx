@@ -10,6 +10,7 @@ interface ProofFirstCardProps {
   title: string;
   stageLabel: string;
   disciplineLabel: string;
+  workTypeLabel?: string;
   locationLabel: string;
   providerNameLabel: string;
   trustContent?: ReactNode;
@@ -26,6 +27,7 @@ const ProofFirstCard = ({
   title,
   stageLabel,
   disciplineLabel,
+  workTypeLabel,
   locationLabel,
   providerNameLabel,
   trustContent,
@@ -75,6 +77,11 @@ const ProofFirstCard = ({
           <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
             Disciplina: {disciplineLabel}
           </Badge>
+          {workTypeLabel && (
+            <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+              Tipo: {workTypeLabel}
+            </Badge>
+          )}
         </div>
 
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">

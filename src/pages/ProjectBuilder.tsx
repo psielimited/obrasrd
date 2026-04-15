@@ -69,15 +69,17 @@ const ProjectBuilder = () => {
   }, [draft.requesterContact, draft.requesterName, profile?.displayName, profile?.phone, user]);
 
   const providerMatches = useMemo(() => {
+    const selectedWorkTypeCode = taxonomyCatalog?.workTypes.find((item) => item.id === draft.projectTypeId)?.code;
     const matches = matchProvidersDeterministic(providers, {
       stageId: draft.stageId,
       disciplineId: draft.disciplineId,
       serviceId: draft.serviceId,
       workTypeId: draft.projectTypeId,
+      workTypeCode: selectedWorkTypeCode,
       location: draft.location,
     });
     return matches.filter((item) => item.score > 0);
-  }, [draft.disciplineId, draft.location, draft.projectTypeId, draft.serviceId, draft.stageId, providers]);
+  }, [draft.disciplineId, draft.location, draft.projectTypeId, draft.serviceId, draft.stageId, providers, taxonomyCatalog?.workTypes]);
 
   const intakeProgress = step === "intake" ? 1 : step === "matching" ? 2 : 3;
   const intakeReady =
@@ -295,6 +297,8 @@ const ProjectBuilder = () => {
                     const params = new URLSearchParams();
                     const stageSlug = phases.find((phase) => phase.id === draft.stageId)?.slug;
                     if (stageSlug) params.set("etapa", stageSlug);
+                    const workTypeCode = taxonomyCatalog?.workTypes.find((item) => item.id === draft.projectTypeId)?.code;
+                    if (workTypeCode) params.set("tipo_obra", workTypeCode);
                     if (draft.location.trim()) params.set("q", draft.location.trim());
                     navigate(`/buscar?${params.toString()}`);
                   }}

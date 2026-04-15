@@ -777,6 +777,7 @@ export type Database = {
           name: string
           project_type: string
           updated_at: string
+          work_type_id: number | null
         }
         Insert: {
           created_at?: string
@@ -785,6 +786,7 @@ export type Database = {
           name: string
           project_type: string
           updated_at?: string
+          work_type_id?: number | null
         }
         Update: {
           created_at?: string
@@ -793,6 +795,7 @@ export type Database = {
           name?: string
           project_type?: string
           updated_at?: string
+          work_type_id?: number | null
         }
         Relationships: [
           {
@@ -807,6 +810,13 @@ export type Database = {
             columns: ["current_phase"]
             isOneToOne: false
             referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_work_type_id_fkey"
+            columns: ["work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
             referencedColumns: ["id"]
           },
         ]

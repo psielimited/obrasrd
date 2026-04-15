@@ -13,6 +13,7 @@ export interface ProviderPortfolioProject {
   summary?: string;
   location?: string;
   status: string;
+  primaryWorkTypeId?: number;
   completedOn?: string;
 }
 
@@ -76,6 +77,8 @@ export interface Project {
   id: string;
   name: string;
   type: string;
+  workTypeId?: number;
+  workTypeCode?: string;
   area: string;
   currentPhase: number;
   phases: number[];

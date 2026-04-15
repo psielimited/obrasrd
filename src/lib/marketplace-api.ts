@@ -46,6 +46,7 @@ const toPortfolioProject = (row: Tables<"portfolio_projects">) => ({
   summary: row.summary ?? undefined,
   location: row.location ?? undefined,
   status: row.status,
+  primaryWorkTypeId: row.primary_work_type_id ?? undefined,
   completedOn: row.completed_on ?? undefined,
 });
 
@@ -220,7 +221,7 @@ export const fetchProviderById = async (id: string): Promise<Provider | null> =>
       .eq("provider_id", data.id)
       .limit(1),
     (supabase.from as any)("portfolio_projects")
-      .select("id,title,summary,location,status,completed_on")
+      .select("id,title,summary,location,status,completed_on,primary_work_type_id")
       .eq("provider_id", data.id)
       .order("completed_on", { ascending: false }),
   ]);

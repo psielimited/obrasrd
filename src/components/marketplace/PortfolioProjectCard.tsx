@@ -5,6 +5,7 @@ import { CalendarDays, MapPin } from "lucide-react";
 interface PortfolioProjectCardProps {
   project: ProviderPortfolioProject;
   trustSnapshot?: ProviderTrustSnapshot;
+  workTypeLabel?: string;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -15,7 +16,7 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: "Cancelado",
 };
 
-const PortfolioProjectCard = ({ project, trustSnapshot }: PortfolioProjectCardProps) => {
+const PortfolioProjectCard = ({ project, trustSnapshot, workTypeLabel }: PortfolioProjectCardProps) => {
   return (
     <div className="rounded-xl border border-[#E3DDD4] bg-[#F5F0E8] p-3">
       <div className="flex items-start justify-between gap-2">
@@ -33,6 +34,13 @@ const PortfolioProjectCard = ({ project, trustSnapshot }: PortfolioProjectCardPr
             {STATUS_LABELS[project.status] ?? project.status}
           </Badge>
         </span>
+        {workTypeLabel && (
+          <span className="inline-flex items-center gap-1">
+            <Badge variant="outline" className="border-[#D2C7B9] bg-white text-[#3D342B]">
+              Tipo: {workTypeLabel}
+            </Badge>
+          </span>
+        )}
         {project.location && (
           <span className="inline-flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />

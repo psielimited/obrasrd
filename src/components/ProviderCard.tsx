@@ -23,10 +23,16 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
 
   const phase = phases.find((item) => item.id === provider.phaseId);
   const discipline = taxonomyCatalog?.disciplines.find((item) => item.id === provider.primaryDisciplineId);
+  const workTypes = taxonomyCatalog?.workTypes ?? [];
   const fallback = getLegacyCategoryDisplayFallback(provider.categorySlug);
 
   const stageLabel = phase?.name || fallback?.stageLabel || "Sin etapa";
   const disciplineLabel = discipline?.name || fallback?.disciplineLabel || "Sin disciplina";
+  const workTypeLabel =
+    (provider.workTypeIds ?? [])
+      .map((id) => workTypes.find((item) => item.id === id)?.name)
+      .find(Boolean) ||
+    fallback?.workTypeLabel;
 
   const trustBadges = getProviderTrustBadges(provider, {
     profileCompleteness: calculateProviderProfileCompleteness(provider),
@@ -43,6 +49,7 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
       title={provider.trade}
       stageLabel={stageLabel}
       disciplineLabel={disciplineLabel}
+      workTypeLabel={workTypeLabel}
       locationLabel={provider.location || provider.city || "Ubicacion no indicada"}
       providerNameLabel={provider.name}
       onCardClick={() => navigate(`/proveedor/${provider.id}`)}

@@ -401,6 +401,11 @@ const ProviderProfile = () => {
                   key={project.id}
                   project={project}
                   trustSnapshot={provider.trustSnapshot}
+                  workTypeLabel={
+                    project.primaryWorkTypeId
+                      ? workTypes.find((item) => item.id === project.primaryWorkTypeId)?.name
+                      : undefined
+                  }
                 />
               ))}
             </div>

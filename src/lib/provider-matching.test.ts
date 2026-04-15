@@ -72,4 +72,19 @@ describe("provider deterministic matching", () => {
     expect(ranked[0].provider.id).toBe("featured");
     expect(ranked[0].score).toBe(ranked[1].score);
   });
+
+  it("falls back to legacy mapped work type when provider has no explicit workTypeIds", () => {
+    const providers: Provider[] = [
+      baseProvider({
+        id: "legacy",
+        name: "Legacy",
+        categorySlug: "excavacion",
+        workTypeIds: [],
+      }),
+    ];
+
+    const ranked = matchProvidersDeterministic(providers, { workTypeCode: "obra_exterior" });
+    expect(ranked[0].signals.workTypeMatch).toBe(true);
+    expect(ranked[0].reasons).toContain("maneja este tipo de obra");
+  });
 });
