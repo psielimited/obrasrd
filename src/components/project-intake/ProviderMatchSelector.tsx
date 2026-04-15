@@ -1,9 +1,10 @@
-import type { Provider } from "@/data/marketplace";
 import { Button } from "@/components/ui/button";
 import ProviderCard from "@/components/ProviderCard";
+import type { ProviderMatchResult } from "@/lib/provider-matching";
+import { Badge } from "@/components/ui/badge";
 
 interface ProviderMatchSelectorProps {
-  providers: Provider[];
+  matches: ProviderMatchResult[];
   selectedProviderIds: string[];
   onToggleProvider: (providerId: string) => void;
   onBack: () => void;
@@ -12,7 +13,7 @@ interface ProviderMatchSelectorProps {
 }
 
 const ProviderMatchSelector = ({
-  providers,
+  matches,
   selectedProviderIds,
   onToggleProvider,
   onBack,
@@ -25,17 +26,28 @@ const ProviderMatchSelector = ({
         Selecciona los proveedores a los que quieres enviar la solicitud.
       </p>
 
-      {providers.length === 0 ? (
+      {matches.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
           No encontramos proveedores con esos criterios. Puedes volver y ajustar la etapa, disciplina, servicio o ubicacion.
         </div>
       ) : (
         <div className="space-y-4">
-          {providers.map((provider) => {
+          {matches.map((match) => {
+            const { provider } = match;
             const selected = selectedProviderIds.includes(provider.id);
 
             return (
               <div key={provider.id} className={`rounded-xl border ${selected ? "border-accent" : "border-transparent"}`}>
+                <div className="flex flex-wrap items-center gap-1 px-2 pt-2">
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                    Score: {match.score}
+                  </Badge>
+                  {match.reasons.map((reason) => (
+                    <Badge key={reason} variant="outline" className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {reason}
+                    </Badge>
+                  ))}
+                </div>
                 <div className="p-2">
                   <Button
                     variant={selected ? "default" : "outline"}

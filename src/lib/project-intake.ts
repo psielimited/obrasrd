@@ -1,4 +1,3 @@
-import type { Provider } from "@/data/marketplace";
 import type { TaxonomyCatalog } from "@/lib/taxonomy-api";
 
 export type IntakeUrgency = "baja" | "media" | "alta";
@@ -78,31 +77,3 @@ export const buildProjectIntakeLeadMessage = (draft: ProjectIntakeDraft): string
 
   return lines.join("\n");
 };
-
-export const getMatchingProvidersForIntake = (
-  providers: Provider[],
-  draft: Pick<ProjectIntakeDraft, "stageId" | "disciplineId" | "serviceId" | "projectTypeId" | "location">,
-): Provider[] =>
-  providers.filter((provider) => {
-    if (draft.stageId && provider.phaseId !== draft.stageId) return false;
-
-    if (draft.disciplineId && provider.primaryDisciplineId !== draft.disciplineId) return false;
-
-    if (draft.serviceId) {
-      const serviceIds = provider.serviceIds ?? [];
-      if (provider.primaryServiceId !== draft.serviceId && !serviceIds.includes(draft.serviceId)) return false;
-    }
-
-    if (draft.projectTypeId) {
-      const workTypeIds = provider.workTypeIds ?? [];
-      if (!workTypeIds.includes(draft.projectTypeId)) return false;
-    }
-
-    if (draft.location.trim()) {
-      const locationNeedle = draft.location.trim().toLowerCase();
-      const providerLocation = `${provider.city} ${provider.location} ${provider.serviceAreas.join(" ")}`.toLowerCase();
-      if (!providerLocation.includes(locationNeedle)) return false;
-    }
-
-    return true;
-  });

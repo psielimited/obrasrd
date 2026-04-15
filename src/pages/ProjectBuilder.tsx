@@ -11,10 +11,10 @@ import { useMyProfile } from "@/hooks/use-profile-data";
 import { createLead } from "@/lib/leads-api";
 import {
   buildProjectIntakeLeadMessage,
-  getMatchingProvidersForIntake,
   type ProjectIntakeDraft,
   validateTaxonomyDependency,
 } from "@/lib/project-intake";
+import { matchProvidersDeterministic } from "@/lib/provider-matching";
 import { createRequestMediaSignedUrl, uploadImageAsset } from "@/lib/media-api";
 import { useToast } from "@/hooks/use-toast";
 
@@ -68,17 +68,16 @@ const ProjectBuilder = () => {
     }
   }, [draft.requesterContact, draft.requesterName, profile?.displayName, profile?.phone, user]);
 
-  const matchingProviders = useMemo(
-    () =>
-      getMatchingProvidersForIntake(providers, {
-        stageId: draft.stageId,
-        disciplineId: draft.disciplineId,
-        serviceId: draft.serviceId,
-        projectTypeId: draft.projectTypeId,
-        location: draft.location,
-      }),
-    [draft.disciplineId, draft.location, draft.projectTypeId, draft.serviceId, draft.stageId, providers],
-  );
+  const providerMatches = useMemo(() => {
+    const matches = matchProvidersDeterministic(providers, {
+      stageId: draft.stageId,
+      disciplineId: draft.disciplineId,
+      serviceId: draft.serviceId,
+      workTypeId: draft.projectTypeId,
+      location: draft.location,
+    });
+    return matches.filter((item) => item.score > 0);
+  }, [draft.disciplineId, draft.location, draft.projectTypeId, draft.serviceId, draft.stageId, providers]);
 
   const intakeProgress = step === "intake" ? 1 : step === "matching" ? 2 : 3;
   const intakeReady =
@@ -149,7 +148,7 @@ const ProjectBuilder = () => {
       return;
     }
 
-    const initialSelection = matchingProviders.slice(0, 5).map((provider) => provider.id);
+    const initialSelection = providerMatches.slice(0, 5).map((item) => item.provider.id);
     setSelectedProviderIds(initialSelection);
     setStep("matching");
   };
@@ -246,7 +245,7 @@ const ProjectBuilder = () => {
 
           {step === "matching" && (
             <ProviderMatchSelector
-              providers={matchingProviders}
+              matches={providerMatches}
               selectedProviderIds={selectedProviderIds}
               onToggleProvider={onToggleProvider}
               onBack={() => setStep("intake")}
