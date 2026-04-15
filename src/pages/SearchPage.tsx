@@ -19,6 +19,8 @@ import {
   getLegacyCategoryTaxonomyMapping,
   getLegacyTaxonomySearchTerms,
 } from "@/lib/legacy-taxonomy-compat";
+import { buildSearchNormalization, normalizeSearchText } from "@/lib/search/search-normalization";
+import { logUnmatchedNormalizedSearchQuery } from "@/lib/search/search-analytics";
 import {
   clearStructuredFilters,
   countActiveStructuredFilters,
@@ -65,6 +67,17 @@ const SearchPage = () => {
   useEffect(() => {
     setQueryDraft(searchState.q);
   }, [searchState.q]);
+
+  const searchNormalization = useMemo(
+    () => buildSearchNormalization(searchState.q),
+    [searchState.q],
+  );
+
+  useEffect(() => {
+    if (searchNormalization.unmatchedNormalizedQuery) {
+      logUnmatchedNormalizedSearchQuery(searchNormalization.normalizedQuery);
+    }
+  }, [searchNormalization.unmatchedNormalizedQuery, searchNormalization.normalizedQuery]);
 
   const allDisciplines = taxonomyCatalog?.disciplines ?? [];
   const allServices = taxonomyCatalog?.services ?? [];
@@ -235,7 +248,7 @@ const SearchPage = () => {
     }
   }, [disciplineOptions, serviceOptions, workTypeOptions, searchState]);
 
-  const normalizedQuery = searchState.q.toLowerCase();
+  const normalizedSearchTerms = searchNormalization.searchTerms;
 
   const filteredProviders = useMemo(() => {
     return providers.filter((provider) => {
@@ -302,14 +315,29 @@ const SearchPage = () => {
         workTypeSlugs.add(workType.code);
       }
 
+      const providerHaystack = normalizeSearchText(
+        [
+          provider.name,
+          provider.trade,
+          provider.categorySlug,
+          provider.location,
+          provider.city,
+          providerPhase?.name,
+          primaryDiscipline?.name,
+          primaryService?.name,
+          ...taxonomyTerms,
+          ...Array.from(stageSlugs),
+          ...Array.from(disciplineSlugs),
+          ...Array.from(serviceSlugs),
+          ...Array.from(workTypeSlugs),
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
+
       const matchesQuery =
-        !normalizedQuery ||
-        provider.name.toLowerCase().includes(normalizedQuery) ||
-        provider.trade.toLowerCase().includes(normalizedQuery) ||
-        provider.categorySlug.toLowerCase().includes(normalizedQuery) ||
-        provider.location.toLowerCase().includes(normalizedQuery) ||
-        provider.city.toLowerCase().includes(normalizedQuery) ||
-        taxonomyTerms.some((term) => term.includes(normalizedQuery));
+        normalizedSearchTerms.length === 0 ||
+        normalizedSearchTerms.some((term) => term.length >= 2 && providerHaystack.includes(term));
 
       const matchesLegacyCategory =
         !searchState.categoria ||
@@ -343,7 +371,7 @@ const SearchPage = () => {
     disciplineById,
     serviceById,
     workTypeById,
-    normalizedQuery,
+    normalizedSearchTerms,
     searchState.categoria,
     searchState.etapa,
     searchState.disciplina,
@@ -353,13 +381,14 @@ const SearchPage = () => {
 
   const filteredMaterials = useMemo(
     () =>
-      materials.filter(
-        (material) =>
-          material.name.toLowerCase().includes(normalizedQuery) ||
-          material.category.toLowerCase().includes(normalizedQuery) ||
-          material.supplier.toLowerCase().includes(normalizedQuery),
-      ),
-    [materials, normalizedQuery],
+      materials.filter((material) => {
+        if (normalizedSearchTerms.length === 0) return true;
+        const materialHaystack = normalizeSearchText(
+          [material.name, material.category, material.supplier, material.location].join(" "),
+        );
+        return normalizedSearchTerms.some((term) => term.length >= 2 && materialHaystack.includes(term));
+      }),
+    [materials, normalizedSearchTerms],
   );
 
   const activeFilterCount = countActiveStructuredFilters(searchState);
