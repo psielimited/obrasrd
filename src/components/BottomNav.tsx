@@ -1,11 +1,11 @@
-import { Search, FolderOpen, User, Home, LayoutGrid } from "lucide-react";
+import { Search, ClipboardList, User, Home, BookOpen } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const navItems = [
   { icon: Home, label: "Inicio", path: "/" },
   { icon: Search, label: "Buscar", path: "/buscar" },
-  { icon: LayoutGrid, label: "Materiales", path: "/materiales" },
-  { icon: FolderOpen, label: "Proyectos", path: "/proyectos" },
+  { icon: ClipboardList, label: "Proyecto", path: "/proyectos" },
+  { icon: BookOpen, label: "Guias", path: "/#guias" },
   { icon: User, label: "Perfil", path: "/perfil" },
 ];
 
@@ -17,7 +17,12 @@ const BottomNav = () => {
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 md:hidden">
       <div className="flex">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isHashRoute = item.path.includes("#");
+          const basePath = isHashRoute ? item.path.split("#")[0] : item.path;
+          const hash = isHashRoute ? `#${item.path.split("#")[1]}` : "";
+          const isActive = isHashRoute
+            ? location.pathname === basePath && location.hash === hash
+            : location.pathname === item.path;
           return (
             <button
               key={item.path}

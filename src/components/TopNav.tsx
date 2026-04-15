@@ -9,10 +9,12 @@ const TopNav = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const mobileNavItems = [
-    { to: "/buscar", label: "Buscar" },
-    { to: "/materiales", label: "Materiales", badge: "Nuevo" },
-    { to: "/proyectos", label: "Proyectos" },
-    { to: "/precios", label: "Precios" },
+    { to: "/buscar", label: "Buscar servicios" },
+    { to: "/proyectos", label: "Publicar proyecto" },
+    { to: "/#proveedores-destacados", label: "Proveedores" },
+    { to: "/#como-funciona", label: "Como funciona" },
+    { to: "/#guias", label: "Guias" },
+    { to: "/materiales", label: "Materiales / Suplidores", badge: "Nuevo" },
   ];
 
   const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -31,19 +33,25 @@ const TopNav = () => {
 
         <nav className="hidden items-center gap-0 md:flex">
           <NavLink to="/buscar" className={desktopLinkClass}>
-            Buscar
+            Buscar servicios
           </NavLink>
+          <NavLink to="/proyectos" className={desktopLinkClass}>
+            Publicar proyecto
+          </NavLink>
+          <Link to="/#proveedores-destacados" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Proveedores
+          </Link>
+          <Link to="/#como-funciona" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Como funciona
+          </Link>
+          <Link to="/#guias" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Guias
+          </Link>
           <NavLink to="/materiales" className={desktopLinkClass}>
             Materiales
             <span className="ml-1.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-foreground">
               Nuevo
             </span>
-          </NavLink>
-          <NavLink to="/proyectos" className={desktopLinkClass}>
-            Proyectos
-          </NavLink>
-          <NavLink to="/precios" className={desktopLinkClass}>
-            Precios
           </NavLink>
 
           <Link to="/publicar" className="ml-2">
@@ -117,7 +125,7 @@ const TopNav = () => {
               <Link to="/publicar" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full" size="sm">
                   <Plus className="h-3.5 w-3.5" />
-                  Publicar servicio
+                  Soy proveedor
                 </Button>
               </Link>
             </div>

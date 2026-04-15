@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { ShieldCheck, Wrench } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import HowItWorks from "@/components/HowItWorks";
 import IntentEntryCard from "@/components/home/IntentEntryCard";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
@@ -91,6 +92,7 @@ const resolvePhaseHref = (phaseSlug: string, phaseExists: boolean, fallbackHref:
   phaseExists ? `/fase/${phaseSlug}` : fallbackHref;
 
 const Index = () => {
+  const location = useLocation();
   const { data: providers = [] } = useProviders();
   const { data: phases = [] } = usePhases();
 
@@ -112,12 +114,23 @@ const Index = () => {
   const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), "/buscar?categoria=construccion");
   const maintenanceHref = resolvePhaseHref("mantenimiento", phaseSlugSet.has("mantenimiento"), "/buscar?categoria=mantenimiento");
 
+  useEffect(() => {
+    if (!location.hash) return;
+    const anchorId = location.hash.replace("#", "");
+    const target = document.getElementById(anchorId);
+    if (!target) return;
+
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [location.hash]);
+
   return (
     <div className="min-h-screen pb-16 md:pb-0">
       <section className="relative overflow-hidden border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(248,137,64,0.22),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.1),transparent_42%)]" />
         <div className="container relative mx-auto max-w-5xl">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">ObrasRD · Republica Dominicana</p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">ObrasRD - Republica Dominicana</p>
           <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
             Entra por lo que necesitas hacer en tu proyecto, no por categorias genericas.
           </h1>
@@ -127,7 +140,7 @@ const Index = () => {
 
           <div className="mt-6 flex flex-col gap-2 sm:flex-row">
             <Button asChild variant="accent" size="lg" className="sm:w-auto">
-              <Link to="#entradas-intencion">Empezar por necesidad</Link>
+              <Link to="/#entradas-intencion">Empezar por necesidad</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-background/20 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
               <Link to="/proyectos">Crear solicitud de proyecto</Link>
@@ -188,7 +201,7 @@ const Index = () => {
         maintenanceHref={maintenanceHref}
       />
 
-      <section className="px-4 py-8 md:py-12">
+      <section id="proveedores-destacados" className="px-4 py-8 md:py-12">
         <div className="container mx-auto max-w-5xl">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Proveedores destacados</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -203,12 +216,44 @@ const Index = () => {
 
       <footer className="border-t border-border px-4 py-8">
         <div className="container mx-auto max-w-5xl">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <p className="text-lg font-black tracking-tight text-foreground">ObrasRD</p>
-              <p className="text-xs text-muted-foreground">Marketplace de construccion para Republica Dominicana.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Marketplace de construccion para Republica Dominicana.</p>
             </div>
-            <p className="text-xs text-muted-foreground">© 2026 ObrasRD. Todos los derechos reservados.</p>
+
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Explorar</p>
+              <div className="space-y-1 text-sm">
+                <Link to="/buscar" className="block text-muted-foreground transition-colors hover:text-foreground">Buscar servicios</Link>
+                <Link to="/proyectos" className="block text-muted-foreground transition-colors hover:text-foreground">Publicar proyecto</Link>
+                <Link to="/buscar?tab=servicios" className="block text-muted-foreground transition-colors hover:text-foreground">Proveedores</Link>
+                <Link to="/materiales" className="block text-muted-foreground transition-colors hover:text-foreground">Materiales / Suplidores</Link>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Etapas</p>
+              <div className="space-y-1 text-sm">
+                <Link to={planningHref} className="block text-muted-foreground transition-colors hover:text-foreground">Planificacion</Link>
+                <Link to={constructionHref} className="block text-muted-foreground transition-colors hover:text-foreground">Construccion</Link>
+                <Link to={maintenanceHref} className="block text-muted-foreground transition-colors hover:text-foreground">Mantenimiento</Link>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Recursos</p>
+              <div className="space-y-1 text-sm">
+                <Link to="/#como-funciona" className="block text-muted-foreground transition-colors hover:text-foreground">Como funciona</Link>
+                <Link to="/#guias" className="block text-muted-foreground transition-colors hover:text-foreground">Guias por etapa</Link>
+                <Link to="/publicar" className="block text-muted-foreground transition-colors hover:text-foreground">Soy proveedor</Link>
+                <Link to="/precios" className="block text-muted-foreground transition-colors hover:text-foreground">Planes</Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">(c) 2026 ObrasRD. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

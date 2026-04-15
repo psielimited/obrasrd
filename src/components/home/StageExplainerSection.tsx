@@ -35,7 +35,7 @@ const StageExplainerSection = ({ planningHref, constructionHref, maintenanceHref
   ] as const;
 
   return (
-    <section className="px-4 py-10 md:py-14">
+    <section id="guias" className="px-4 py-10 md:py-14">
       <div className="container mx-auto max-w-5xl">
         <div className="mb-5">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Ruta del proyecto</p>
