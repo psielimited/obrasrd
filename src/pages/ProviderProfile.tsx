@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Briefcase, Calendar, Heart, MapPin, Share2, Star } from "lucide-react";
@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import CategoryTag from "@/components/marketplace/CategoryTag";
 import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
+import PortfolioGallery from "@/components/marketplace/PortfolioGallery";
 import { useProvider, usePhases } from "@/hooks/use-marketplace-data";
+import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { createLead } from "@/lib/leads-api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -57,6 +58,7 @@ const ProviderProfile = () => {
   const navigate = useNavigate();
   const { data: provider, isLoading } = useProvider(id);
   const { data: phases = [] } = usePhases();
+  const { data: taxonomyCatalog } = useTaxonomyCatalog();
   const { user } = useAuthSession();
   const { data: profile } = useMyProfile();
   const { data: savedProviderIds = [] } = useMySavedProviderIds();
@@ -77,15 +79,6 @@ const ProviderProfile = () => {
     }
   }, [profile, user, requesterName]);
 
-  const categoryName = useMemo(() => {
-    const phase = phases.find((item) => item.id === provider?.phaseId);
-    const legacyName = phase?.categories.find((item) => item.slug === provider?.categorySlug)?.name;
-    if (legacyName) return legacyName;
-
-    const fallback = getLegacyCategoryDisplayFallback(provider?.categorySlug);
-    return fallback?.serviceLabel || fallback?.disciplineLabel;
-  }, [phases, provider?.categorySlug, provider?.phaseId]);
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -102,10 +95,78 @@ const ProviderProfile = () => {
     );
   }
 
+  const fallback = getLegacyCategoryDisplayFallback(provider.categorySlug);
   const theme = getCategoryTheme(provider.categorySlug);
+  const phase = phases.find((item) => item.id === provider.phaseId);
+
+  const disciplines = taxonomyCatalog?.disciplines ?? [];
+  const services = taxonomyCatalog?.services ?? [];
+  const workTypes = taxonomyCatalog?.workTypes ?? [];
+
+  const primaryDiscipline = disciplines.find((item) => item.id === provider.primaryDisciplineId);
+  const primaryService = services.find((item) => item.id === provider.primaryServiceId);
+
+  const serviceLabels = useMemo(() => {
+    const labels = new Set<string>();
+
+    for (const serviceId of provider.serviceIds ?? []) {
+      const item = services.find((service) => service.id === serviceId);
+      if (item?.name) labels.add(item.name);
+    }
+
+    if (primaryService?.name) labels.add(primaryService.name);
+    if (labels.size === 0 && fallback?.serviceLabel) labels.add(fallback.serviceLabel);
+
+    return Array.from(labels);
+  }, [provider.serviceIds, primaryService?.name, services, fallback?.serviceLabel]);
+
+  const disciplineLabels = useMemo(() => {
+    const labels = new Set<string>();
+
+    if (primaryDiscipline?.name) labels.add(primaryDiscipline.name);
+
+    for (const serviceId of provider.serviceIds ?? []) {
+      const serviceItem = services.find((item) => item.id === serviceId);
+      if (!serviceItem) continue;
+      const disciplineItem = disciplines.find((item) => item.id === serviceItem.disciplineId);
+      if (disciplineItem?.name) labels.add(disciplineItem.name);
+    }
+
+    if (labels.size === 0 && fallback?.disciplineLabel) labels.add(fallback.disciplineLabel);
+
+    return Array.from(labels);
+  }, [provider.serviceIds, primaryDiscipline?.name, disciplines, services, fallback?.disciplineLabel]);
+
+  const workTypeLabels = useMemo(() => {
+    const labels = new Set<string>();
+
+    for (const workTypeId of provider.workTypeIds ?? []) {
+      const item = workTypes.find((workType) => workType.id === workTypeId);
+      if (item?.name) labels.add(item.name);
+    }
+
+    if (labels.size === 0 && fallback?.workTypeLabel) labels.add(fallback.workTypeLabel);
+
+    return Array.from(labels);
+  }, [provider.workTypeIds, workTypes, fallback?.workTypeLabel]);
+
+  const stageLabels = useMemo(() => {
+    const labels = new Set<string>();
+    if (phase?.name) labels.add(phase.name);
+    if (labels.size === 0 && fallback?.stageLabel) labels.add(fallback.stageLabel);
+    return Array.from(labels);
+  }, [phase?.name, fallback?.stageLabel]);
+
+  const categoryName =
+    phase?.categories.find((item) => item.slug === provider.categorySlug)?.name ||
+    fallback?.serviceLabel ||
+    fallback?.disciplineLabel ||
+    theme.label;
+
   const whatsappUrl = `https://wa.me/${provider.whatsapp}?text=${encodeURIComponent(
     `Hola, me interesa cotizar sus servicios de ${provider.trade}. Vi su perfil en ObrasRD.`,
   )}`;
+
   const canSubmitLead = requesterContact.trim() && message.trim();
   const isSaved = savedProviderIds.includes(provider.id);
   const completeness = calculateProviderProfileCompleteness(provider);
@@ -115,7 +176,6 @@ const ProviderProfile = () => {
   const active = isProviderActive(provider, { profileCompleteness: completeness });
   const images = provider.portfolioImages ?? [];
   const heroImage = images[0] ?? "";
-  const galleryImages = images.slice(0, 4);
 
   const submitLead = async () => {
     if (!canSubmitLead || isSubmittingLead) return;
@@ -206,7 +266,7 @@ const ProviderProfile = () => {
 
   return (
     <div className="min-h-screen bg-[#F0EDE7] pb-40 text-[#1A1612] md:pb-28">
-      <section className="relative h-[340px] overflow-hidden bg-[#1A1612] md:h-[430px]">
+      <section className="relative h-[320px] overflow-hidden bg-[#1A1612] md:h-[420px]">
         {heroImage ? (
           <img
             src={heroImage}
@@ -229,7 +289,7 @@ const ProviderProfile = () => {
             className="h-9 rounded-full border-white/35 bg-black/35 px-3 text-white backdrop-blur hover:bg-black/55"
             onClick={() => navigate(-1)}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="mr-1 h-4 w-4" />
             Volver
           </Button>
           <Button
@@ -249,29 +309,20 @@ const ProviderProfile = () => {
               theme.pillClassName,
             )}
           >
-            {categoryName || theme.label}
+            {categoryName}
           </span>
-          {active && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-[10px] text-white/85 backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-whatsapp" />
-              Activo
-            </span>
-          )}
-        </div>
-
-        {images.length > 1 && (
-          <div className="absolute inset-x-0 bottom-[82px] flex items-center justify-center gap-1.5 md:bottom-[92px]">
-            {Array.from({ length: Math.min(images.length, 5) }).map((_, index) => (
-              <span
-                key={index}
-                className={cn(
-                  "h-[5px] rounded-full transition-all",
-                  index === 0 ? "w-4 bg-white" : "w-[5px] bg-white/45",
-                )}
-              />
-            ))}
+          <div className="flex items-center gap-2">
+            {provider.isFeatured && (
+              <Badge className="bg-accent text-accent-foreground">Destacado</Badge>
+            )}
+            {active && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-[10px] text-white/85 backdrop-blur">
+                <span className="h-1.5 w-1.5 rounded-full bg-whatsapp" />
+                Activo
+              </span>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="absolute inset-x-0 bottom-0 px-4 pb-5 md:px-5 md:pb-6">
           <h1 className="max-w-[16ch] text-[31px] font-extrabold leading-[1.02] tracking-tight text-white md:max-w-none md:text-4xl">
@@ -281,104 +332,158 @@ const ProviderProfile = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-px bg-[#2A221A] text-white sm:grid-cols-4">
-        <div className="bg-[#1A1612] px-3 py-4 text-center md:py-5">
-          <p className="text-xl font-extrabold leading-none">
-            {provider.yearsExperience}
-            <span className="ml-1 text-xs text-accent">anos</span>
-          </p>
-          <p className="mt-1 text-[10px] uppercase tracking-wider text-white/55">Experiencia</p>
-        </div>
-        <div className="bg-[#1A1612] px-3 py-4 text-center md:py-5">
-          <p className="text-xl font-extrabold leading-none">{provider.completedProjects}</p>
-          <p className="mt-1 text-[10px] uppercase tracking-wider text-white/55">Proyectos</p>
-        </div>
-        <div className="bg-[#1A1612] px-3 py-4 text-center md:py-5">
-          <p className="text-xl font-extrabold leading-none">
-            {provider.rating}
-            <span className="ml-1 text-xs text-accent">★</span>
-          </p>
-          <p className="mt-1 text-[10px] uppercase tracking-wider text-white/55">{provider.reviewCount} resenas</p>
-        </div>
-        <div className="bg-[#1A1612] px-3 py-4 text-center md:py-5">
-          <p className="text-xl font-extrabold leading-none">{provider.serviceAreas.length}</p>
-          <p className="mt-1 text-[10px] uppercase tracking-wider text-white/55">Zonas</p>
-        </div>
-      </section>
-
       <div className="container mx-auto max-w-5xl space-y-4 px-4 py-4 md:py-5">
+        <section className="rounded-2xl border border-[#E3DDD4] bg-white p-4 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Prueba de trabajo</p>
+            <TrustBadgeRow badges={trustBadges} />
+          </div>
+          <PortfolioGallery
+            images={images.slice(0, 6)}
+            categorySlug={provider.categorySlug}
+            categoryName={categoryName}
+            trustBadges={trustBadges}
+            emptyTitle="Portafolio visual pendiente"
+            emptyDescription="Este proveedor aun no ha publicado fotos de obras ejecutadas."
+          />
+        </section>
+
         <section className="rounded-2xl border border-[#E3DDD4] bg-white p-5 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
-          <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#7A6E64]">Ubicacion</p>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1A1612]">
+                <MapPin className="h-4 w-4" />
+                {provider.city || provider.location || "No indicada"}
+              </p>
+            </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.14em] text-[#7A6E64]">Desde</p>
-              <p className="text-[31px] font-extrabold leading-none tracking-tight text-[#1A1612]">
+              <p className="mt-1 text-lg font-extrabold text-[#1A1612]">
                 {provider.startingPrice ? `RD$${provider.startingPrice.toLocaleString()}` : "A cotizar"}
               </p>
             </div>
-            <p className="inline-flex items-center gap-1.5 text-sm text-[#7A6E64]">
-              <MapPin className="h-4 w-4" />
-              {provider.city}
-            </p>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#7A6E64]">Experiencia</p>
+              <p className="mt-1 text-lg font-extrabold text-[#1A1612]">{provider.yearsExperience} anos</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#7A6E64]">Proyectos</p>
+              <p className="mt-1 text-lg font-extrabold text-[#1A1612]">{provider.completedProjects}</p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <TrustBadgeRow badges={trustBadges} />
-            <span className="ml-auto inline-flex items-center gap-2 rounded-md border border-[#E3DDD4] bg-[#F5F0E8] px-2.5 py-1">
-              <span className="text-sm font-bold text-[#1A1612]">{provider.rating}</span>
-              <StarRating rating={provider.rating} />
-              <span className="text-xs text-[#7A6E64]">({provider.reviewCount})</span>
-            </span>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {provider.reviewCount > 0 ? (
+              <span className="inline-flex items-center gap-2 rounded-md border border-[#E3DDD4] bg-[#F5F0E8] px-2.5 py-1">
+                <span className="text-sm font-bold text-[#1A1612]">{provider.rating}</span>
+                <StarRating rating={provider.rating} />
+                <span className="text-xs text-[#7A6E64]">({provider.reviewCount} resenas)</span>
+              </span>
+            ) : (
+              <Badge variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#7A6E64]">
+                Sin resenas todavia
+              </Badge>
+            )}
           </div>
         </section>
 
         <section className="rounded-2xl border border-[#E3DDD4] bg-white p-5 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Descripcion</p>
-          <p className="text-sm leading-relaxed text-[#3D342B]">{provider.description}</p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Capacidades tecnicas</p>
 
-          <div className="my-4 h-px bg-[#E3DDD4]" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold text-[#3D342B]">Etapas</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {stageLabels.length > 0 ? (
+                  stageLabels.map((label) => (
+                    <Badge key={label} variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#3D342B]">
+                      {label}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="border-dashed border-[#E3DDD4] text-[#7A6E64]">
+                    Sin etapa registrada
+                  </Badge>
+                )}
+              </div>
+            </div>
 
+            <div>
+              <p className="text-xs font-semibold text-[#3D342B]">Disciplinas</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {disciplineLabels.length > 0 ? (
+                  disciplineLabels.map((label) => (
+                    <Badge key={label} variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#3D342B]">
+                      {label}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="border-dashed border-[#E3DDD4] text-[#7A6E64]">
+                    Sin disciplinas registradas
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-[#3D342B]">Servicios especificos</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {serviceLabels.length > 0 ? (
+                  serviceLabels.map((label) => (
+                    <Badge key={label} variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#3D342B]">
+                      {label}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="border-dashed border-[#E3DDD4] text-[#7A6E64]">
+                    Sin servicios especificos
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-[#3D342B]">Tipos de obra</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {workTypeLabels.length > 0 ? (
+                  workTypeLabels.map((label) => (
+                    <Badge key={label} variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#3D342B]">
+                      {label}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="border-dashed border-[#E3DDD4] text-[#7A6E64]">
+                    Sin tipos de obra registrados
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-[#E3DDD4] bg-white p-5 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Areas de servicio</p>
           <div className="flex flex-wrap gap-2">
-            {provider.serviceAreas.map((area) => (
-              <Badge key={area} variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] font-medium text-[#3D342B]">
-                {area}
+            {provider.serviceAreas.length > 0 ? (
+              provider.serviceAreas.map((area) => (
+                <Badge key={area} variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] font-medium text-[#3D342B]">
+                  {area}
+                </Badge>
+              ))
+            ) : (
+              <Badge variant="outline" className="border-dashed border-[#E3DDD4] text-[#7A6E64]">
+                Sin areas registradas
               </Badge>
-            ))}
-          </div>
-
-          <div className="mt-4">
-            <CategoryTag categorySlug={provider.categorySlug} categoryName={categoryName} />
+            )}
           </div>
         </section>
 
         <section className="rounded-2xl border border-[#E3DDD4] bg-white p-5 shadow-[0_1px_2px_rgba(26,22,18,0.05)]">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Proyectos</p>
-          {galleryImages.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#E3DDD4] p-6 text-center text-sm text-[#7A6E64]">
-              Este proveedor aun no ha publicado imagenes de obra.
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2.5">
-              {galleryImages.map((imageUrl, index) => (
-                <div
-                  key={`${imageUrl}-${index}`}
-                  className={cn(
-                    "overflow-hidden rounded-xl border border-[#E3DDD4] bg-[#F5F0E8]",
-                    index === 0 && "col-span-2 aspect-[16/7]",
-                    index !== 0 && "aspect-[4/3]",
-                  )}
-                >
-                  <img
-                    src={imageUrl}
-                    alt={`Trabajo ${index + 1} de ${provider.name}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A6E64]">Sobre el proveedor</p>
+          <p className="text-sm leading-relaxed text-[#3D342B]">
+            {provider.description?.trim() || "Descripcion pendiente de completar."}
+          </p>
         </section>
 
         {showQuoteForm && (
@@ -439,7 +544,7 @@ const ProviderProfile = () => {
             </p>
             <p className="inline-flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              {provider.location}
+              {provider.location || provider.city || "Ubicacion no indicada"}
             </p>
           </div>
         </section>
@@ -449,15 +554,15 @@ const ProviderProfile = () => {
         <div className="container mx-auto flex max-w-5xl items-center gap-2">
           <Button
             variant="default"
-            className="h-11 flex-1 rounded-xl border border-[#1A1612]/15 bg-[#1A1612] uppercase tracking-[0.12em] text-[11px] text-white hover:bg-[#9E5A24]"
-            onClick={() => window.open(whatsappUrl, "_blank")}
+            className="h-11 flex-1 rounded-xl border border-[#1A1612]/15 bg-[#1A1612] text-[11px] uppercase tracking-[0.12em] text-white hover:bg-[#9E5A24]"
+            onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}
           >
             <span className="h-[7px] w-[7px] rounded-full bg-whatsapp shadow-[0_0_0_2px_hsl(var(--whatsapp)/0.25)]" />
             WhatsApp
           </Button>
           <Button
             variant="outline"
-            className="h-11 flex-1 rounded-xl uppercase tracking-[0.12em] text-[11px]"
+            className="h-11 flex-1 rounded-xl text-[11px] uppercase tracking-[0.12em]"
             onClick={() => setShowQuoteForm((prev) => !prev)}
           >
             Cotizacion
