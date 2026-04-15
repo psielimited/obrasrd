@@ -23,6 +23,11 @@ const CATEGORY_PILLS = [
 
 const HeroSearch = () => {
   const [query, setQuery] = useState("");
+  const [headlineIndex, setHeadlineIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setHeadlineIndex((i) => (i + 1) % HERO_HEADLINES.length), 4000);
+    return () => clearInterval(id);
+  }, []);
   const navigate = useNavigate();
   const { data: providers = [] } = useProviders();
 
