@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePhases } from "@/hooks/use-marketplace-data";
+import ProjectPhaseCard from "@/components/ProjectPhaseCard";
 
 const ProjectBuilder = () => {
   const navigate = useNavigate();
@@ -118,30 +119,17 @@ const ProjectBuilder = () => {
               <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
                 Selecciona las fases necesarias
               </label>
-              <div className="space-y-3 mb-6">
+              <div className="grid grid-cols-1 gap-3 mb-6">
                 {phases.map((phase) => (
-                  <button
+                  <ProjectPhaseCard
                     key={phase.id}
-                    onClick={() => togglePhase(phase.id)}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all ${
-                      selectedPhases.includes(phase.id)
-                        ? "bg-foreground text-background"
-                        : "bg-card obra-shadow text-foreground hover:obra-shadow-md"
-                    }`}
-                  >
-                    <span className="text-2xl font-black opacity-30">
-                      {String(phase.id).padStart(2, "0")}
-                    </span>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-bold">{phase.name}</h3>
-                      <p className={`text-xs ${selectedPhases.includes(phase.id) ? "opacity-70" : "text-muted-foreground"}`}>
-                        {phase.description}
-                      </p>
-                    </div>
-                    {selectedPhases.includes(phase.id) && (
-                      <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                    )}
-                  </button>
+                    phaseId={phase.id}
+                    phaseName={phase.name}
+                    description={phase.description}
+                    disciplineLabel={phase.categories[0]?.name ?? "Sin disciplina"}
+                    selected={selectedPhases.includes(phase.id)}
+                    onToggle={() => togglePhase(phase.id)}
+                  />
                 ))}
               </div>
               <Button
