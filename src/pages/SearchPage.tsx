@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Search } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMaterials, useProviders } from "@/hooks/use-marketplace-data";
+import { getLegacyCategoryTaxonomyMapping, getLegacyTaxonomySearchTerms } from "@/lib/legacy-taxonomy-compat";
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -21,12 +22,25 @@ const SearchPage = () => {
   const normalizedQuery = query.toLowerCase();
 
   const filteredProviders = providers.filter(
-    (p) =>
-      p.name.toLowerCase().includes(normalizedQuery) ||
-      p.trade.toLowerCase().includes(normalizedQuery) ||
-      p.categorySlug.includes(normalizedQuery) ||
-      p.location.toLowerCase().includes(normalizedQuery) ||
-      (initialCategory && p.categorySlug === initialCategory)
+    (p) => {
+      const mapping = getLegacyCategoryTaxonomyMapping(p.categorySlug);
+      const taxonomyTerms = getLegacyTaxonomySearchTerms(p.categorySlug);
+      const matchesCategoryParam = Boolean(initialCategory) && (
+        p.categorySlug === initialCategory ||
+        mapping?.serviceSlug === initialCategory ||
+        mapping?.disciplineSlug === initialCategory ||
+        mapping?.stageSlug === initialCategory
+      );
+
+      return (
+        p.name.toLowerCase().includes(normalizedQuery) ||
+        p.trade.toLowerCase().includes(normalizedQuery) ||
+        p.categorySlug.includes(normalizedQuery) ||
+        p.location.toLowerCase().includes(normalizedQuery) ||
+        taxonomyTerms.some((term) => term.includes(normalizedQuery)) ||
+        matchesCategoryParam
+      );
+    }
   );
 
   const filteredMaterials = materials.filter(

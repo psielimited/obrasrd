@@ -21,6 +21,7 @@ import {
   isProviderActive,
 } from "@/lib/provider-trust";
 import { getCategoryTheme } from "@/lib/category-theme";
+import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
 import { cn } from "@/lib/utils";
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -78,7 +79,11 @@ const ProviderProfile = () => {
 
   const categoryName = useMemo(() => {
     const phase = phases.find((item) => item.id === provider?.phaseId);
-    return phase?.categories.find((item) => item.slug === provider?.categorySlug)?.name;
+    const legacyName = phase?.categories.find((item) => item.slug === provider?.categorySlug)?.name;
+    if (legacyName) return legacyName;
+
+    const fallback = getLegacyCategoryDisplayFallback(provider?.categorySlug);
+    return fallback?.serviceLabel || fallback?.disciplineLabel;
   }, [phases, provider?.categorySlug, provider?.phaseId]);
 
   if (isLoading) {
