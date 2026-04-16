@@ -16,8 +16,7 @@ interface IntentDefinition {
   searchHref: string;
   intakeHref: string;
   journeyLabel: string;
-  journeyPhaseSlug?: string;
-  journeyFallbackHref: string;
+  journeyHref: string;
 }
 
 const INTENT_DEFINITIONS: IntentDefinition[] = [
@@ -28,9 +27,8 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     tags: ["obra nueva", "estructura", "contratistas"],
     searchHref: "/buscar?categoria=construccion&q=construccion",
     intakeHref: "/proyectos?intencion=construir",
-    journeyLabel: "Ver ruta de construccion",
-    journeyPhaseSlug: "construccion",
-    journeyFallbackHref: "/buscar?categoria=construccion",
+    journeyLabel: "Ver guia: casa desde cero",
+    journeyHref: "/guias/construir-casa-desde-cero",
   },
   {
     id: "remodelar",
@@ -39,9 +37,8 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     tags: ["interiores", "acabados", "reforma"],
     searchHref: "/buscar?categoria=remodelacion_de_cocina&q=remodelacion",
     intakeHref: "/proyectos?intencion=remodelar",
-    journeyLabel: "Ver opciones para remodelar",
-    journeyPhaseSlug: "construccion",
-    journeyFallbackHref: "/buscar?q=remodelacion",
+    journeyLabel: "Ver guia: cocina y bano",
+    journeyHref: "/guias/remodelar-cocina-bano",
   },
   {
     id: "diseno",
@@ -50,9 +47,8 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     tags: ["arquitectura", "ingenieria", "planos"],
     searchHref: "/buscar?categoria=planificacion&q=diseno",
     intakeHref: "/proyectos?intencion=diseno",
-    journeyLabel: "Ver ruta de planificacion",
-    journeyPhaseSlug: "planificacion",
-    journeyFallbackHref: "/buscar?categoria=planificacion",
+    journeyLabel: "Ver guia: planos y permisos",
+    journeyHref: "/guias/planos-y-permisos",
   },
   {
     id: "supervision",
@@ -61,9 +57,8 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     tags: ["control de obra", "calidad", "gerencia"],
     searchHref: "/buscar?categoria=supervision_de_obra&q=supervision",
     intakeHref: "/proyectos?intencion=supervision",
-    journeyLabel: "Ver supervision en construccion",
-    journeyPhaseSlug: "construccion",
-    journeyFallbackHref: "/buscar?q=supervision",
+    journeyLabel: "Ver guia: supervision de obra",
+    journeyHref: "/guias/supervision-de-obra",
   },
   {
     id: "mantenimiento",
@@ -72,9 +67,8 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     tags: ["preventivo", "correctivo", "diagnostico"],
     searchHref: "/buscar?categoria=mantenimiento&q=mantenimiento",
     intakeHref: "/proyectos?intencion=mantenimiento",
-    journeyLabel: "Ver ruta de mantenimiento",
-    journeyPhaseSlug: "mantenimiento",
-    journeyFallbackHref: "/buscar?categoria=mantenimiento",
+    journeyLabel: "Ver guia: mantenimiento",
+    journeyHref: "/guias/mantenimiento-inmueble",
   },
   {
     id: "materiales",
@@ -84,7 +78,7 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     searchHref: "/buscar?categoria=materiales&q=materiales",
     intakeHref: "/proyectos?intencion=materiales",
     journeyLabel: "Ir al catalogo de materiales",
-    journeyFallbackHref: "/materiales",
+    journeyHref: "/materiales",
   },
 ];
 
@@ -99,16 +93,7 @@ const Index = () => {
   const featuredProviders = providers.filter((provider) => provider.isFeatured).slice(0, 4);
   const phaseSlugSet = new Set(phases.map((phase) => phase.slug));
 
-  const intentCards = INTENT_DEFINITIONS.map((intent) => {
-    const journeyHref = intent.journeyPhaseSlug
-      ? resolvePhaseHref(intent.journeyPhaseSlug, phaseSlugSet.has(intent.journeyPhaseSlug), intent.journeyFallbackHref)
-      : intent.journeyFallbackHref;
-
-    return {
-      ...intent,
-      journeyHref,
-    };
-  });
+  const intentCards = INTENT_DEFINITIONS;
 
   const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), "/buscar?categoria=planificacion");
   const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), "/buscar?categoria=construccion");
@@ -192,6 +177,30 @@ const Index = () => {
               />
             ))}
           </div>
+
+          <div className="mt-4 rounded-xl border border-border bg-card p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Escenarios comunes</p>
+            <div className="mt-2 flex flex-col gap-1.5 text-sm md:flex-row md:flex-wrap md:gap-3">
+              <Link to="/guias/construir-casa-desde-cero" className="text-foreground/90 transition-colors hover:text-foreground">
+                Construir casa desde cero
+              </Link>
+              <Link to="/guias/remodelar-cocina-bano" className="text-foreground/90 transition-colors hover:text-foreground">
+                Remodelar cocina y bano
+              </Link>
+              <Link to="/guias/resolver-filtracion" className="text-foreground/90 transition-colors hover:text-foreground">
+                Resolver filtracion
+              </Link>
+              <Link to="/guias/planos-y-permisos" className="text-foreground/90 transition-colors hover:text-foreground">
+                Planos y permisos
+              </Link>
+              <Link to="/guias/supervision-de-obra" className="text-foreground/90 transition-colors hover:text-foreground">
+                Supervision de obra
+              </Link>
+              <Link to="/guias/mantenimiento-inmueble" className="text-foreground/90 transition-colors hover:text-foreground">
+                Mantenimiento de inmueble
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -245,7 +254,7 @@ const Index = () => {
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Recursos</p>
               <div className="space-y-1 text-sm">
                 <Link to="/#como-funciona" className="block text-muted-foreground transition-colors hover:text-foreground">Como funciona</Link>
-                <Link to="/#guias" className="block text-muted-foreground transition-colors hover:text-foreground">Guias por etapa</Link>
+                <Link to="/guias" className="block text-muted-foreground transition-colors hover:text-foreground">Guias por escenario</Link>
                 <Link to="/publicar" className="block text-muted-foreground transition-colors hover:text-foreground">Soy proveedor</Link>
                 <Link to="/precios" className="block text-muted-foreground transition-colors hover:text-foreground">Planes</Link>
               </div>

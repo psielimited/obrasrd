@@ -11,9 +11,9 @@ const TopNav = () => {
   const mobileNavItems = [
     { to: "/buscar", label: "Buscar servicios" },
     { to: "/proyectos", label: "Publicar proyecto" },
+    { to: "/guias", label: "Guias de proyecto" },
     { to: "/#proveedores-destacados", label: "Proveedores" },
     { to: "/#como-funciona", label: "Como funciona" },
-    { to: "/#guias", label: "Guias" },
     { to: "/materiales", label: "Materiales / Suplidores", badge: "Nuevo" },
   ];
 
@@ -44,9 +44,9 @@ const TopNav = () => {
           <Link to="/#como-funciona" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
             Como funciona
           </Link>
-          <Link to="/#guias" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <NavLink to="/guias" className={desktopLinkClass}>
             Guias
-          </Link>
+          </NavLink>
           <NavLink to="/materiales" className={desktopLinkClass}>
             Materiales
             <span className="ml-1.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-foreground">
