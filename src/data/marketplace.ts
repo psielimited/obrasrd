@@ -200,7 +200,10 @@ export const PROVIDERS: Provider[] = [
     verified: true,
     whatsapp: "18091234567",
     startingPrice: 25000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
+    ],
     serviceAreas: ["Santo Domingo", "San Cristóbal"],
   },
   {
@@ -219,7 +222,10 @@ export const PROVIDERS: Provider[] = [
     verified: true,
     whatsapp: "18099876543",
     startingPrice: 35000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80",
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80",
+    ],
     serviceAreas: ["Santiago", "Jarabacoa"],
   },
   {
@@ -238,7 +244,10 @@ export const PROVIDERS: Provider[] = [
     verified: true,
     whatsapp: "18095551234",
     startingPrice: 500000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80",
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+    ],
     serviceAreas: ["Punta Cana", "La Romana"],
   },
   {
@@ -257,7 +266,10 @@ export const PROVIDERS: Provider[] = [
     verified: true,
     whatsapp: "18097771234",
     startingPrice: 15000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
+    ],
     serviceAreas: ["Santo Domingo", "San Cristóbal"],
   },
   {
@@ -276,7 +288,9 @@ export const PROVIDERS: Provider[] = [
     verified: false,
     whatsapp: "18098881234",
     startingPrice: 8000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80",
+    ],
     serviceAreas: ["Santiago"],
   },
   {
@@ -295,7 +309,10 @@ export const PROVIDERS: Provider[] = [
     verified: false,
     whatsapp: "18096661234",
     startingPrice: 12000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&q=80",
+      "https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=800&q=80",
+    ],
     serviceAreas: ["La Romana", "Punta Cana"],
   },
   {
@@ -314,7 +331,10 @@ export const PROVIDERS: Provider[] = [
     verified: true,
     whatsapp: "18094441234",
     startingPrice: 20000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80",
+      "https://images.unsplash.com/photo-1579547944212-c4f4961a8dd8?w=800&q=80",
+    ],
     serviceAreas: ["Jarabacoa", "Santiago"],
   },
   {
@@ -333,7 +353,10 @@ export const PROVIDERS: Provider[] = [
     verified: true,
     whatsapp: "18093331234",
     startingPrice: 45000,
-    portfolioImages: [],
+    portfolioImages: [
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80",
+      "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=800&q=80",
+    ],
     serviceAreas: ["Santo Domingo", "Santiago", "Punta Cana"],
   },
 ];
