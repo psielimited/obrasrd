@@ -6,9 +6,10 @@ export const taxonomyQueryKeys = {
   catalog: ["taxonomy", "catalog"] as const,
 };
 
-export const useTaxonomyCatalog = () =>
+export const useTaxonomyCatalog = (enabled = true) =>
   useQuery({
     queryKey: taxonomyQueryKeys.catalog,
     queryFn: fetchTaxonomyCatalog,
+    enabled,
     ...CATALOG_QUERY_OPTIONS,
   });

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ShieldCheck, Wrench } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import HowItWorks from "@/components/HowItWorks";
@@ -88,9 +88,10 @@ const resolvePhaseHref = (phaseSlug: string, phaseExists: boolean, fallbackHref:
 
 const Index = () => {
   const location = useLocation();
-  const { data: providers = [] } = useFeaturedProviders(4);
-  const { data: phases = [] } = usePhases();
-  const { data: taxonomyCatalog } = useTaxonomyCatalog();
+  const [shouldLoadDeferredData, setShouldLoadDeferredData] = useState(false);
+  const { data: providers = [] } = useFeaturedProviders(4, shouldLoadDeferredData);
+  const { data: phases = [] } = usePhases(shouldLoadDeferredData);
+  const { data: taxonomyCatalog } = useTaxonomyCatalog(shouldLoadDeferredData);
 
   const featuredProviders = providers.slice(0, 4);
   const phaseSlugSet = new Set(phases.map((phase) => phase.slug));
@@ -100,6 +101,22 @@ const Index = () => {
   const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), "/buscar?categoria=planificacion");
   const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), "/buscar?categoria=construccion");
   const maintenanceHref = resolvePhaseHref("mantenimiento", phaseSlugSet.has("mantenimiento"), "/buscar?categoria=mantenimiento");
+
+  useEffect(() => {
+    let animationFrameId = 0;
+    let nestedAnimationFrameId = 0;
+
+    animationFrameId = window.requestAnimationFrame(() => {
+      nestedAnimationFrameId = window.requestAnimationFrame(() => {
+        setShouldLoadDeferredData(true);
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      window.cancelAnimationFrame(nestedAnimationFrameId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!location.hash) return;

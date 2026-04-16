@@ -37,10 +37,11 @@ export const useProviderSummaries = () =>
     ...MARKETPLACE_LIST_QUERY_OPTIONS,
   });
 
-export const useFeaturedProviders = (limit = 4) =>
+export const useFeaturedProviders = (limit = 4, enabled = true) =>
   useQuery({
     queryKey: marketplaceQueryKeys.featuredProviders(limit),
     queryFn: () => fetchFeaturedProviders(limit),
+    enabled,
     ...MARKETPLACE_LIST_QUERY_OPTIONS,
   });
 
