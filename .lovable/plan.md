@@ -1,73 +1,31 @@
 
-Do I know what the issue is? Yes.
 
-## Diagnosis
+## Replace Empty Provider Images with Discipline-Specific Photos
 
-The blank page is most likely caused by the custom production chunking in `vite.config.ts`, not by the hero copy or route code.
+### Problem
+All 8 mock providers in `src/data/marketplace.ts` have `portfolioImages: []`, causing the "Sin imagen disponible" placeholder to show on every card.
 
-### Why this matches the error
-- The production error points into `vendor-radix-*.js`.
-- That chunk contains Radix-based UI wrappers, many of which call `React.forwardRef(...)`.
-- In this repo, `vite.config.ts` manually forces:
-  - `react` into `vendor-react`
-  - all `@radix-ui/*` into `vendor-radix`
-- That split is the most suspicious production-only difference, and it can break module interop/order so the React namespace inside the Radix chunk becomes `undefined`, which matches:
-  - `Cannot read properties of undefined (reading 'forwardRef')`
+### Solution
+Populate each provider's `portfolioImages` array with 1-2 high-quality Unsplash photos that match their trade. Unsplash provides free, royalty-free images via direct URL.
 
-## Minimal safe fix
+### Image Mapping
 
-### 1) Remove the custom `manualChunks` override in `vite.config.ts`
-Let Vite/Rollup generate the chunk graph automatically.
+| Provider | Trade | Image Subject |
+|----------|-------|---------------|
+| p1 - Arq. María González | Arquitecto Residencial | Architectural blueprints / modern house design |
+| p2 - Ing. Carlos Pérez | Ingeniero Estructural | Building structure / concrete framework |
+| p3 - José Martínez | Contratista General | Construction site / villa under construction |
+| p4 - ElectriPro RD | Electricista | Electrical panel / wiring work |
+| p5 - Plomería Dominicana | Plomero | Plumbing pipes / installation |
+| p6 - Pinturas del Caribe | Pintor | Interior painting / color wall |
+| p7 - Excavaciones del Norte | Excavación | Excavator / earthwork site |
+| p8 - Solar Tech RD | Paneles Solares | Solar panel installation on roof |
 
-This is the safest fix because:
-- it does not change UI or behavior
-- it only changes how the app is bundled
-- it directly targets the production-only failure path
+### Changes
 
-### 2) Rebuild and verify production entry loads
-After removing the manual chunking:
-- confirm the homepage renders
-- confirm no `forwardRef` runtime error remains
-- smoke-test mobile nav / dropdown / toast startup since those load Radix UI early
+**`src/data/marketplace.ts`** — Update each provider's `portfolioImages` array with 1-2 curated Unsplash URLs using the `?w=800&q=80` params for optimized loading. No other files change.
 
-## Files to update
-- `vite.config.ts`
+### Visual fit
+- The `ProofFirstCard` component already renders `portfolioImages[0]` as cover with `object-cover` — these landscape construction photos will fill the 176px hero area cleanly
+- Matches the B&W + orange accent brand since the images are neutral construction photography
 
-## Expected change
-From this:
-```ts
-build: {
-  rollupOptions: {
-    output: {
-      manualChunks(id) {
-        if (id.includes("node_modules/react-dom")) return "vendor-react";
-        if (id.includes("node_modules/react/")) return "vendor-react";
-        if (id.includes("node_modules/react-router")) return "vendor-router";
-        if (id.includes("node_modules/@tanstack/react-query")) return "vendor-query";
-        if (id.includes("node_modules/@radix-ui")) return "vendor-radix";
-        if (id.includes("node_modules/lucide-react")) return "vendor-icons";
-      },
-    },
-  },
-},
-```
-
-To either:
-```ts
-build: {},
-```
-
-or just remove the whole `build.rollupOptions.output.manualChunks` block.
-
-## Why I am not proposing broader changes
-I reviewed the app startup path and the Radix wrappers themselves. They look normal. The strongest production-specific fault line is the custom chunk splitting. So the safest fix is to revert that bundling optimization first instead of changing UI components.
-
-## Verification checklist
-- Open published homepage: page renders instead of blank screen
-- Console no longer shows `forwardRef` error
-- Mobile menu opens
-- Auth dropdown still opens
-- Toast providers mount without crashing
-
-## Technical note
-If the issue somehow persists after removing `manualChunks`, the next fallback would be to simplify startup imports for the home route and isolate which Radix wrapper is first in the crash path. But I do not expect that to be necessary—the bundling config is the primary suspect.
