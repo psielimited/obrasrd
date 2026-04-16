@@ -128,6 +128,13 @@ const Index = () => {
   return (
     <div className="min-h-screen pb-16 md:pb-0">
       <section className="relative overflow-hidden border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
+        <img
+          aria-hidden
+          src="/hero-doodle-kids.svg"
+          alt=""
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover object-bottom opacity-[0.17] mix-blend-luminosity pointer-events-none select-none"
+        />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(248,137,64,0.22),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.1),transparent_42%)]" />
         <div className="container relative mx-auto max-w-5xl">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">ObrasRD - Republica Dominicana</p>
