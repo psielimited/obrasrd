@@ -209,7 +209,7 @@ export const fetchProviderSummaries = async (): Promise<Provider[]> => {
     }));
   }
 
-  return (data as ProviderSummaryRow[]).map(mapProviderSummaryRow);
+  return (data as unknown as ProviderSummaryRow[]).map(mapProviderSummaryRow);
 };
 
 export const fetchFeaturedProviders = async (limit = 4): Promise<Provider[]> => {
@@ -231,7 +231,7 @@ export const fetchFeaturedProviders = async (limit = 4): Promise<Provider[]> => 
     return PROVIDERS.filter((provider) => provider.isFeatured).slice(0, limit);
   }
 
-  return (data as ProviderSummaryRow[]).map(mapProviderSummaryRow);
+  return (data as unknown as ProviderSummaryRow[]).map(mapProviderSummaryRow);
 };
 
 export const fetchProviders = fetchProviderSummaries;
