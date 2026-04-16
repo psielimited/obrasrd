@@ -95,7 +95,7 @@ const TopNav = () => {
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[85vw] max-w-sm bg-background p-0">
           <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <div className="flex items-center border-b border-border px-5 py-4">
               <Link
                 to="/"
                 className="text-[20px] font-black tracking-tight"
@@ -103,9 +103,6 @@ const TopNav = () => {
               >
                 Obras<span className="text-accent">RD</span>
               </Link>
-              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
-                <X className="h-5 w-5" />
-              </Button>
             </div>
 
             <nav className="flex flex-col gap-1 p-4">
