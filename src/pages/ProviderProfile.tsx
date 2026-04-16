@@ -170,6 +170,50 @@ const ProviderProfile = () => {
     });
   }, [providerId, phaseId, primaryDisciplineId, primaryServiceId, firstWorkTypeId, province]);
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Cargando proveedor...</p>
+      </div>
+    );
+  }
+
+  if (!provider) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Proveedor no encontrado.</p>
+      </div>
+    );
+  }
+
+  const categoryName =
+    phase?.categories.find((item) => item.slug === provider.categorySlug)?.name ||
+    fallback?.serviceLabel ||
+    fallback?.disciplineLabel ||
+    theme.label;
+
+  const whatsappUrl = `https://wa.me/${provider.whatsapp}?text=${encodeURIComponent(
+    `Hola, me interesa cotizar sus servicios de ${provider.trade}. Vi su perfil en ObrasRD.`,
+  )}`;
+
+  const canSubmitLead = requesterContact.trim() && message.trim();
+  const isSaved = savedProviderIds.includes(provider.id);
+  const completeness = calculateProviderProfileCompleteness(provider);
+  const trustBadges = getProviderTrustBadges(provider, {
+    profileCompleteness: completeness,
+  });
+  const active = isProviderActive(provider, { profileCompleteness: completeness });
+  const images = provider.portfolioImages ?? [];
+  const heroImage = images[0] ?? "";
+  const analyticsMeta = {
+    provider_id: provider.id,
+    stage_id: provider.phaseId,
+    discipline_id: provider.primaryDisciplineId,
+    service_id: provider.primaryServiceId,
+    work_type_id: provider.workTypeIds?.[0],
+    province: deriveProvinceFromText(provider.city || provider.location),
+  };
+
   const submitLead = async () => {
     if (!canSubmitLead || isSubmittingLead) return;
 
