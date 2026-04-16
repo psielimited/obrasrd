@@ -32,6 +32,7 @@ const ConsumerSavedProvidersPage = lazy(() => import("./pages/ConsumerSavedProvi
 const ConsumerCompareProvidersPage = lazy(() => import("./pages/ConsumerCompareProvidersPage"));
 const DashboardHomeRedirect = lazy(() => import("./pages/DashboardHomeRedirect"));
 const LeadThreadPage = lazy(() => import("./pages/LeadThreadPage"));
+const InternalDataQualityPage = lazy(() => import("./pages/InternalDataQualityPage"));
 
 const queryClient = new QueryClient();
 
@@ -146,6 +147,16 @@ const AppContent = () => {
               </RequireAuth>
             }
           />
+          {import.meta.env.DEV && (
+            <Route
+              path="/internal/data-quality"
+              element={
+                <RequireAuth>
+                  <InternalDataQualityPage />
+                </RequireAuth>
+              }
+            />
+          )}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
