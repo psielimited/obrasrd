@@ -148,63 +148,27 @@ const ProviderProfile = () => {
     return Array.from(labels);
   }, [phase?.name, fallback?.stageLabel]);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Cargando proveedor...</p>
-      </div>
-    );
-  }
-
-  if (!provider) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Proveedor no encontrado.</p>
-      </div>
-    );
-  }
-
-  const categoryName =
-    phase?.categories.find((item) => item.slug === provider.categorySlug)?.name ||
-    fallback?.serviceLabel ||
-    fallback?.disciplineLabel ||
-    theme.label;
-
-  const whatsappUrl = `https://wa.me/${provider.whatsapp}?text=${encodeURIComponent(
-    `Hola, me interesa cotizar sus servicios de ${provider.trade}. Vi su perfil en ObrasRD.`,
-  )}`;
-
-  const canSubmitLead = requesterContact.trim() && message.trim();
-  const isSaved = savedProviderIds.includes(provider.id);
-  const completeness = calculateProviderProfileCompleteness(provider);
-  const trustBadges = getProviderTrustBadges(provider, {
-    profileCompleteness: completeness,
-  });
-  const active = isProviderActive(provider, { profileCompleteness: completeness });
-  const images = provider.portfolioImages ?? [];
-  const heroImage = images[0] ?? "";
-  const analyticsMeta = {
-    provider_id: provider.id,
-    stage_id: provider.phaseId,
-    discipline_id: provider.primaryDisciplineId,
-    service_id: provider.primaryServiceId,
-    work_type_id: provider.workTypeIds?.[0],
-    province: deriveProvinceFromText(provider.city || provider.location),
-  };
+  // Analytics tracking — must be before any early returns to respect hooks rules
+  const providerId = provider?.id;
+  const phaseId = provider?.phaseId;
+  const primaryDisciplineId = provider?.primaryDisciplineId;
+  const primaryServiceId = provider?.primaryServiceId;
+  const firstWorkTypeId = provider?.workTypeIds?.[0];
+  const providerCity = provider?.city || provider?.location;
+  const province = deriveProvinceFromText(providerCity ?? "");
 
   useEffect(() => {
+    if (!providerId) return;
     trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderViewed, {
       source: "provider_profile",
-      ...analyticsMeta,
+      provider_id: providerId,
+      stage_id: phaseId,
+      discipline_id: primaryDisciplineId,
+      service_id: primaryServiceId,
+      work_type_id: firstWorkTypeId,
+      province,
     });
-  }, [
-    analyticsMeta.provider_id,
-    analyticsMeta.stage_id,
-    analyticsMeta.discipline_id,
-    analyticsMeta.service_id,
-    analyticsMeta.work_type_id,
-    analyticsMeta.province,
-  ]);
+  }, [providerId, phaseId, primaryDisciplineId, primaryServiceId, firstWorkTypeId, province]);
 
   const submitLead = async () => {
     if (!canSubmitLead || isSubmittingLead) return;
