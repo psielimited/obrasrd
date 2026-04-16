@@ -29,6 +29,37 @@ type TrustSignalsRow = {
   active_this_month: boolean;
 };
 
+type ProviderSummaryRow = {
+  id: string;
+  name: string;
+  trade: string;
+  category_slug: string;
+  phase_id: number;
+  primary_discipline_id: number | null;
+  primary_service_id: number | null;
+  location: string;
+  city: string;
+  years_experience: number;
+  description: string;
+  rating: number | string | null;
+  review_count: number;
+  completed_projects: number;
+  verified: boolean;
+  is_featured: boolean;
+  whatsapp: string;
+  starting_price: number | string | null;
+  portfolio_images: string[] | null;
+  service_areas: string[] | null;
+  service_ids: Array<number | string> | null;
+  work_type_ids: Array<number | string> | null;
+  provider_verified: boolean | null;
+  identity_confirmed: boolean | null;
+  portfolio_validated: boolean | null;
+  project_registered: boolean | null;
+  rapid_response: boolean | null;
+  active_this_month: boolean | null;
+};
+
 const getMonthWindowStartIso = () => {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -107,7 +138,40 @@ const toMaterial = (row: Tables<"materials">): Material => ({
   description: row.description,
 });
 
-export const fetchProviders = async (): Promise<Provider[]> => {
+const mapProviderSummaryRow = (row: ProviderSummaryRow): Provider => ({
+  id: row.id,
+  name: row.name,
+  trade: row.trade,
+  categorySlug: row.category_slug,
+  phaseId: row.phase_id,
+  primaryDisciplineId: row.primary_discipline_id ?? undefined,
+  primaryServiceId: row.primary_service_id ?? undefined,
+  location: row.location,
+  city: row.city,
+  yearsExperience: row.years_experience,
+  description: row.description,
+  rating: Number(row.rating) || 0,
+  reviewCount: row.review_count,
+  completedProjects: row.completed_projects,
+  verified: row.verified,
+  isFeatured: row.is_featured,
+  whatsapp: row.whatsapp,
+  startingPrice: row.starting_price ? Number(row.starting_price) : undefined,
+  portfolioImages: row.portfolio_images ?? [],
+  serviceAreas: row.service_areas ?? [],
+  serviceIds: (row.service_ids ?? []).map((item) => Number(item)),
+  workTypeIds: (row.work_type_ids ?? []).map((item) => Number(item)),
+  trustSnapshot: {
+    providerVerified: row.provider_verified ?? row.verified,
+    identityConfirmed: row.identity_confirmed ?? false,
+    portfolioValidated: row.portfolio_validated ?? false,
+    projectRegistered: row.project_registered ?? false,
+    rapidResponse: row.rapid_response ?? false,
+    activeThisMonth: row.active_this_month ?? false,
+  },
+});
+
+export const fetchProviderSummaries = async (): Promise<Provider[]> => {
   if (!hasSupabaseConfig) {
     return PROVIDERS.map((provider) => ({
       ...provider,
@@ -123,59 +187,54 @@ export const fetchProviders = async (): Promise<Provider[]> => {
   }
 
   const { data, error } = await supabase
-    .from("providers")
-    .select("*")
+    .from("provider_summary_view" as any)
+    .select(
+      "id,name,trade,category_slug,phase_id,primary_discipline_id,primary_service_id,location,city,years_experience,description,rating,review_count,completed_projects,verified,is_featured,whatsapp,starting_price,portfolio_images,service_areas,service_ids,work_type_ids,provider_verified,identity_confirmed,portfolio_validated,project_registered,rapid_response,active_this_month",
+    )
     .order("is_featured", { ascending: false })
     .order("verified", { ascending: false })
     .order("rating", { ascending: false });
 
   if (error || !data?.length) {
-    return PROVIDERS;
+    return PROVIDERS.map((provider) => ({
+      ...provider,
+      trustSnapshot: provider.trustSnapshot ?? {
+        providerVerified: provider.verified,
+        identityConfirmed: false,
+        portfolioValidated: false,
+        projectRegistered: provider.completedProjects > 0,
+        rapidResponse: false,
+        activeThisMonth: false,
+      },
+    }));
   }
 
-  const providerIds = data.map((item) => item.id);
-  const [{ data: providerServices }, { data: providerWorkTypes }, { data: trustSignalsRows }] = await Promise.all([
-    (supabase.from as any)("provider_services")
-      .select("provider_id,service_id")
-      .in("provider_id", providerIds),
-    (supabase.from as any)("provider_work_types")
-      .select("provider_id,work_type_id")
-      .in("provider_id", providerIds),
-    (supabase.from as any)("provider_trust_signals")
-      .select("provider_id,provider_verified,identity_confirmed,portfolio_validated,project_registered,rapid_response,active_this_month")
-      .in("provider_id", providerIds),
-  ]);
-
-  const serviceMap = new Map<string, number[]>();
-  const workTypeMap = new Map<string, number[]>();
-  const trustSignalsMap = new Map<string, TrustSignalsRow>();
-
-  for (const row of providerServices ?? []) {
-    const key = String((row as any).provider_id);
-    const current = serviceMap.get(key) ?? [];
-    current.push(Number((row as any).service_id));
-    serviceMap.set(key, current);
-  }
-
-  for (const row of providerWorkTypes ?? []) {
-    const key = String((row as any).provider_id);
-    const current = workTypeMap.get(key) ?? [];
-    current.push(Number((row as any).work_type_id));
-    workTypeMap.set(key, current);
-  }
-
-  for (const row of trustSignalsRows ?? []) {
-    const item = row as TrustSignalsRow;
-    trustSignalsMap.set(item.provider_id, item);
-  }
-
-  return data.map((row) =>
-    toProvider(row, {
-      serviceIds: serviceMap.get(row.id) ?? [],
-      workTypeIds: workTypeMap.get(row.id) ?? [],
-    }, trustSignalsMap.get(row.id)),
-  );
+  return (data as ProviderSummaryRow[]).map(mapProviderSummaryRow);
 };
+
+export const fetchFeaturedProviders = async (limit = 4): Promise<Provider[]> => {
+  if (!hasSupabaseConfig) {
+    return PROVIDERS.filter((provider) => provider.isFeatured).slice(0, limit);
+  }
+
+  const { data, error } = await supabase
+    .from("provider_summary_view" as any)
+    .select(
+      "id,name,trade,category_slug,phase_id,primary_discipline_id,primary_service_id,location,city,years_experience,description,rating,review_count,completed_projects,verified,is_featured,whatsapp,starting_price,portfolio_images,service_areas,service_ids,work_type_ids,provider_verified,identity_confirmed,portfolio_validated,project_registered,rapid_response,active_this_month",
+    )
+    .eq("is_featured", true)
+    .order("verified", { ascending: false })
+    .order("rating", { ascending: false })
+    .limit(limit);
+
+  if (error || !data?.length) {
+    return PROVIDERS.filter((provider) => provider.isFeatured).slice(0, limit);
+  }
+
+  return (data as ProviderSummaryRow[]).map(mapProviderSummaryRow);
+};
+
+export const fetchProviders = fetchProviderSummaries;
 
 export const fetchProviderById = async (id: string): Promise<Provider | null> => {
   if (!hasSupabaseConfig) {

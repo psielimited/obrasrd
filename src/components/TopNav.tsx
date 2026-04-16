@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Bell, Menu, Plus, X } from "lucide-react";
-import TopNavAuthActions from "@/components/TopNavAuthActions";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+
+const TopNavAuthActions = lazy(() => import("@/components/TopNavAuthActions"));
 
 const TopNav = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -62,12 +63,22 @@ const TopNav = () => {
           </Link>
 
           <div className="ml-2">
-            <TopNavAuthActions />
+            <Suspense fallback={<Button variant="outline" size="sm">Cuenta</Button>}>
+              <TopNavAuthActions />
+            </Suspense>
           </div>
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
-          <TopNavAuthActions mobile />
+          <Suspense
+            fallback={
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                Cuenta
+              </Button>
+            }
+          >
+            <TopNavAuthActions mobile />
+          </Suspense>
 
           <Link to="/notificaciones">
             <Button variant="ghost" size="icon" className="h-9 w-9">

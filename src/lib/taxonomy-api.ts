@@ -94,7 +94,10 @@ export const fetchTaxonomyCatalog = async (): Promise<TaxonomyCatalog> => {
     workTypesRes.error ||
     !Array.isArray(disciplinesRes.data) ||
     !Array.isArray(servicesRes.data) ||
-    !Array.isArray(workTypesRes.data)
+    !Array.isArray(workTypesRes.data) ||
+    disciplinesRes.data.length === 0 ||
+    servicesRes.data.length === 0 ||
+    workTypesRes.data.length === 0
   ) {
     return fallbackCatalog;
   }

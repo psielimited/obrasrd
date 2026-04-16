@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowLeft, RefreshCcw } from "lucide-react";
@@ -9,6 +9,8 @@ import { useMyProfile } from "@/hooks/use-profile-data";
 import { getDataQualityReport } from "@/lib/reports/data-quality-report";
 
 const InternalDataQualityPage = () => {
+  const [leadLookbackDays, setLeadLookbackDays] = useState(90);
+  const [leadLimit, setLeadLimit] = useState(2000);
   const { data: profile, isLoading: isProfileLoading } = useMyProfile();
   const {
     data: report,
@@ -18,8 +20,8 @@ const InternalDataQualityPage = () => {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ["internal", "data-quality-report"],
-    queryFn: getDataQualityReport,
+    queryKey: ["internal", "data-quality-report", leadLookbackDays, leadLimit],
+    queryFn: () => getDataQualityReport({ leadLookbackDays, leadLimit }),
   });
 
   const summary = useMemo(() => {
@@ -92,6 +94,36 @@ const InternalDataQualityPage = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground" htmlFor="dq-window">
+                Ventana leads
+              </label>
+              <select
+                id="dq-window"
+                value={leadLookbackDays}
+                onChange={(event) => setLeadLookbackDays(Number(event.target.value))}
+                className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+              >
+                <option value={30}>30d</option>
+                <option value={60}>60d</option>
+                <option value={90}>90d</option>
+                <option value={180}>180d</option>
+                <option value={365}>365d</option>
+              </select>
+              <label className="text-xs text-muted-foreground" htmlFor="dq-limit">
+                Limite leads
+              </label>
+              <select
+                id="dq-limit"
+                value={leadLimit}
+                onChange={(event) => setLeadLimit(Number(event.target.value))}
+                className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+              >
+                <option value={500}>500</option>
+                <option value={1000}>1,000</option>
+                <option value={2000}>2,000</option>
+                <option value={5000}>5,000</option>
+                <option value={10000}>10,000</option>
+              </select>
               {report && (
                 <Badge variant="outline">
                   Generado: {new Date(report.generatedAt).toLocaleString()}
@@ -235,6 +267,10 @@ const InternalDataQualityPage = () => {
                 <p className="text-sm font-semibold text-foreground">Project Requests With Unmapped Terms</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Se muestra hash del termino normalizado para evitar exponer texto libre.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Leads escaneados: {report.scannedLeadCount} | Ventana: {report.leadLookbackDays} dias | Limite:{" "}
+                  {report.leadLimit}
                 </p>
                 <table className="mt-3 w-full text-left text-xs">
                   <thead className="text-muted-foreground">

@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
 import ProviderCard from "@/components/ProviderCard";
+import type { Phase } from "@/data/marketplace";
 import type { ProviderMatchResult } from "@/lib/provider-matching";
+import type { TaxonomyCatalog } from "@/lib/taxonomy-api";
 import { Badge } from "@/components/ui/badge";
 
 interface ProviderMatchSelectorProps {
   matches: ProviderMatchResult[];
+  phases?: Phase[];
+  taxonomyCatalog?: TaxonomyCatalog | null;
   selectedProviderIds: string[];
   onToggleProvider: (providerId: string) => void;
   onBack: () => void;
@@ -14,6 +18,8 @@ interface ProviderMatchSelectorProps {
 
 const ProviderMatchSelector = ({
   matches,
+  phases = [],
+  taxonomyCatalog,
   selectedProviderIds,
   onToggleProvider,
   onBack,
@@ -58,7 +64,7 @@ const ProviderMatchSelector = ({
                     {selected ? "Seleccionado" : "Seleccionar"}
                   </Button>
                 </div>
-                <ProviderCard provider={provider} />
+                <ProviderCard provider={provider} phases={phases} taxonomyCatalog={taxonomyCatalog} />
               </div>
             );
           })}

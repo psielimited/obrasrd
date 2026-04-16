@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProjectIntakeForm from "@/components/project-intake/ProjectIntakeForm";
 import ProviderMatchSelector from "@/components/project-intake/ProviderMatchSelector";
-import { usePhases, useProviders } from "@/hooks/use-marketplace-data";
+import { usePhases, useProviderSummaries } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useMyProfile } from "@/hooks/use-profile-data";
@@ -35,7 +35,7 @@ const ProjectBuilder = () => {
   const { user } = useAuthSession();
   const { data: profile } = useMyProfile();
   const { data: phases = [] } = usePhases();
-  const { data: providers = [] } = useProviders();
+  const { data: providers = [] } = useProviderSummaries();
   const { data: taxonomyCatalog } = useTaxonomyCatalog();
 
   const [step, setStep] = useState<IntakeStep>("intake");
@@ -262,6 +262,8 @@ const ProjectBuilder = () => {
           {step === "matching" && (
             <ProviderMatchSelector
               matches={providerMatches}
+              phases={phases}
+              taxonomyCatalog={taxonomyCatalog}
               selectedProviderIds={selectedProviderIds}
               onToggleProvider={onToggleProvider}
               onBack={() => setStep("intake")}

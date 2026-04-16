@@ -6,7 +6,8 @@ import IntentEntryCard from "@/components/home/IntentEntryCard";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
 import ProviderCard from "@/components/ProviderCard";
 import { Button } from "@/components/ui/button";
-import { usePhases, useProviders } from "@/hooks/use-marketplace-data";
+import { useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
+import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 
 interface IntentDefinition {
   id: string;
@@ -87,10 +88,11 @@ const resolvePhaseHref = (phaseSlug: string, phaseExists: boolean, fallbackHref:
 
 const Index = () => {
   const location = useLocation();
-  const { data: providers = [] } = useProviders();
+  const { data: providers = [] } = useFeaturedProviders(4);
   const { data: phases = [] } = usePhases();
+  const { data: taxonomyCatalog } = useTaxonomyCatalog();
 
-  const featuredProviders = providers.filter((provider) => provider.isFeatured).slice(0, 4);
+  const featuredProviders = providers.slice(0, 4);
   const phaseSlugSet = new Set(phases.map((phase) => phase.slug));
 
   const intentCards = INTENT_DEFINITIONS;
@@ -223,7 +225,12 @@ const Index = () => {
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Proveedores destacados</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {featuredProviders.map((provider) => (
-              <ProviderCard key={provider.id} provider={provider} />
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                phases={phases}
+                taxonomyCatalog={taxonomyCatalog}
+              />
             ))}
           </div>
         </div>

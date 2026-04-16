@@ -29,10 +29,19 @@ export const validateTaxonomyDependency = (
   taxonomy: TaxonomyCatalog | undefined,
 ): string | null => {
   if (!taxonomy) return null;
+  const taxonomyStageIds = new Set([
+    ...taxonomy.disciplines.map((item) => item.stageId),
+    ...taxonomy.services.map((item) => item.stageId),
+  ]);
+  const canValidateStageStrictly = Boolean(draft.stageId && taxonomyStageIds.has(draft.stageId));
 
   if (draft.disciplineId && draft.stageId) {
     const discipline = taxonomy.disciplines.find((item) => item.id === draft.disciplineId);
-    if (!discipline || discipline.stageId !== draft.stageId) {
+    if (!discipline) {
+      return "La disciplina seleccionada no existe en el catalogo.";
+    }
+
+    if (canValidateStageStrictly && discipline.stageId !== draft.stageId) {
       return "La disciplina seleccionada no pertenece a la etapa elegida.";
     }
   }
@@ -47,7 +56,7 @@ export const validateTaxonomyDependency = (
       return "El servicio seleccionado no pertenece a la disciplina elegida.";
     }
 
-    if (draft.stageId && service.stageId !== draft.stageId) {
+    if (canValidateStageStrictly && draft.stageId && service.stageId !== draft.stageId) {
       return "El servicio seleccionado no pertenece a la etapa elegida.";
     }
   }

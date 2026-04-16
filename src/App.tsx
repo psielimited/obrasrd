@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import RequireAuth from "./components/RequireAuth";
+import { QUERY_STALE_TIMES } from "@/lib/query-options";
 
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
@@ -34,7 +35,17 @@ const DashboardHomeRedirect = lazy(() => import("./pages/DashboardHomeRedirect")
 const LeadThreadPage = lazy(() => import("./pages/LeadThreadPage"));
 const InternalDataQualityPage = lazy(() => import("./pages/InternalDataQualityPage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: QUERY_STALE_TIMES.short,
+      gcTime: 30 * 60_000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retry: 1,
+    },
+  },
+});
 
 const AppContent = () => {
   const location = useLocation();

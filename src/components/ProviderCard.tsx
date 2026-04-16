@@ -1,10 +1,11 @@
-﻿import { Badge } from "@/components/ui/badge";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import TrustBadge from "@/components/marketplace/TrustBadge";
 import ProofFirstCard from "@/components/marketplace/ProofFirstCard";
-import { usePhases } from "@/hooks/use-marketplace-data";
-import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
-import type { Provider } from "@/data/marketplace";
+import type { Phase, Provider } from "@/data/marketplace";
+import type { TaxonomyCatalog } from "@/lib/taxonomy-api";
 import {
   calculateProviderProfileCompleteness,
   getProviderTrustBadges,
@@ -13,27 +14,36 @@ import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { deriveProvinceFromText } from "@/lib/analytics/province";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
-import { useNavigate } from "react-router-dom";
 
 interface ProviderCardProps {
   provider: Provider;
+  phases?: Phase[];
+  taxonomyCatalog?: TaxonomyCatalog | null;
 }
 
-const ProviderCard = ({ provider }: ProviderCardProps) => {
+const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardProps) => {
   const navigate = useNavigate();
-  const { data: phases = [] } = usePhases();
-  const { data: taxonomyCatalog } = useTaxonomyCatalog();
+  const phaseById = useMemo(() => new Map(phases.map((item) => [item.id, item])), [phases]);
+  const disciplineById = useMemo(
+    () => new Map((taxonomyCatalog?.disciplines ?? []).map((item) => [item.id, item])),
+    [taxonomyCatalog?.disciplines],
+  );
+  const workTypeById = useMemo(
+    () => new Map((taxonomyCatalog?.workTypes ?? []).map((item) => [item.id, item])),
+    [taxonomyCatalog?.workTypes],
+  );
 
-  const phase = phases.find((item) => item.id === provider.phaseId);
-  const discipline = taxonomyCatalog?.disciplines.find((item) => item.id === provider.primaryDisciplineId);
-  const workTypes = taxonomyCatalog?.workTypes ?? [];
+  const phase = phaseById.get(provider.phaseId);
+  const discipline = provider.primaryDisciplineId
+    ? disciplineById.get(provider.primaryDisciplineId)
+    : undefined;
   const fallback = getLegacyCategoryDisplayFallback(provider.categorySlug);
 
   const stageLabel = phase?.name || fallback?.stageLabel || "Sin etapa";
   const disciplineLabel = discipline?.name || fallback?.disciplineLabel || "Sin disciplina";
   const workTypeLabel =
     (provider.workTypeIds ?? [])
-      .map((id) => workTypes.find((item) => item.id === id)?.name)
+      .map((id) => workTypeById.get(id)?.name)
       .find(Boolean) ||
     fallback?.workTypeLabel;
 

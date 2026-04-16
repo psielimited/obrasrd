@@ -2,13 +2,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import ProviderCard from "@/components/ProviderCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { usePhases, useProviders } from "@/hooks/use-marketplace-data";
+import { usePhases, useProviderSummaries } from "@/hooks/use-marketplace-data";
+import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 
 const PhasePage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { data: phases = [] } = usePhases();
-  const { data: providers = [] } = useProviders();
+  const { data: providers = [] } = useProviderSummaries();
+  const { data: taxonomyCatalog } = useTaxonomyCatalog();
   const phase = phases.find((item) => item.slug === slug);
 
   if (!phase) {
@@ -57,7 +59,12 @@ const PhasePage = () => {
           {phaseProviders.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {phaseProviders.map((provider) => (
-                <ProviderCard key={provider.id} provider={provider} />
+                <ProviderCard
+                  key={provider.id}
+                  provider={provider}
+                  phases={phases}
+                  taxonomyCatalog={taxonomyCatalog}
+                />
               ))}
             </div>
           ) : (

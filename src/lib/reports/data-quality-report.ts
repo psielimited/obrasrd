@@ -106,6 +106,9 @@ export interface FeaturedMissingStructuredItem {
 export interface DataQualityReport {
   generatedAt: string;
   source: "supabase" | "fallback";
+  leadLookbackDays: number;
+  leadLimit: number;
+  scannedLeadCount: number;
   providersMissingTaxonomyBindings: ProviderDataQualityItem[];
   providersMissingLocation: ProviderDataQualityItem[];
   providersMissingPortfolio: ProviderDataQualityItem[];
@@ -113,6 +116,11 @@ export interface DataQualityReport {
   projectRequestsUnmappedNormalizedTerms: UnmappedRequestTermItem[];
   providersVerificationInconsistencies: VerificationInconsistencyItem[];
   featuredPlacementMissingStructuredData: FeaturedMissingStructuredItem[];
+}
+
+export interface DataQualityReportOptions {
+  leadLookbackDays?: number;
+  leadLimit?: number;
 }
 
 const hashFnv1a = (value: string) => {
@@ -176,13 +184,23 @@ const toProviderItem = (
   verified: provider.verified,
 });
 
-export const getDataQualityReport = async (): Promise<DataQualityReport> => {
+export const getDataQualityReport = async (
+  options: DataQualityReportOptions = {},
+): Promise<DataQualityReport> => {
   const generatedAt = new Date().toISOString();
+  const leadLookbackDays = Math.max(7, Math.min(365, options.leadLookbackDays ?? 90));
+  const leadLimit = Math.max(100, Math.min(10_000, options.leadLimit ?? 2_000));
+  const leadWindowStart = new Date();
+  leadWindowStart.setDate(leadWindowStart.getDate() - leadLookbackDays);
+  const leadWindowStartIso = leadWindowStart.toISOString();
 
   if (!hasSupabaseConfig) {
     return {
       generatedAt,
       source: "fallback",
+      leadLookbackDays,
+      leadLimit,
+      scannedLeadCount: 0,
       providersMissingTaxonomyBindings: [],
       providersMissingLocation: [],
       providersMissingPortfolio: [],
@@ -207,7 +225,10 @@ export const getDataQualityReport = async (): Promise<DataQualityReport> => {
         "leads",
       ).select(
         "id,created_at,message,requested_stage_id,requested_discipline_id,requested_service_id,requested_work_type_id",
-      ),
+      )
+        .gte("created_at", leadWindowStartIso)
+        .order("created_at", { ascending: false })
+        .limit(leadLimit),
       (supabase.from as any)("portfolio_projects").select("id,provider_id"),
     ]);
 
@@ -389,6 +410,9 @@ export const getDataQualityReport = async (): Promise<DataQualityReport> => {
   return {
     generatedAt,
     source: "supabase",
+    leadLookbackDays,
+    leadLimit,
+    scannedLeadCount: leads.length,
     providersMissingTaxonomyBindings,
     providersMissingLocation,
     providersMissingPortfolio,

@@ -5,7 +5,7 @@ import MaterialCard from "@/components/MaterialCard";
 import ProviderCard from "@/components/ProviderCard";
 import MarketplaceFilters from "@/components/search/MarketplaceFilters";
 import { Button } from "@/components/ui/button";
-import { useProviders, useMaterials, usePhases } from "@/hooks/use-marketplace-data";
+import { useMaterialsQuery, usePhases, useProviderSummaries } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import {
   CANONICAL_DISCIPLINES,
@@ -68,12 +68,13 @@ const SearchPage = () => {
     data: providers = [],
     isLoading: isProvidersLoading,
     isError: hasProvidersError,
-  } = useProviders();
+  } = useProviderSummaries();
+  const shouldLoadMaterials = searchState.tab === "materiales";
   const {
     data: materials = [],
     isLoading: isMaterialsLoading,
     isError: hasMaterialsError,
-  } = useMaterials();
+  } = useMaterialsQuery(shouldLoadMaterials);
   const { data: phases = [] } = usePhases();
   const {
     data: taxonomyCatalog,
@@ -377,134 +378,142 @@ const SearchPage = () => {
 
   const normalizedSearchTerms = searchNormalization.searchTerms;
 
-  const filteredProviders = useMemo(() => {
-    return providers.filter((provider) => {
-      const mapping = getLegacyCategoryTaxonomyMapping(provider.categorySlug);
-      const taxonomyTerms = getLegacyTaxonomySearchTerms(provider.categorySlug);
+  const providerSearchIndex = useMemo(
+    () =>
+      providers.map((provider) => {
+        const mapping = getLegacyCategoryTaxonomyMapping(provider.categorySlug);
+        const taxonomyTerms = getLegacyTaxonomySearchTerms(provider.categorySlug);
+        const providerPhase = phaseById.get(provider.phaseId);
+        const primaryDiscipline = provider.primaryDisciplineId
+          ? disciplineById.get(provider.primaryDisciplineId)
+          : undefined;
+        const primaryService = provider.primaryServiceId
+          ? serviceById.get(provider.primaryServiceId)
+          : undefined;
 
-      const providerPhase = phaseById.get(provider.phaseId);
-      const primaryDiscipline = provider.primaryDisciplineId
-        ? disciplineById.get(provider.primaryDisciplineId)
-        : undefined;
-      const primaryService = provider.primaryServiceId
-        ? serviceById.get(provider.primaryServiceId)
-        : undefined;
+        const serviceSlugs = new Set<string>();
+        const disciplineSlugs = new Set<string>();
+        const stageSlugs = new Set<string>();
+        const workTypeSlugs = new Set<string>();
 
-      const providerServices = (provider.serviceIds ?? [])
-        .map((id) => serviceById.get(id))
-        .filter(Boolean);
+        if (providerPhase?.slug) stageSlugs.add(providerPhase.slug);
+        if (mapping?.stageSlug) stageSlugs.add(mapping.stageSlug);
+        if (mapping?.disciplineSlug) disciplineSlugs.add(mapping.disciplineSlug);
+        if (mapping?.serviceSlug) serviceSlugs.add(mapping.serviceSlug);
+        if (mapping?.workTypeSlug) workTypeSlugs.add(mapping.workTypeSlug);
 
-      const providerWorkTypes = (provider.workTypeIds ?? [])
-        .map((id) => workTypeById.get(id))
-        .filter(Boolean);
-
-      const serviceSlugs = new Set<string>();
-      const disciplineSlugs = new Set<string>();
-      const stageSlugs = new Set<string>();
-      const workTypeSlugs = new Set<string>();
-
-      if (providerPhase?.slug) {
-        stageSlugs.add(providerPhase.slug);
-      }
-
-      if (mapping?.stageSlug) stageSlugs.add(mapping.stageSlug);
-      if (mapping?.disciplineSlug) disciplineSlugs.add(mapping.disciplineSlug);
-      if (mapping?.serviceSlug) serviceSlugs.add(mapping.serviceSlug);
-      if (mapping?.workTypeSlug) workTypeSlugs.add(mapping.workTypeSlug);
-
-      if (primaryDiscipline) {
-        disciplineSlugs.add(primaryDiscipline.slug);
-        const stageSlug = canonicalDisciplineStageBySlug.get(primaryDiscipline.slug as CanonicalDisciplineSlug);
-        if (stageSlug) stageSlugs.add(stageSlug);
-      }
-
-      if (primaryService) {
-        serviceSlugs.add(primaryService.slug);
-        const serviceMeta = canonicalServiceMetaBySlug.get(primaryService.slug as CanonicalServiceSlug);
-        if (serviceMeta) {
-          stageSlugs.add(serviceMeta.stageSlug);
-          disciplineSlugs.add(serviceMeta.disciplineSlug);
+        if (primaryDiscipline) {
+          disciplineSlugs.add(primaryDiscipline.slug);
+          const stageSlug = canonicalDisciplineStageBySlug.get(primaryDiscipline.slug as CanonicalDisciplineSlug);
+          if (stageSlug) stageSlugs.add(stageSlug);
         }
-      }
 
-      for (const service of providerServices) {
-        if (!service) continue;
-        serviceSlugs.add(service.slug);
-        const serviceMeta = canonicalServiceMetaBySlug.get(service.slug as CanonicalServiceSlug);
-        if (serviceMeta) {
-          stageSlugs.add(serviceMeta.stageSlug);
-          disciplineSlugs.add(serviceMeta.disciplineSlug);
+        if (primaryService) {
+          serviceSlugs.add(primaryService.slug);
+          const serviceMeta = canonicalServiceMetaBySlug.get(primaryService.slug as CanonicalServiceSlug);
+          if (serviceMeta) {
+            stageSlugs.add(serviceMeta.stageSlug);
+            disciplineSlugs.add(serviceMeta.disciplineSlug);
+          }
         }
-      }
 
-      for (const workType of providerWorkTypes) {
-        if (!workType) continue;
-        workTypeSlugs.add(workType.code);
-      }
+        for (const serviceId of provider.serviceIds ?? []) {
+          const service = serviceById.get(serviceId);
+          if (!service) continue;
+          serviceSlugs.add(service.slug);
+          const serviceMeta = canonicalServiceMetaBySlug.get(service.slug as CanonicalServiceSlug);
+          if (serviceMeta) {
+            stageSlugs.add(serviceMeta.stageSlug);
+            disciplineSlugs.add(serviceMeta.disciplineSlug);
+          }
+        }
 
-      const providerHaystack = normalizeSearchText(
-        [
-          provider.name,
-          provider.trade,
-          provider.categorySlug,
-          provider.location,
-          provider.city,
-          providerPhase?.name,
-          primaryDiscipline?.name,
-          primaryService?.name,
-          ...taxonomyTerms,
-          ...Array.from(stageSlugs),
-          ...Array.from(disciplineSlugs),
-          ...Array.from(serviceSlugs),
-          ...Array.from(workTypeSlugs),
-        ]
-          .filter(Boolean)
-          .join(" "),
-      );
+        for (const workTypeId of provider.workTypeIds ?? []) {
+          const workType = workTypeById.get(workTypeId);
+          if (workType) workTypeSlugs.add(workType.code);
+        }
 
-      const matchesQuery =
-        normalizedSearchTerms.length === 0 ||
-        normalizedSearchTerms.some((term) => term.length >= 2 && providerHaystack.includes(term));
+        const providerHaystack = normalizeSearchText(
+          [
+            provider.name,
+            provider.trade,
+            provider.categorySlug,
+            provider.location,
+            provider.city,
+            providerPhase?.name,
+            primaryDiscipline?.name,
+            primaryService?.name,
+            ...taxonomyTerms,
+            ...Array.from(stageSlugs),
+            ...Array.from(disciplineSlugs),
+            ...Array.from(serviceSlugs),
+            ...Array.from(workTypeSlugs),
+          ]
+            .filter(Boolean)
+            .join(" "),
+        );
 
-      const matchesLegacyCategory =
-        !searchState.categoria ||
-        provider.categorySlug === searchState.categoria ||
-        stageSlugs.has(searchState.categoria) ||
-        disciplineSlugs.has(searchState.categoria) ||
-        serviceSlugs.has(searchState.categoria) ||
-        workTypeSlugs.has(searchState.categoria) ||
-        mapping?.serviceSlug === searchState.categoria ||
-        mapping?.disciplineSlug === searchState.categoria ||
-        mapping?.stageSlug === searchState.categoria ||
-        mapping?.workTypeSlug === searchState.categoria;
+        return {
+          provider,
+          mapping,
+          providerHaystack,
+          stageSlugs,
+          disciplineSlugs,
+          serviceSlugs,
+          workTypeSlugs,
+        };
+      }),
+    [providers, phaseById, disciplineById, serviceById, workTypeById],
+  );
 
-      const matchesStage = !searchState.etapa || stageSlugs.has(searchState.etapa);
-      const matchesDiscipline = !searchState.disciplina || disciplineSlugs.has(searchState.disciplina);
-      const matchesService = !searchState.servicio || serviceSlugs.has(searchState.servicio);
-      const matchesWorkType = !searchState.tipoObra || workTypeSlugs.has(searchState.tipoObra);
+  const filteredProviders = useMemo(
+    () =>
+      providerSearchIndex
+        .filter((item) => {
+          const matchesQuery =
+            normalizedSearchTerms.length === 0 ||
+            normalizedSearchTerms.some(
+              (term) => term.length >= 2 && item.providerHaystack.includes(term),
+            );
 
-      return (
-        matchesQuery &&
-        matchesLegacyCategory &&
-        matchesStage &&
-        matchesDiscipline &&
-        matchesService &&
-        matchesWorkType
-      );
-    });
-  }, [
-    providers,
-    phaseById,
-    disciplineById,
-    serviceById,
-    workTypeById,
-    normalizedSearchTerms,
-    searchState.categoria,
-    searchState.etapa,
-    searchState.disciplina,
-    searchState.servicio,
-    searchState.tipoObra,
-  ]);
+          const matchesLegacyCategory =
+            !searchState.categoria ||
+            item.provider.categorySlug === searchState.categoria ||
+            item.stageSlugs.has(searchState.categoria) ||
+            item.disciplineSlugs.has(searchState.categoria) ||
+            item.serviceSlugs.has(searchState.categoria) ||
+            item.workTypeSlugs.has(searchState.categoria) ||
+            item.mapping?.serviceSlug === searchState.categoria ||
+            item.mapping?.disciplineSlug === searchState.categoria ||
+            item.mapping?.stageSlug === searchState.categoria ||
+            item.mapping?.workTypeSlug === searchState.categoria;
+
+          const matchesStage = !searchState.etapa || item.stageSlugs.has(searchState.etapa);
+          const matchesDiscipline =
+            !searchState.disciplina || item.disciplineSlugs.has(searchState.disciplina);
+          const matchesService = !searchState.servicio || item.serviceSlugs.has(searchState.servicio);
+          const matchesWorkType = !searchState.tipoObra || item.workTypeSlugs.has(searchState.tipoObra);
+
+          return (
+            matchesQuery &&
+            matchesLegacyCategory &&
+            matchesStage &&
+            matchesDiscipline &&
+            matchesService &&
+            matchesWorkType
+          );
+        })
+        .map((item) => item.provider),
+    [
+      providerSearchIndex,
+      normalizedSearchTerms,
+      searchState.categoria,
+      searchState.etapa,
+      searchState.disciplina,
+      searchState.servicio,
+      searchState.tipoObra,
+    ],
+  );
 
   const filteredMaterials = useMemo(
     () =>
@@ -599,7 +608,12 @@ const SearchPage = () => {
               ) : filteredProviders.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {filteredProviders.map((provider) => (
-                    <ProviderCard key={provider.id} provider={provider} />
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      phases={phases}
+                      taxonomyCatalog={taxonomyCatalog}
+                    />
                   ))}
                 </div>
               ) : (

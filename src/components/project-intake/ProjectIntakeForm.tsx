@@ -2,6 +2,13 @@ import type { Phase } from "@/data/marketplace";
 import type { TaxonomyCatalog } from "@/lib/taxonomy-api";
 import type { IntakeUrgency, ProjectIntakeDraft } from "@/lib/project-intake";
 import { INTAKE_URGENCY_OPTIONS } from "@/lib/project-intake";
+import {
+  CANONICAL_DISCIPLINES,
+  CANONICAL_SERVICES,
+  type CanonicalDisciplineSlug,
+  type CanonicalServiceSlug,
+  type CanonicalStageSlug,
+} from "@/lib/taxonomy";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { Button } from "@/components/ui/button";
@@ -33,12 +40,49 @@ const ProjectIntakeForm = ({
   onContinue,
   continueDisabled,
 }: ProjectIntakeFormProps) => {
+  const canonicalDisciplineStageBySlug = new Map(
+    CANONICAL_DISCIPLINES.map((item) => [item.slug, item.stageSlug]),
+  );
+  const canonicalServiceStageBySlug = new Map(
+    CANONICAL_SERVICES.map((item) => [item.slug, item.stageSlug]),
+  );
+
+  const inferCanonicalStageFromPhaseSlug = (phaseSlug?: string): CanonicalStageSlug | undefined => {
+    if (!phaseSlug) return undefined;
+    if (phaseSlug.includes("plan") || phaseSlug.includes("pre-")) return "planificacion";
+    if (phaseSlug.includes("mant") || phaseSlug.includes("final")) return "mantenimiento";
+    return "construccion";
+  };
+
+  const selectedPhaseSlug = phases.find((item) => item.id === draft.stageId)?.slug;
+  const selectedCanonicalStage = inferCanonicalStageFromPhaseSlug(selectedPhaseSlug);
+  const hasDirectTaxonomyStageMatch = Boolean(
+    draft.stageId &&
+      (taxonomy?.disciplines ?? []).some((item) => item.stageId === draft.stageId),
+  );
+
   const filteredDisciplines = (taxonomy?.disciplines ?? []).filter((item) =>
-    draft.stageId ? item.stageId === draft.stageId : true,
+    draft.stageId
+      ? hasDirectTaxonomyStageMatch
+        ? item.stageId === draft.stageId
+        : selectedCanonicalStage
+          ? canonicalDisciplineStageBySlug.get(item.slug as CanonicalDisciplineSlug) === selectedCanonicalStage
+          : true
+      : true,
   );
 
   const filteredServices = (taxonomy?.services ?? []).filter((item) => {
-    if (draft.stageId && item.stageId !== draft.stageId) return false;
+    if (draft.stageId) {
+      if (hasDirectTaxonomyStageMatch) {
+        if (item.stageId !== draft.stageId) return false;
+      } else if (selectedCanonicalStage) {
+        if (
+          canonicalServiceStageBySlug.get(item.slug as CanonicalServiceSlug) !== selectedCanonicalStage
+        ) {
+          return false;
+        }
+      }
+    }
     if (draft.disciplineId && item.disciplineId !== draft.disciplineId) return false;
     return true;
   });
