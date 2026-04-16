@@ -423,13 +423,4 @@ export const MATERIALS: Material[] = [
   },
 ];
 
-export const POPULAR_CATEGORIES = [
-  { name: "Arquitectos", slug: "arquitectos", count: 48 },
-  { name: "Ingenieros", slug: "ingenieros-estructurales", count: 35 },
-  { name: "Contratistas", slug: "contratistas-generales", count: 92 },
-  { name: "Electricistas", slug: "electricistas", count: 67 },
-  { name: "Plomeros", slug: "plomeros", count: 54 },
-  { name: "Materiales", slug: "materiales", count: 120 },
-  { name: "Excavación", slug: "excavacion", count: 23 },
-  { name: "Pintores", slug: "pintores", count: 41 },
-];
+

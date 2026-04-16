@@ -1,12 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { MATERIALS, PHASES, POPULAR_CATEGORIES, PROVIDERS, Material, Phase, Provider } from "@/data/marketplace";
-
-export interface PopularCategory {
-  slug: string;
-  name: string;
-  count: number;
-}
+import { MATERIALS, PHASES, PROVIDERS, Material, Phase, Provider } from "@/data/marketplace";
 
 export interface PublishServiceInput {
   postType: string;
@@ -273,36 +267,6 @@ export const fetchPhases = async (): Promise<Phase[]> => {
         name: category.name,
         icon: category.icon,
       })),
-  }));
-};
-
-export const fetchPopularCategories = async (): Promise<PopularCategory[]> => {
-  if (!hasSupabaseConfig) {
-    return POPULAR_CATEGORIES.map((category) => ({
-      slug: category.slug,
-      name: category.name,
-      count: category.count,
-    }));
-  }
-
-  const { data, error } = await supabase
-    .from("categories")
-    .select("slug,name,popularity_count")
-    .order("popularity_count", { ascending: false })
-    .limit(8);
-
-  if (error || !data?.length) {
-    return POPULAR_CATEGORIES.map((category) => ({
-      slug: category.slug,
-      name: category.name,
-      count: category.count,
-    }));
-  }
-
-  return data.map((category) => ({
-    slug: category.slug,
-    name: category.name,
-    count: category.popularity_count,
   }));
 };
 

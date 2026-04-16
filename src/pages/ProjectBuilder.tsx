@@ -278,7 +278,7 @@ const ProjectBuilder = () => {
                   <p className="text-base font-semibold text-foreground">Solicitud procesada</p>
                   <p className="text-sm text-muted-foreground">
                     Leads creados: {createdLeadsCount}
-                    {failedLeadsCount > 0 ? ` • Fallidos: ${failedLeadsCount}` : ""}
+                    {failedLeadsCount > 0 ? ` | Fallidos: ${failedLeadsCount}` : ""}
                   </p>
                 </div>
               </div>

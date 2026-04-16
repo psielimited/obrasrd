@@ -3,7 +3,6 @@ import {
   createServicePost,
   fetchMaterials,
   fetchPhases,
-  fetchPopularCategories,
   fetchProviderById,
   fetchProviders,
   PublishServiceInput,
@@ -14,7 +13,6 @@ export const marketplaceQueryKeys = {
   provider: (id: string) => ["marketplace", "providers", id] as const,
   materials: ["marketplace", "materials"] as const,
   phases: ["marketplace", "phases"] as const,
-  popularCategories: ["marketplace", "popular-categories"] as const,
 };
 
 export const useProviders = () =>
@@ -40,12 +38,6 @@ export const usePhases = () =>
   useQuery({
     queryKey: marketplaceQueryKeys.phases,
     queryFn: fetchPhases,
-  });
-
-export const usePopularCategories = () =>
-  useQuery({
-    queryKey: marketplaceQueryKeys.popularCategories,
-    queryFn: fetchPopularCategories,
   });
 
 export { createServicePost };
