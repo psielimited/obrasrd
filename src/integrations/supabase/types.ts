@@ -232,6 +232,13 @@ export type Database = {
             foreignKeyName: "leads_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_summary_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "provider_trust_signals"
             referencedColumns: ["provider_id"]
           },
@@ -700,6 +707,13 @@ export type Database = {
             foreignKeyName: "portfolio_projects_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_summary_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_projects_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "provider_trust_signals"
             referencedColumns: ["provider_id"]
           },
@@ -893,6 +907,13 @@ export type Database = {
             foreignKeyName: "provider_services_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_summary_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "provider_trust_signals"
             referencedColumns: ["provider_id"]
           },
@@ -1008,6 +1029,13 @@ export type Database = {
             foreignKeyName: "provider_verifications_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
+            referencedRelation: "provider_summary_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_verifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
             referencedRelation: "provider_trust_signals"
             referencedColumns: ["provider_id"]
           },
@@ -1040,6 +1068,13 @@ export type Database = {
           work_type_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "provider_work_types_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_summary_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "provider_work_types_provider_id_fkey"
             columns: ["provider_id"]
@@ -1213,6 +1248,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "saved_providers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_summary_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "saved_providers_provider_id_fkey"
             columns: ["provider_id"]
@@ -1514,6 +1556,83 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      provider_summary_view: {
+        Row: {
+          active_this_month: boolean | null
+          category_slug: string | null
+          city: string | null
+          completed_projects: number | null
+          description: string | null
+          id: string | null
+          identity_confirmed: boolean | null
+          is_featured: boolean | null
+          location: string | null
+          name: string | null
+          phase_id: number | null
+          portfolio_images: string[] | null
+          portfolio_project_count: number | null
+          portfolio_validated: boolean | null
+          primary_discipline_id: number | null
+          primary_service_id: number | null
+          project_registered: boolean | null
+          provider_verified: boolean | null
+          rapid_response: boolean | null
+          rating: number | null
+          review_count: number | null
+          service_areas: string[] | null
+          service_ids: number[] | null
+          starting_price: number | null
+          trade: string | null
+          verified: boolean | null
+          whatsapp: string | null
+          work_type_ids: number[] | null
+          years_experience: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "providers_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "providers_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "legacy_category_mapping_report"
+            referencedColumns: ["legacy_category_slug"]
+          },
+          {
+            foreignKeyName: "providers_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "providers_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "providers_primary_discipline_id_fkey"
+            columns: ["primary_discipline_id"]
+            isOneToOne: false
+            referencedRelation: "disciplines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "providers_primary_service_id_fkey"
+            columns: ["primary_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_trust_signals: {
         Row: {
