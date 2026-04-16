@@ -148,6 +148,28 @@ const ProviderProfile = () => {
     return Array.from(labels);
   }, [phase?.name, fallback?.stageLabel]);
 
+  // Analytics tracking — must be before any early returns to respect hooks rules
+  const providerId = provider?.id;
+  const phaseId = provider?.phaseId;
+  const primaryDisciplineId = provider?.primaryDisciplineId;
+  const primaryServiceId = provider?.primaryServiceId;
+  const firstWorkTypeId = provider?.workTypeIds?.[0];
+  const providerCity = provider?.city || provider?.location;
+  const province = deriveProvinceFromText(providerCity ?? "");
+
+  useEffect(() => {
+    if (!providerId) return;
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderViewed, {
+      source: "provider_profile",
+      provider_id: providerId,
+      stage_id: phaseId,
+      discipline_id: primaryDisciplineId,
+      service_id: primaryServiceId,
+      work_type_id: firstWorkTypeId,
+      province,
+    });
+  }, [providerId, phaseId, primaryDisciplineId, primaryServiceId, firstWorkTypeId, province]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -191,20 +213,6 @@ const ProviderProfile = () => {
     work_type_id: provider.workTypeIds?.[0],
     province: deriveProvinceFromText(provider.city || provider.location),
   };
-
-  useEffect(() => {
-    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderViewed, {
-      source: "provider_profile",
-      ...analyticsMeta,
-    });
-  }, [
-    analyticsMeta.provider_id,
-    analyticsMeta.stage_id,
-    analyticsMeta.discipline_id,
-    analyticsMeta.service_id,
-    analyticsMeta.work_type_id,
-    analyticsMeta.province,
-  ]);
 
   const submitLead = async () => {
     if (!canSubmitLead || isSubmittingLead) return;
