@@ -21,6 +21,8 @@ import {
 } from "@/lib/legacy-taxonomy-compat";
 import { buildSearchNormalization, normalizeSearchText } from "@/lib/search/search-normalization";
 import { logUnmatchedNormalizedSearchQuery } from "@/lib/search/search-analytics";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import {
   clearStructuredFilters,
   countActiveStructuredFilters,
@@ -38,6 +40,21 @@ const canonicalDisciplineStageBySlug = new Map(
 const canonicalServiceMetaBySlug = new Map(
   CANONICAL_SERVICES.map((item) => [item.slug, { stageSlug: item.stageSlug, disciplineSlug: item.disciplineSlug }]),
 );
+
+const hashFnv1a = (value: string) => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash +=
+      (hash << 1) +
+      (hash << 4) +
+      (hash << 7) +
+      (hash << 8) +
+      (hash << 24);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, "0");
+};
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -90,6 +107,10 @@ const SearchPage = () => {
   const serviceById = useMemo(() => new Map(allServices.map((item) => [item.id, item])), [allServices]);
   const workTypeById = useMemo(() => new Map(allWorkTypes.map((item) => [item.id, item])), [allWorkTypes]);
   const phaseById = useMemo(() => new Map(phases.map((item) => [item.id, item])), [phases]);
+  const phaseIdBySlug = useMemo(() => new Map(phases.map((item) => [item.slug, item.id])), [phases]);
+  const disciplineBySlug = useMemo(() => new Map(allDisciplines.map((item) => [item.slug, item])), [allDisciplines]);
+  const serviceBySlug = useMemo(() => new Map(allServices.map((item) => [item.slug, item])), [allServices]);
+  const workTypeByCode = useMemo(() => new Map(allWorkTypes.map((item) => [item.code, item])), [allWorkTypes]);
 
   const stageIdsBySlug = useMemo(() => {
     const map = new Map<string, Set<number>>();
@@ -217,7 +238,113 @@ const SearchPage = () => {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const normalized = buildSearchNormalization(queryDraft.trim());
+    if (normalized.normalizedQuery) {
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.NormalizedSearchExecuted, {
+        source: "search_page",
+        query_hash: hashFnv1a(normalized.normalizedQuery),
+        token_count: normalized.normalizedTokens.length,
+        character_count: normalized.normalizedQuery.length,
+        matched_synonym_count: normalized.matchedSynonymIds.length,
+      });
+    }
     applyPatch({ q: queryDraft.trim() }, false);
+  };
+
+  const onCategoryChange = (value: string) => {
+    applyPatch({ categoria: value }, false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "categoria",
+      has_value: Boolean(value),
+    });
+  };
+
+  const onStageChange = (value: string) => {
+    const stageId = value ? phaseIdBySlug.get(value) : undefined;
+    applyPatch({ etapa: value, disciplina: "", servicio: "" }, false);
+
+    if (value) {
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.StageSelected, {
+        source: "search_filters",
+        stage_id: stageId,
+        stage_slug: value,
+      });
+    }
+
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "etapa",
+      has_value: Boolean(value),
+      stage_id: stageId,
+    });
+  };
+
+  const onDisciplineChange = (value: string) => {
+    const discipline = value ? disciplineBySlug.get(value) : undefined;
+    applyPatch({ disciplina: value, servicio: "" }, false);
+
+    if (discipline) {
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.DisciplineSelected, {
+        source: "search_filters",
+        discipline_id: discipline.id,
+        stage_id: discipline.stageId,
+        discipline_slug: discipline.slug,
+      });
+    }
+
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "disciplina",
+      has_value: Boolean(value),
+      discipline_id: discipline?.id,
+      stage_id: discipline?.stageId,
+    });
+  };
+
+  const onServiceChange = (value: string) => {
+    const service = value ? serviceBySlug.get(value) : undefined;
+    applyPatch({ servicio: value }, false);
+
+    if (service) {
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ServiceSelected, {
+        source: "search_filters",
+        service_id: service.id,
+        discipline_id: service.disciplineId,
+        stage_id: service.stageId,
+        service_slug: service.slug,
+      });
+    }
+
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "servicio",
+      has_value: Boolean(value),
+      service_id: service?.id,
+      discipline_id: service?.disciplineId,
+      stage_id: service?.stageId,
+    });
+  };
+
+  const onWorkTypeChange = (value: string) => {
+    const workType = value ? workTypeByCode.get(value) : undefined;
+    applyPatch({ tipoObra: value }, false);
+
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "tipo_obra",
+      has_value: Boolean(value),
+      work_type_id: workType?.id,
+    });
+  };
+
+  const onClearFilters = () => {
+    applyState(clearStructuredFilters(searchState), false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "clear_all",
+      has_value: false,
+    });
   };
 
   useEffect(() => {
@@ -447,12 +574,12 @@ const SearchPage = () => {
               activeFilterCount={activeFilterCount}
               isTaxonomyLoading={isTaxonomyLoading}
               hasTaxonomyError={hasTaxonomyError}
-              onCategoryChange={(value) => applyPatch({ categoria: value }, false)}
-              onStageChange={(value) => applyPatch({ etapa: value, disciplina: "", servicio: "" }, false)}
-              onDisciplineChange={(value) => applyPatch({ disciplina: value, servicio: "" }, false)}
-              onServiceChange={(value) => applyPatch({ servicio: value }, false)}
-              onWorkTypeChange={(value) => applyPatch({ tipoObra: value }, false)}
-              onClearFilters={() => applyState(clearStructuredFilters(searchState), false)}
+              onCategoryChange={onCategoryChange}
+              onStageChange={onStageChange}
+              onDisciplineChange={onDisciplineChange}
+              onServiceChange={onServiceChange}
+              onWorkTypeChange={onWorkTypeChange}
+              onClearFilters={onClearFilters}
             />
           )}
 

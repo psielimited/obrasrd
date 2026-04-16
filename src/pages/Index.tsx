@@ -174,6 +174,7 @@ const Index = () => {
             {intentCards.map((intent) => (
               <IntentEntryCard
                 key={intent.id}
+                intentId={intent.id}
                 title={intent.title}
                 description={intent.description}
                 tags={intent.tags}

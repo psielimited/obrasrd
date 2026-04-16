@@ -5,6 +5,9 @@ import { useState } from "react";
 import { createServicePost, usePhases } from "@/hooks/use-marketplace-data";
 import { useToast } from "@/hooks/use-toast";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { deriveProvinceFromText } from "@/lib/analytics/province";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 
 const PublishService = () => {
   const navigate = useNavigate();
@@ -52,6 +55,17 @@ const PublishService = () => {
         requestedDisciplineId,
         requestedServiceId,
         requestedWorkTypeId,
+      });
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProjectRequestCreated, {
+        source: "publish_service",
+        provider_count: 0,
+        success_count: 1,
+        failed_count: 0,
+        stage_id: requestedStageId,
+        discipline_id: requestedDisciplineId,
+        service_id: requestedServiceId,
+        work_type_id: requestedWorkTypeId,
+        province: deriveProvinceFromText(location),
       });
       setSubmitted(true);
     } catch (error) {
@@ -162,6 +176,18 @@ const PublishService = () => {
                   setRequestedStageId(next);
                   setRequestedDisciplineId(undefined);
                   setRequestedServiceId(undefined);
+                  if (next) {
+                    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.StageSelected, {
+                      source: "publish_service",
+                      stage_id: next,
+                    });
+                  }
+                  trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+                    source: "publish_service",
+                    filter_name: "etapa",
+                    has_value: Boolean(next),
+                    stage_id: next,
+                  });
                 }}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
               >
@@ -184,6 +210,22 @@ const PublishService = () => {
                   const next = event.target.value ? Number(event.target.value) : undefined;
                   setRequestedDisciplineId(next);
                   setRequestedServiceId(undefined);
+                  const selected = filteredDisciplines.find((item) => item.id === next);
+                  if (selected) {
+                    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.DisciplineSelected, {
+                      source: "publish_service",
+                      discipline_id: selected.id,
+                      stage_id: selected.stageId,
+                      discipline_slug: selected.slug,
+                    });
+                  }
+                  trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+                    source: "publish_service",
+                    filter_name: "disciplina",
+                    has_value: Boolean(next),
+                    discipline_id: selected?.id,
+                    stage_id: selected?.stageId,
+                  });
                 }}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
               >
@@ -202,7 +244,28 @@ const PublishService = () => {
               </label>
               <select
                 value={requestedServiceId ? String(requestedServiceId) : ""}
-                onChange={(event) => setRequestedServiceId(event.target.value ? Number(event.target.value) : undefined)}
+                onChange={(event) => {
+                  const next = event.target.value ? Number(event.target.value) : undefined;
+                  setRequestedServiceId(next);
+                  const selected = filteredServices.find((item) => item.id === next);
+                  if (selected) {
+                    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ServiceSelected, {
+                      source: "publish_service",
+                      service_id: selected.id,
+                      discipline_id: selected.disciplineId,
+                      stage_id: selected.stageId,
+                      service_slug: selected.slug,
+                    });
+                  }
+                  trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+                    source: "publish_service",
+                    filter_name: "servicio",
+                    has_value: Boolean(next),
+                    service_id: selected?.id,
+                    discipline_id: selected?.disciplineId,
+                    stage_id: selected?.stageId,
+                  });
+                }}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="">Sin especificar</option>
@@ -220,7 +283,16 @@ const PublishService = () => {
               </label>
               <select
                 value={requestedWorkTypeId ? String(requestedWorkTypeId) : ""}
-                onChange={(event) => setRequestedWorkTypeId(event.target.value ? Number(event.target.value) : undefined)}
+                onChange={(event) => {
+                  const next = event.target.value ? Number(event.target.value) : undefined;
+                  setRequestedWorkTypeId(next);
+                  trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+                    source: "publish_service",
+                    filter_name: "tipo_obra",
+                    has_value: Boolean(next),
+                    work_type_id: next,
+                  });
+                }}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="">Sin especificar</option>

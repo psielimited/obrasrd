@@ -24,6 +24,9 @@ import {
 } from "@/lib/provider-trust";
 import { getCategoryTheme } from "@/lib/category-theme";
 import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { deriveProvinceFromText } from "@/lib/analytics/province";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { cn } from "@/lib/utils";
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -180,6 +183,28 @@ const ProviderProfile = () => {
   const active = isProviderActive(provider, { profileCompleteness: completeness });
   const images = provider.portfolioImages ?? [];
   const heroImage = images[0] ?? "";
+  const analyticsMeta = {
+    provider_id: provider.id,
+    stage_id: provider.phaseId,
+    discipline_id: provider.primaryDisciplineId,
+    service_id: provider.primaryServiceId,
+    work_type_id: provider.workTypeIds?.[0],
+    province: deriveProvinceFromText(provider.city || provider.location),
+  };
+
+  useEffect(() => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderViewed, {
+      source: "provider_profile",
+      ...analyticsMeta,
+    });
+  }, [
+    analyticsMeta.provider_id,
+    analyticsMeta.stage_id,
+    analyticsMeta.discipline_id,
+    analyticsMeta.service_id,
+    analyticsMeta.work_type_id,
+    analyticsMeta.province,
+  ]);
 
   const submitLead = async () => {
     if (!canSubmitLead || isSubmittingLead) return;
@@ -195,6 +220,22 @@ const ProviderProfile = () => {
         requestedStageId: provider.phaseId,
         requestedDisciplineId: provider.primaryDisciplineId,
         requestedServiceId: provider.primaryServiceId,
+      });
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderContacted, {
+        source: "provider_profile",
+        method: "quote_form",
+        ...analyticsMeta,
+      });
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProjectRequestCreated, {
+        source: "provider_profile",
+        provider_count: 1,
+        success_count: 1,
+        failed_count: 0,
+        stage_id: provider.phaseId,
+        discipline_id: provider.primaryDisciplineId,
+        service_id: provider.primaryServiceId,
+        work_type_id: provider.workTypeIds?.[0],
+        province: deriveProvinceFromText(provider.city || provider.location),
       });
 
       toast({
@@ -266,6 +307,15 @@ const ProviderProfile = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const onWhatsappContact = () => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderContacted, {
+      source: "provider_profile",
+      method: "whatsapp",
+      ...analyticsMeta,
+    });
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -579,7 +629,7 @@ const ProviderProfile = () => {
           <Button
             variant="default"
             className="h-11 flex-1 rounded-xl border border-[#1A1612]/15 bg-[#1A1612] text-[11px] uppercase tracking-[0.12em] text-white hover:bg-[#9E5A24]"
-            onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}
+            onClick={onWhatsappContact}
           >
             <span className="h-[7px] w-[7px] rounded-full bg-whatsapp shadow-[0_0_0_2px_hsl(var(--whatsapp)/0.25)]" />
             WhatsApp

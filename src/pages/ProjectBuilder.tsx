@@ -17,6 +17,9 @@ import {
 import { matchProvidersDeterministic } from "@/lib/provider-matching";
 import { createRequestMediaSignedUrl, uploadImageAsset } from "@/lib/media-api";
 import { useToast } from "@/hooks/use-toast";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { deriveProvinceFromText } from "@/lib/analytics/province";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 
 type IntakeStep = "intake" | "matching" | "confirmation";
 
@@ -191,6 +194,17 @@ const ProjectBuilder = () => {
     setFailedLeadsCount(failed);
     setIsSubmitting(false);
     setStep("confirmation");
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProjectRequestCreated, {
+      source: "project_builder",
+      provider_count: selectedProviderIds.length,
+      success_count: created,
+      failed_count: failed,
+      stage_id: draft.stageId,
+      discipline_id: draft.disciplineId,
+      service_id: draft.serviceId,
+      work_type_id: draft.projectTypeId,
+      province: deriveProvinceFromText(draft.location),
+    });
 
     if (created > 0) {
       toast({

@@ -10,6 +10,9 @@ import {
   getProviderTrustBadges,
 } from "@/lib/provider-trust";
 import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { deriveProvinceFromText } from "@/lib/analytics/province";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { useNavigate } from "react-router-dom";
 
 interface ProviderCardProps {
@@ -42,6 +45,36 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
     `Hola, me interesa cotizar ${provider.trade}. Vi su perfil en ObrasRD.`,
   )}`;
 
+  const analyticsMeta = {
+    provider_id: provider.id,
+    stage_id: provider.phaseId,
+    discipline_id: provider.primaryDisciplineId,
+    service_id: provider.primaryServiceId,
+    work_type_id: provider.workTypeIds?.[0],
+    province: deriveProvinceFromText(provider.city || provider.location),
+  };
+
+  const trackProviderViewed = (source: "provider_card" | "search_results") => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderViewed, {
+      source,
+      ...analyticsMeta,
+    });
+  };
+
+  const onOpenProfile = () => {
+    trackProviderViewed("provider_card");
+    navigate(`/proveedor/${provider.id}`);
+  };
+
+  const onContactViaWhatsapp = () => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderContacted, {
+      source: "provider_card",
+      method: "whatsapp",
+      ...analyticsMeta,
+    });
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <ProofFirstCard
       imageUrl={provider.portfolioImages[0]}
@@ -52,7 +85,7 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
       workTypeLabel={workTypeLabel}
       locationLabel={provider.location || provider.city || "Ubicacion no indicada"}
       providerNameLabel={provider.name}
-      onCardClick={() => navigate(`/proveedor/${provider.id}`)}
+      onCardClick={onOpenProfile}
       topRightBadge={provider.isFeatured ? <Badge className="bg-accent text-accent-foreground">Destacado (Plan)</Badge> : undefined}
       trustContent={
         trustBadges.length > 0 ? (
@@ -68,12 +101,12 @@ const ProviderCard = ({ provider }: ProviderCardProps) => {
         )
       }
       primaryCta={
-        <Button className="flex-1" size="sm" onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}>
+        <Button className="flex-1" size="sm" onClick={onContactViaWhatsapp}>
           Cotizar
         </Button>
       }
       secondaryCta={
-        <Button variant="outline" size="sm" onClick={() => navigate(`/proveedor/${provider.id}`)}>
+        <Button variant="outline" size="sm" onClick={onOpenProfile}>
           Ver perfil
         </Button>
       }

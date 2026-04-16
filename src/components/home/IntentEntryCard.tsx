@@ -2,8 +2,11 @@ import { ArrowRight, ClipboardList, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 
 interface IntentEntryCardProps {
+  intentId: string;
   title: string;
   description: string;
   tags: string[];
@@ -14,6 +17,7 @@ interface IntentEntryCardProps {
 }
 
 const IntentEntryCard = ({
+  intentId,
   title,
   description,
   tags,
@@ -22,6 +26,13 @@ const IntentEntryCard = ({
   journeyHref,
   journeyLabel,
 }: IntentEntryCardProps) => {
+  const trackIntentClick = (cta: "search" | "intake" | "journey") => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.HomepageIntentClick, {
+      intent_id: intentId,
+      cta,
+    });
+  };
+
   return (
     <Card className="h-full overflow-hidden border-border/70 bg-card/95 p-5 obra-shadow-md">
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -46,19 +57,19 @@ const IntentEntryCard = ({
 
       <div className="space-y-2">
         <Button asChild className="w-full justify-between" variant="accent">
-          <Link to={searchHref}>
+          <Link to={searchHref} onClick={() => trackIntentClick("search")}>
             Ver opciones
             <Search className="h-4 w-4" />
           </Link>
         </Button>
         <Button asChild className="w-full justify-between" variant="outline">
-          <Link to={intakeHref}>
+          <Link to={intakeHref} onClick={() => trackIntentClick("intake")}>
             Iniciar solicitud
             <ClipboardList className="h-4 w-4" />
           </Link>
         </Button>
         <Button asChild className="w-full justify-between" variant="ghost">
-          <Link to={journeyHref}>
+          <Link to={journeyHref} onClick={() => trackIntentClick("journey")}>
             {journeyLabel}
             <ArrowRight className="h-4 w-4" />
           </Link>

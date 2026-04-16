@@ -1,3 +1,6 @@
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
+
 interface UnmatchedQueryPayload {
   hash: string;
   tokenCount: number;
@@ -27,21 +30,8 @@ const getUnmatchedPayload = (normalizedQuery: string): UnmatchedQueryPayload => 
 });
 
 export const logUnmatchedNormalizedSearchQuery = (normalizedQuery: string) => {
-  if (typeof window === "undefined") return;
   if (!normalizedQuery.trim()) return;
 
   const payload = getUnmatchedPayload(normalizedQuery);
-  const globalScope = window as unknown as {
-    plausible?: (eventName: string, options?: { props?: Record<string, unknown> }) => void;
-    analytics?: { track?: (eventName: string, payload?: Record<string, unknown>) => void };
-  };
-
-  if (typeof globalScope.plausible === "function") {
-    globalScope.plausible("search_unmatched_normalized_query", { props: payload });
-    return;
-  }
-
-  if (typeof globalScope.analytics?.track === "function") {
-    globalScope.analytics.track("search_unmatched_normalized_query", payload);
-  }
+  trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.SearchUnmatchedNormalizedQuery, payload);
 };

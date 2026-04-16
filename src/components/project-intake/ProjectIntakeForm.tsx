@@ -2,6 +2,8 @@ import type { Phase } from "@/data/marketplace";
 import type { TaxonomyCatalog } from "@/lib/taxonomy-api";
 import type { IntakeUrgency, ProjectIntakeDraft } from "@/lib/project-intake";
 import { INTAKE_URGENCY_OPTIONS } from "@/lib/project-intake";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { Button } from "@/components/ui/button";
 
 interface ProjectIntakeFormProps {
@@ -51,6 +53,12 @@ const ProjectIntakeForm = ({
             const value = event.target.value ? Number(event.target.value) : undefined;
             const selected = (taxonomy?.workTypes ?? []).find((item) => item.id === value);
             onChange({ projectTypeId: value, projectTypeLabel: selected?.name });
+            trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+              source: "project_intake",
+              filter_name: "tipo_obra",
+              has_value: Boolean(selected),
+              work_type_id: selected?.id,
+            });
           }}
           className="w-full rounded-lg bg-card px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-accent"
         >
@@ -68,6 +76,12 @@ const ProjectIntakeForm = ({
           onChange={(event) => {
             const nextStage = event.target.value ? Number(event.target.value) : undefined;
             onChange({ stageId: nextStage, disciplineId: undefined, serviceId: undefined });
+            if (nextStage) {
+              trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.StageSelected, {
+                source: "project_intake",
+                stage_id: nextStage,
+              });
+            }
           }}
           className="w-full rounded-lg bg-card px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-accent"
         >
@@ -82,7 +96,19 @@ const ProjectIntakeForm = ({
         <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Disciplina requerida</label>
         <select
           value={draft.disciplineId ? String(draft.disciplineId) : ""}
-          onChange={(event) => onChange({ disciplineId: event.target.value ? Number(event.target.value) : undefined, serviceId: undefined })}
+          onChange={(event) => {
+            const nextDisciplineId = event.target.value ? Number(event.target.value) : undefined;
+            const selected = filteredDisciplines.find((item) => item.id === nextDisciplineId);
+            onChange({ disciplineId: nextDisciplineId, serviceId: undefined });
+            if (selected) {
+              trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.DisciplineSelected, {
+                source: "project_intake",
+                discipline_id: selected.id,
+                stage_id: selected.stageId,
+                discipline_slug: selected.slug,
+              });
+            }
+          }}
           className="w-full rounded-lg bg-card px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-accent"
         >
           <option value="">Seleccionar</option>
@@ -96,7 +122,20 @@ const ProjectIntakeForm = ({
         <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Servicio especifico</label>
         <select
           value={draft.serviceId ? String(draft.serviceId) : ""}
-          onChange={(event) => onChange({ serviceId: event.target.value ? Number(event.target.value) : undefined })}
+          onChange={(event) => {
+            const nextServiceId = event.target.value ? Number(event.target.value) : undefined;
+            const selected = filteredServices.find((item) => item.id === nextServiceId);
+            onChange({ serviceId: nextServiceId });
+            if (selected) {
+              trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ServiceSelected, {
+                source: "project_intake",
+                service_id: selected.id,
+                discipline_id: selected.disciplineId,
+                stage_id: selected.stageId,
+                service_slug: selected.slug,
+              });
+            }
+          }}
           className="w-full rounded-lg bg-card px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-accent"
         >
           <option value="">Seleccionar</option>
