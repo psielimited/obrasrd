@@ -60,7 +60,7 @@ const InternalDataQualityPage = () => {
     );
   }
 
-  if (profile?.role !== "admin") {
+  if ((profile?.role as string) !== "admin") {
     return (
       <div className="min-h-screen px-4 py-8">
         <div className="mx-auto max-w-4xl rounded-xl border border-border bg-card p-6">

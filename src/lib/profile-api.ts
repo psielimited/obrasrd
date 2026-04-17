@@ -2,7 +2,7 @@ import type { Provider } from "@/data/marketplace";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
-export type UserRole = "buyer" | "provider" | "admin";
+export type UserRole = "buyer" | "provider";
 
 export interface UserProfile {
   userId: string;
