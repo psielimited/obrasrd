@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ShieldCheck, Wrench } from "lucide-react";
+import { BookOpen, Building2, Search } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import HowItWorks from "@/components/HowItWorks";
 import IntentEntryCard from "@/components/home/IntentEntryCard";
@@ -15,7 +15,6 @@ interface IntentDefinition {
   description: string;
   tags: string[];
   searchHref: string;
-  intakeHref: string;
   journeyLabel: string;
   journeyHref: string;
 }
@@ -27,7 +26,6 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     description: "Necesito equipos para arrancar una obra nueva con plan claro y ejecucion segura.",
     tags: ["obra nueva", "estructura", "contratistas"],
     searchHref: "/buscar?categoria=construccion&q=construccion",
-    intakeHref: "/proyectos?intencion=construir",
     journeyLabel: "Ver guia: casa desde cero",
     journeyHref: "/guias/construir-casa-desde-cero",
   },
@@ -37,7 +35,6 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     description: "Quiero renovar espacios sin improvisar presupuesto, tiempos ni acabados.",
     tags: ["interiores", "acabados", "reforma"],
     searchHref: "/buscar?categoria=remodelacion_de_cocina&q=remodelacion",
-    intakeHref: "/proyectos?intencion=remodelar",
     journeyLabel: "Ver guia: cocina y bano",
     journeyHref: "/guias/remodelar-cocina-bano",
   },
@@ -47,7 +44,6 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     description: "Busco arquitectura o ingenieria para definir el proyecto antes de construir.",
     tags: ["arquitectura", "ingenieria", "planos"],
     searchHref: "/buscar?categoria=planificacion&q=diseno",
-    intakeHref: "/proyectos?intencion=diseno",
     journeyLabel: "Ver guia: planos y permisos",
     journeyHref: "/guias/planos-y-permisos",
   },
@@ -57,7 +53,6 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     description: "Quiero control tecnico de obra para reducir riesgos, retrabajos y sobrecostos.",
     tags: ["control de obra", "calidad", "gerencia"],
     searchHref: "/buscar?categoria=supervision_de_obra&q=supervision",
-    intakeHref: "/proyectos?intencion=supervision",
     journeyLabel: "Ver guia: supervision de obra",
     journeyHref: "/guias/supervision-de-obra",
   },
@@ -67,7 +62,6 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     description: "Busco servicios para mantener la propiedad operativa y prevenir fallas.",
     tags: ["preventivo", "correctivo", "diagnostico"],
     searchHref: "/buscar?categoria=mantenimiento&q=mantenimiento",
-    intakeHref: "/proyectos?intencion=mantenimiento",
     journeyLabel: "Ver guia: mantenimiento",
     journeyHref: "/guias/mantenimiento-inmueble",
   },
@@ -77,7 +71,6 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     description: "Quiero comparar suplidores y materiales para comprar con confianza.",
     tags: ["suplidores", "materiales", "logistica"],
     searchHref: "/buscar?categoria=materiales&q=materiales",
-    intakeHref: "/proyectos?intencion=materiales",
     journeyLabel: "Ir al catalogo de materiales",
     journeyHref: "/materiales",
   },
@@ -96,7 +89,7 @@ const Index = () => {
   const featuredProviders = providers.slice(0, 4);
   const phaseSlugSet = new Set(phases.map((phase) => phase.slug));
 
-  const intentCards = INTENT_DEFINITIONS;
+  const intentCards = INTENT_DEFINITIONS.slice(0, 4);
 
   const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), "/buscar?categoria=planificacion");
   const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), "/buscar?categoria=construccion");
@@ -143,53 +136,95 @@ const Index = () => {
         <div className="container relative mx-auto max-w-5xl">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">ObrasRD - Republica Dominicana</p>
           <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
-            Contrata con criterio. Construye con confianza.
+            Busca servicios, conecta con profesionales y avanza tu obra con criterio.
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-background/80 md:text-base">
-            Selecciona tu necesidad, recibe opciones filtradas y arranca con una ruta clara de planificacion, construccion o mantenimiento.
+            Marketplace dominicano para construccion: descubre opciones confiables, registra tu empresa y consulta guias del sector en un mismo lugar.
           </p>
 
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button asChild variant="accent" size="lg" className="sm:w-auto">
-              <Link to="/#entradas-intencion">Empezar por necesidad</Link>
+              <Link to="/buscar">Buscar servicios</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-background/20 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
-              <Link to="/proyectos">Crear solicitud de proyecto</Link>
+            <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
+              <Link to="/publicar">Registrar empresa</Link>
             </Button>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div className="rounded-lg border border-background/15 bg-background/5 p-3">
-              <p className="mb-1 flex items-center gap-2 font-semibold text-background">
-                <ShieldCheck className="h-4 w-4 text-accent" />
-                Contratacion con criterio tecnico
-              </p>
-              <p className="text-background/75">Perfiles y rutas pensadas para decisiones de obra mas seguras.</p>
-            </div>
-            <div className="rounded-lg border border-background/15 bg-background/5 p-3">
-              <p className="mb-1 flex items-center gap-2 font-semibold text-background">
-                <Wrench className="h-4 w-4 text-accent" />
-                Flujo practico para obra real
-              </p>
-              <p className="text-background/75">De la primera busqueda al seguimiento del proyecto en un solo flujo.</p>
-            </div>
+          <div className="mt-4">
+            <Link
+              to="/guias"
+              className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
+            >
+              Ver guias y conocimiento del sector
+            </Link>
           </div>
         </div>
       </section>
 
-      <section id="entradas-intencion" className="px-4 py-10 md:py-14">
+      <section id="acciones-principales" className="px-4 py-10 md:py-12">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Que puedes hacer en ObrasRD</p>
+            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Tres caminos claros para arrancar hoy</h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <article className="rounded-xl border border-border bg-card p-5 obra-shadow">
+              <p className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
+                <Search className="h-5 w-5" />
+              </p>
+              <h3 className="text-lg font-black tracking-tight text-foreground">1) Buscar servicios o profesionales</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Compara opciones por especialidad, etapa y ubicacion para cotizar con mas claridad.
+              </p>
+              <Button asChild className="mt-4 w-full" variant="accent">
+                <Link to="/buscar">Buscar servicios</Link>
+              </Button>
+            </article>
+
+            <article className="rounded-xl border border-border bg-card p-5 obra-shadow">
+              <p className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
+                <Building2 className="h-5 w-5" />
+              </p>
+              <h3 className="text-lg font-black tracking-tight text-foreground">2) Registrar o promocionar tu empresa</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Muestra tus servicios y aumenta tu visibilidad ante clientes listos para contratar.
+              </p>
+              <Button asChild className="mt-4 w-full" variant="outline">
+                <Link to="/publicar">Registrar empresa</Link>
+              </Button>
+            </article>
+
+            <article className="rounded-xl border border-border bg-card p-5 obra-shadow">
+              <p className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
+                <BookOpen className="h-5 w-5" />
+              </p>
+              <h3 className="text-lg font-black tracking-tight text-foreground">3) Acceder a conocimiento del sector</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Consulta guias por escenario para planificar mejor y tomar decisiones tecnicas con contexto.
+              </p>
+              <Button asChild className="mt-4 w-full" variant="ghost">
+                <Link to="/guias">Ver guias</Link>
+              </Button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="entradas-intencion" className="px-4 pb-10 md:pb-12">
         <div className="container mx-auto max-w-5xl">
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Entrada principal</p>
-              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Elige tu necesidad y entra directo</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Explora por necesidad</p>
+              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Empieza por tu tipo de proyecto</h2>
             </div>
             <Button asChild variant="ghost" className="justify-start md:justify-center">
-              <Link to="/buscar">Ver todas las opciones</Link>
+              <Link to="/buscar">Ver todo en buscador</Link>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {intentCards.map((intent) => (
               <IntentEntryCard
                 key={intent.id}
@@ -198,48 +233,17 @@ const Index = () => {
                 description={intent.description}
                 tags={intent.tags}
                 searchHref={intent.searchHref}
-                intakeHref={intent.intakeHref}
                 journeyHref={intent.journeyHref}
                 journeyLabel={intent.journeyLabel}
               />
             ))}
           </div>
-
-          <div className="mt-4 rounded-xl border border-border bg-card p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Escenarios comunes</p>
-            <div className="mt-2 flex flex-col gap-1.5 text-sm md:flex-row md:flex-wrap md:gap-3">
-              <Link to="/guias/construir-casa-desde-cero" className="text-foreground/90 transition-colors hover:text-foreground">
-                Construir casa desde cero
-              </Link>
-              <Link to="/guias/remodelar-cocina-bano" className="text-foreground/90 transition-colors hover:text-foreground">
-                Remodelar cocina y bano
-              </Link>
-              <Link to="/guias/resolver-filtracion" className="text-foreground/90 transition-colors hover:text-foreground">
-                Resolver filtracion
-              </Link>
-              <Link to="/guias/planos-y-permisos" className="text-foreground/90 transition-colors hover:text-foreground">
-                Planos y permisos
-              </Link>
-              <Link to="/guias/supervision-de-obra" className="text-foreground/90 transition-colors hover:text-foreground">
-                Supervision de obra
-              </Link>
-              <Link to="/guias/mantenimiento-inmueble" className="text-foreground/90 transition-colors hover:text-foreground">
-                Mantenimiento de inmueble
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
 
-      <StageExplainerSection
-        planningHref={planningHref}
-        constructionHref={constructionHref}
-        maintenanceHref={maintenanceHref}
-      />
-
       <section id="proveedores-destacados" className="px-4 py-8 md:py-12">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Proveedores destacados</h2>
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Profesionales y empresas destacadas</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {featuredProviders.map((provider) => (
               <ProviderCard
@@ -252,6 +256,12 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <StageExplainerSection
+        planningHref={planningHref}
+        constructionHref={constructionHref}
+        maintenanceHref={maintenanceHref}
+      />
 
       <HowItWorks />
 

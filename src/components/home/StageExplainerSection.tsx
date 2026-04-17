@@ -38,8 +38,8 @@ const StageExplainerSection = ({ planningHref, constructionHref, maintenanceHref
     <section id="guias" className="px-4 py-10 md:py-14">
       <div className="container mx-auto max-w-5xl">
         <div className="mb-5">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Ruta del proyecto</p>
-          <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">De la idea al mantenimiento, sin perder el control</h2>
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Conocimiento del sector</p>
+          <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Entiende cada etapa antes de contratar</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

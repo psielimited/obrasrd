@@ -1,4 +1,4 @@
-import { ArrowRight, ClipboardList, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,6 @@ interface IntentEntryCardProps {
   description: string;
   tags: string[];
   searchHref: string;
-  intakeHref: string;
   journeyHref: string;
   journeyLabel: string;
 }
@@ -22,11 +21,10 @@ const IntentEntryCard = ({
   description,
   tags,
   searchHref,
-  intakeHref,
   journeyHref,
   journeyLabel,
 }: IntentEntryCardProps) => {
-  const trackIntentClick = (cta: "search" | "intake" | "journey") => {
+  const trackIntentClick = (cta: "search" | "journey") => {
     trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.HomepageIntentClick, {
       intent_id: intentId,
       cta,
@@ -60,12 +58,6 @@ const IntentEntryCard = ({
           <Link to={searchHref} onClick={() => trackIntentClick("search")}>
             Ver opciones
             <Search className="h-4 w-4" />
-          </Link>
-        </Button>
-        <Button asChild className="w-full justify-between" variant="outline">
-          <Link to={intakeHref} onClick={() => trackIntentClick("intake")}>
-            Iniciar solicitud
-            <ClipboardList className="h-4 w-4" />
           </Link>
         </Button>
         <Button asChild className="w-full justify-between" variant="ghost">

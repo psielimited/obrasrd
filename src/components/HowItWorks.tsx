@@ -4,22 +4,22 @@ const steps = [
   {
     icon: Search,
     title: "Busca",
-    description: "Encuentra profesionales y materiales por fase de construccion.",
+    description: "Filtra servicios y profesionales segun tu necesidad.",
   },
   {
     icon: ClipboardList,
     title: "Compara",
-    description: "Revisa perfiles, calificaciones y precios.",
+    description: "Revisa perfiles, experiencia y alcance antes de cotizar.",
   },
   {
     icon: MessageCircle,
     title: "Contacta",
-    description: "Comunicate directamente por WhatsApp.",
+    description: "Coordina por WhatsApp y valida disponibilidad rapidamente.",
   },
   {
     icon: CheckCircle,
     title: "Construye",
-    description: "Contrata y comienza tu proyecto.",
+    description: "Selecciona con criterio y arranca tu proyecto con confianza.",
   },
 ];
 
@@ -28,7 +28,7 @@ const HowItWorks = () => {
     <section id="como-funciona" className="px-4 py-8 md:py-12">
       <div className="container mx-auto max-w-5xl">
         <h2 className="mb-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          Como funciona
+          Como contratar en ObrasRD
         </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {steps.map((step, i) => (
