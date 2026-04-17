@@ -744,18 +744,21 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          owner_user_id: string | null
           phase_id: number
           project_id: string
         }
         Insert: {
           created_at?: string
           id?: never
+          owner_user_id?: string | null
           phase_id: number
           project_id: string
         }
         Update: {
           created_at?: string
           id?: never
+          owner_user_id?: string | null
           phase_id?: number
           project_id?: string
         }
@@ -789,6 +792,7 @@ export type Database = {
           current_phase: number | null
           id: string
           name: string
+          owner_user_id: string | null
           project_type: string
           updated_at: string
           work_type_id: number | null
@@ -798,6 +802,7 @@ export type Database = {
           current_phase?: number | null
           id?: string
           name: string
+          owner_user_id?: string | null
           project_type: string
           updated_at?: string
           work_type_id?: number | null
@@ -807,6 +812,7 @@ export type Database = {
           current_phase?: number | null
           id?: string
           name?: string
+          owner_user_id?: string | null
           project_type?: string
           updated_at?: string
           work_type_id?: number | null
@@ -1278,6 +1284,7 @@ export type Database = {
           estimated_budget: string | null
           id: string
           location: string
+          owner_user_id: string | null
           post_type: string
           requested_discipline_id: number | null
           requested_service_id: number | null
@@ -1294,6 +1301,7 @@ export type Database = {
           estimated_budget?: string | null
           id?: string
           location: string
+          owner_user_id?: string | null
           post_type: string
           requested_discipline_id?: number | null
           requested_service_id?: number | null
@@ -1310,6 +1318,7 @@ export type Database = {
           estimated_budget?: string | null
           id?: string
           location?: string
+          owner_user_id?: string | null
           post_type?: string
           requested_discipline_id?: number | null
           requested_service_id?: number | null
