@@ -376,10 +376,10 @@ const Index = () => {
               Registra tu perfil para ganar presencia en categorias de alta demanda, demostrar ejecucion con proyectos reales y captar leads en Republica Dominicana.
             </p>
             <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Visibilidad operativa en tu categoria y zona de servicio.</div>
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Leads directos con intencion de contratacion y contacto por WhatsApp.</div>
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Vitrina de proyectos ejecutados para aumentar cierre comercial.</div>
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Senales de confianza del perfil para elevar credibilidad ante clientes.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Aparece en busquedas de tu ciudad y especialidad.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Recibe solicitudes de clientes con intencion real de contratar.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Publica proyectos terminados para demostrar tu experiencia.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Contacta directo por WhatsApp sin intermediarios ni comisiones.</div>
             </div>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button asChild variant="accent">
