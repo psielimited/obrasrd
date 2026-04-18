@@ -1,81 +1,23 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Building2, Search } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import HowItWorks from "@/components/HowItWorks";
-import IntentEntryCard from "@/components/home/IntentEntryCard";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
 import ProviderCard from "@/components/ProviderCard";
+import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
 import { Button } from "@/components/ui/button";
 import { useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
-interface IntentDefinition {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  searchHref: string;
-  journeyLabel: string;
-  journeyHref: string;
-}
-
-const INTENT_DEFINITIONS: IntentDefinition[] = [
-  {
-    id: "construir",
-    title: "Voy a construir",
-    description: "Necesito equipos para arrancar una obra nueva con plan claro y ejecucion segura.",
-    tags: ["obra nueva", "estructura", "contratistas"],
-    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=construccion&q=construccion`,
-    journeyLabel: "Ver guia: casa desde cero",
-    journeyHref: `${PUBLIC_ROUTES.conocimiento}/construir-casa-desde-cero`,
-  },
-  {
-    id: "remodelar",
-    title: "Voy a remodelar",
-    description: "Quiero renovar espacios sin improvisar presupuesto, tiempos ni acabados.",
-    tags: ["interiores", "acabados", "reforma"],
-    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=remodelacion_de_cocina&q=remodelacion`,
-    journeyLabel: "Ver guia: cocina y bano",
-    journeyHref: `${PUBLIC_ROUTES.conocimiento}/remodelar-cocina-bano`,
-  },
-  {
-    id: "diseno",
-    title: "Necesito diseno",
-    description: "Busco arquitectura o ingenieria para definir el proyecto antes de construir.",
-    tags: ["arquitectura", "ingenieria", "planos"],
-    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=planificacion&q=diseno`,
-    journeyLabel: "Ver guia: planos y permisos",
-    journeyHref: `${PUBLIC_ROUTES.conocimiento}/planos-y-permisos`,
-  },
-  {
-    id: "supervision",
-    title: "Necesito supervision",
-    description: "Quiero control tecnico de obra para reducir riesgos, retrabajos y sobrecostos.",
-    tags: ["control de obra", "calidad", "gerencia"],
-    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=supervision_de_obra&q=supervision`,
-    journeyLabel: "Ver guia: supervision de obra",
-    journeyHref: `${PUBLIC_ROUTES.conocimiento}/supervision-de-obra`,
-  },
-  {
-    id: "mantenimiento",
-    title: "Necesito mantenimiento",
-    description: "Busco servicios para mantener la propiedad operativa y prevenir fallas.",
-    tags: ["preventivo", "correctivo", "diagnostico"],
-    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=mantenimiento&q=mantenimiento`,
-    journeyLabel: "Ver guia: mantenimiento",
-    journeyHref: `${PUBLIC_ROUTES.conocimiento}/mantenimiento-inmueble`,
-  },
-  {
-    id: "materiales",
-    title: "Necesito materiales o suplidores",
-    description: "Quiero comparar suplidores y materiales para comprar con confianza.",
-    tags: ["suplidores", "materiales", "logistica"],
-    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=materiales&q=materiales`,
-    journeyLabel: "Ir al catalogo de materiales",
-    journeyHref: "/materiales",
-  },
-];
+const CATEGORY_SHORTCUT_FALLBACKS = [
+  { slug: "arquitectura", name: "Arquitectura", phase: "Planificacion" },
+  { slug: "ingenieria_civil", name: "Ingenieria civil", phase: "Planificacion" },
+  { slug: "construccion_ejecucion", name: "Construccion y ejecucion", phase: "Construccion" },
+  { slug: "supervision_gerencia", name: "Supervision y gerencia", phase: "Construccion" },
+  { slug: "instalaciones_especiales", name: "Instalaciones especiales", phase: "Construccion" },
+  { slug: "mantenimiento_preventivo", name: "Mantenimiento preventivo", phase: "Mantenimiento" },
+  { slug: "seguridad_salud", name: "Seguridad y salud", phase: "Mantenimiento" },
+  { slug: "materiales", name: "Materiales y suplidores", phase: "Directorio" },
+] as const;
 
 const resolvePhaseHref = (phaseSlug: string, phaseExists: boolean, fallbackHref: string) =>
   phaseExists ? `/fase/${phaseSlug}` : fallbackHref;
@@ -89,8 +31,19 @@ const Index = () => {
 
   const featuredProviders = providers.slice(0, 4);
   const phaseSlugSet = new Set(phases.map((phase) => phase.slug));
-
-  const intentCards = INTENT_DEFINITIONS.slice(0, 4);
+  const categoryShortcuts = phases
+    .flatMap((phase) =>
+      phase.categories.slice(0, 3).map((category) => ({
+        slug: category.slug,
+        name: category.name,
+        phase: phase.name,
+      })),
+    )
+    .slice(0, 8);
+  const shortcuts = categoryShortcuts.length > 0 ? categoryShortcuts : CATEGORY_SHORTCUT_FALLBACKS;
+  const projectProofProviders = featuredProviders
+    .filter((provider) => provider.portfolioImages?.[0])
+    .slice(0, 3);
 
   const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), `${PUBLIC_ROUTES.directorio}?categoria=planificacion`);
   const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), `${PUBLIC_ROUTES.directorio}?categoria=construccion`);
@@ -125,17 +78,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
-      <section className="relative overflow-hidden border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
-        <img
-          aria-hidden
-          src="/hero-doodle-kids.svg"
-          alt=""
-          fetchPriority="high"
-          className="absolute inset-0 h-full w-full object-cover object-bottom opacity-[0.17] mix-blend-luminosity pointer-events-none select-none"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(248,137,64,0.22),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.1),transparent_42%)]" />
+      <section className="border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
         <div className="container relative mx-auto max-w-5xl">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">ObrasRD - Republica Dominicana</p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
           <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
             Busca servicios, conecta con profesionales y avanza tu obra con criterio.
           </h1>
@@ -152,7 +97,7 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-5">
             <Link
               to={PUBLIC_ROUTES.conocimiento}
               className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
@@ -163,88 +108,43 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="acciones-principales" className="px-4 py-10 md:py-12">
+      <section id="atajos-categorias" className="px-4 py-10 md:py-12">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Que puedes hacer en ObrasRD</p>
-            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Tres caminos claros para arrancar hoy</h2>
+          <div className="mb-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Directorio</p>
+            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Atajos por categoria clave</h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Entra directo a categorias de alta demanda y reduce tiempo de busqueda.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <article className="rounded-xl border border-border bg-card p-5 obra-shadow">
-              <p className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
-                <Search className="h-5 w-5" />
-              </p>
-              <h3 className="text-lg font-black tracking-tight text-foreground">1) Buscar servicios o profesionales</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Compara opciones por especialidad, etapa y ubicacion para cotizar con mas claridad.
-              </p>
-              <Button asChild className="mt-4 w-full" variant="accent">
-                <Link to={PUBLIC_ROUTES.directorio}>Buscar servicios</Link>
-              </Button>
-            </article>
-
-            <article className="rounded-xl border border-border bg-card p-5 obra-shadow">
-              <p className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
-                <Building2 className="h-5 w-5" />
-              </p>
-              <h3 className="text-lg font-black tracking-tight text-foreground">2) Registrar o promocionar tu empresa</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Muestra tus servicios y aumenta tu visibilidad ante clientes listos para contratar.
-              </p>
-              <Button asChild className="mt-4 w-full" variant="outline">
-                <Link to={PUBLIC_ROUTES.empresas}>Registrar empresa</Link>
-              </Button>
-            </article>
-
-            <article className="rounded-xl border border-border bg-card p-5 obra-shadow">
-              <p className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
-                <BookOpen className="h-5 w-5" />
-              </p>
-              <h3 className="text-lg font-black tracking-tight text-foreground">3) Acceder a conocimiento del sector</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Consulta guias por escenario para planificar mejor y tomar decisiones tecnicas con contexto.
-              </p>
-              <Button asChild className="mt-4 w-full" variant="ghost">
-                <Link to={PUBLIC_ROUTES.conocimiento}>Ver guias</Link>
-              </Button>
-            </article>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {shortcuts.map((shortcut) => (
+              <Link
+                key={`${shortcut.slug}-${shortcut.phase}`}
+                to={`${PUBLIC_ROUTES.directorio}?categoria=${shortcut.slug}`}
+                className="rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/25"
+              >
+                <p className="text-sm font-semibold text-foreground">{shortcut.name}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      <section id="entradas-intencion" className="px-4 pb-10 md:pb-12">
+      <section id="proveedores-destacados" className="px-4 pb-10 md:pb-12">
         <div className="container mx-auto max-w-5xl">
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Directorio por casos</p>
-              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Elige un caso y filtra resultados</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Confianza</p>
+              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Empresas y profesionales destacados</h2>
             </div>
             <Button asChild variant="ghost" className="justify-start md:justify-center">
               <Link to={PUBLIC_ROUTES.directorio}>Ver todo en directorio</Link>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {intentCards.map((intent) => (
-              <IntentEntryCard
-                key={intent.id}
-                intentId={intent.id}
-                title={intent.title}
-                description={intent.description}
-                tags={intent.tags}
-                searchHref={intent.searchHref}
-                journeyHref={intent.journeyHref}
-                journeyLabel={intent.journeyLabel}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="proveedores-destacados" className="px-4 py-8 md:py-12">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Profesionales y empresas destacadas</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {featuredProviders.map((provider) => (
               <ProviderCard
@@ -258,13 +158,76 @@ const Index = () => {
         </div>
       </section>
 
+      <section id="proyectos-reales" className="px-4 pb-10 md:pb-12">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Prueba de trabajo</p>
+            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {projectProofProviders.length > 0 ? (
+              projectProofProviders.map((provider) => (
+                <Link key={provider.id} to={`/proveedor/${provider.id}`} className="block">
+                  <MarketplaceVisualFrame categorySlug={provider.categorySlug} categoryLabel={provider.trade}>
+                    <img
+                      src={provider.portfolioImages[0]}
+                      alt={`Proyecto de ${provider.name}`}
+                      className="h-48 w-full object-cover"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  </MarketplaceVisualFrame>
+                  <div className="mt-2 px-1">
+                    <p className="text-sm font-semibold text-foreground">{provider.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {provider.completedProjects} proyectos completados · {provider.city || provider.location}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground md:col-span-3">
+                Estamos actualizando evidencia de proyectos. Puedes ver mas perfiles directamente en el directorio.
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <Button asChild variant="ghost" className="px-0">
+              <Link to={PUBLIC_ROUTES.directorio}>Ver mas perfiles con evidencia de obra</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <StageExplainerSection
         planningHref={planningHref}
         constructionHref={constructionHref}
         maintenanceHref={maintenanceHref}
       />
 
-      <HowItWorks />
+      <section id="cta-empresas" className="px-4 pb-10 md:pb-12">
+        <div className="container mx-auto max-w-5xl">
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Empresas</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-foreground md:text-3xl">
+              Tienes una empresa o servicio? Publica tu perfil y consigue mas contactos.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+              Muestra experiencia, portafolio y zonas de servicio para recibir oportunidades desde ObrasRD.
+            </p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <Button asChild variant="accent">
+                <Link to={PUBLIC_ROUTES.empresas}>Registrar empresa</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/precios">Ver planes para empresas</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <footer className="border-t border-border px-4 py-8">
         <div className="container mx-auto max-w-5xl">
