@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Loader2, Search } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MaterialCard from "@/components/MaterialCard";
 import ProviderCard from "@/components/ProviderCard";
@@ -7,6 +7,7 @@ import MarketplaceFilters from "@/components/search/MarketplaceFilters";
 import { Button } from "@/components/ui/button";
 import { useMaterialsQuery, usePhases, useProviderSummaries } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
+import { CITIES } from "@/data/marketplace";
 import {
   CANONICAL_DISCIPLINES,
   CANONICAL_SERVICES,
@@ -41,6 +42,75 @@ const canonicalServiceMetaBySlug = new Map(
   CANONICAL_SERVICES.map((item) => [item.slug, { stageSlug: item.stageSlug, disciplineSlug: item.disciplineSlug }]),
 );
 
+const SEARCH_DEBOUNCE_MS = 320;
+const SUGGESTION_DEBOUNCE_MS = 150;
+const SEARCH_STOPWORDS = new Set(["en", "de", "del", "la", "el", "los", "las", "para"]);
+
+interface SearchSuggestion {
+  id: string;
+  value: string;
+  label: string;
+  kind: "categoria" | "servicio" | "empresa" | "ubicacion";
+  helper: string;
+  normalizedLabel: string;
+  priority: number;
+}
+
+interface SearchLocationOption {
+  label: string;
+  normalized: string;
+}
+
+interface FriendlyQueryIntent {
+  locationLabel?: string;
+  locationNormalized?: string;
+  intentQuery: string;
+}
+
+const parseFriendlyQueryIntent = (
+  rawQuery: string,
+  locations: SearchLocationOption[],
+): FriendlyQueryIntent => {
+  const normalizedQuery = normalizeSearchText(rawQuery);
+  if (!normalizedQuery) {
+    return { intentQuery: "" };
+  }
+
+  const locationAnchors = [...locations].sort(
+    (current, next) => next.normalized.length - current.normalized.length,
+  );
+
+  const enIndex = normalizedQuery.lastIndexOf(" en ");
+  if (enIndex <= 0) {
+    return { intentQuery: rawQuery.trim() };
+  }
+
+  const intentRaw = rawQuery.slice(0, enIndex).trim();
+  const locationRaw = rawQuery.slice(enIndex + 4).trim();
+  const normalizedLocationSegment = normalizeSearchText(locationRaw);
+
+  if (!normalizedLocationSegment) {
+    return { intentQuery: rawQuery.trim() };
+  }
+
+  const matchedLocation = locationAnchors.find((location) => {
+    if (location.normalized === normalizedLocationSegment) return true;
+    if (location.normalized.startsWith(normalizedLocationSegment)) return true;
+    if (normalizedLocationSegment.startsWith(location.normalized)) return true;
+    return false;
+  });
+
+  if (!matchedLocation) {
+    return { intentQuery: rawQuery.trim() };
+  }
+
+  return {
+    locationLabel: matchedLocation.label,
+    locationNormalized: matchedLocation.normalized,
+    intentQuery: intentRaw || rawQuery.trim(),
+  };
+};
+
 const hashFnv1a = (value: string) => {
   let hash = 0x811c9dc5;
   for (let index = 0; index < value.length; index += 1) {
@@ -63,27 +133,34 @@ const SearchPage = () => {
   const searchState = useMemo(() => parseSearchFilterState(searchParams), [searchParams]);
 
   const [queryDraft, setQueryDraft] = useState(searchState.q);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isDebouncingQuery, setIsDebouncingQuery] = useState(false);
+  const [suggestionQueryDraft, setSuggestionQueryDraft] = useState(searchState.q);
 
   const {
     data: providers = [],
     isLoading: isProvidersLoading,
     isError: hasProvidersError,
+    refetch: refetchProviders,
   } = useProviderSummaries();
   const shouldLoadMaterials = searchState.tab === "materiales";
   const {
     data: materials = [],
     isLoading: isMaterialsLoading,
     isError: hasMaterialsError,
+    refetch: refetchMaterials,
   } = useMaterialsQuery(shouldLoadMaterials);
   const { data: phases = [] } = usePhases();
   const {
     data: taxonomyCatalog,
     isLoading: isTaxonomyLoading,
     isError: hasTaxonomyError,
+    refetch: refetchTaxonomyCatalog,
   } = useTaxonomyCatalog();
 
   useEffect(() => {
     setQueryDraft(searchState.q);
+    setSuggestionQueryDraft(searchState.q);
   }, [searchState.q]);
 
   const searchNormalization = useMemo(
@@ -214,12 +291,187 @@ const SearchPage = () => {
     [allWorkTypes],
   );
 
+  const locationOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    const add = (value?: string) => {
+      if (!value) return;
+      const normalized = normalizeSearchText(value);
+      if (!normalized || seen.has(normalized)) return;
+      seen.set(normalized, value.trim());
+    };
+
+    for (const city of CITIES) add(city);
+    for (const provider of providers) {
+      add(provider.city);
+      add(provider.location);
+      for (const serviceArea of provider.serviceAreas ?? []) add(serviceArea);
+    }
+    for (const material of materials) add(material.location);
+
+    return Array.from(seen.entries())
+      .map(([normalized, label]) => ({ normalized, label }))
+      .sort((current, next) => current.label.localeCompare(next.label, "es"));
+  }, [materials, providers]);
+
   const applyState = (nextState: SearchFilterState, replace = true) => {
     setSearchParams(toSearchParams(nextState), { replace });
   };
 
   const applyPatch = (patch: Partial<SearchFilterState>, replace = true) => {
     applyState(patchSearchFilterState(searchState, patch), replace);
+  };
+
+  useEffect(() => {
+    const nextValue = queryDraft.trim();
+    if (nextValue === searchState.q) {
+      setIsDebouncingQuery(false);
+      return;
+    }
+
+    setIsDebouncingQuery(true);
+    const timeoutId = window.setTimeout(() => {
+      setSearchParams(toSearchParams(patchSearchFilterState(searchState, { q: nextValue })), {
+        replace: false,
+      });
+      setIsDebouncingQuery(false);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [queryDraft, searchState, setSearchParams]);
+
+  useEffect(() => {
+    if (queryDraft === suggestionQueryDraft) return;
+    const timeoutId = window.setTimeout(() => {
+      setSuggestionQueryDraft(queryDraft);
+    }, SUGGESTION_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [queryDraft, suggestionQueryDraft]);
+
+  const friendlyIntent = useMemo(
+    () => parseFriendlyQueryIntent(searchState.q, locationOptions),
+    [locationOptions, searchState.q],
+  );
+
+  const normalizedSearchTerms = useMemo(() => {
+    const queryForTerms = friendlyIntent.intentQuery || searchState.q;
+    const normalized = buildSearchNormalization(queryForTerms);
+    return normalized.searchTerms.filter(
+      (term) => term.length >= 2 && !SEARCH_STOPWORDS.has(term),
+    );
+  }, [friendlyIntent.intentQuery, searchState.q]);
+
+  const searchSuggestions = useMemo(() => {
+    const items = new Map<string, SearchSuggestion>();
+
+    const pushSuggestion = (entry: Omit<SearchSuggestion, "id" | "normalizedLabel">) => {
+      const normalizedLabel = normalizeSearchText(entry.label);
+      if (!normalizedLabel) return;
+
+      const key = `${entry.kind}:${normalizedLabel}`;
+      if (items.has(key)) return;
+
+      items.set(key, {
+        ...entry,
+        id: key,
+        normalizedLabel,
+      });
+    };
+
+    for (const option of serviceOptions) {
+      pushSuggestion({
+        value: option.label,
+        label: option.label,
+        kind: "servicio",
+        helper: "Servicio",
+        priority: 0,
+      });
+    }
+
+    for (const option of categoryOptions) {
+      pushSuggestion({
+        value: option.label,
+        label: option.label,
+        kind: "categoria",
+        helper: "Categoria",
+        priority: 1,
+      });
+    }
+
+    for (const provider of providers) {
+      pushSuggestion({
+        value: provider.name,
+        label: provider.name,
+        kind: "empresa",
+        helper: "Empresa",
+        priority: 2,
+      });
+    }
+
+    for (const location of locationOptions) {
+      pushSuggestion({
+        value: location.label,
+        label: location.label,
+        kind: "ubicacion",
+        helper: "Ubicacion",
+        priority: 3,
+      });
+    }
+
+    return Array.from(items.values());
+  }, [categoryOptions, locationOptions, providers, serviceOptions]);
+
+  const normalizedSuggestionQuery = useMemo(
+    () => normalizeSearchText(suggestionQueryDraft),
+    [suggestionQueryDraft],
+  );
+
+  const suggestions = useMemo(() => {
+    const queryTokens = normalizedSuggestionQuery.split(" ").filter(Boolean);
+
+    if (queryTokens.length === 0) {
+      return [...searchSuggestions]
+        .sort((current, next) => current.priority - next.priority)
+        .slice(0, 8);
+    }
+
+    return searchSuggestions
+      .filter((item) => {
+        if (item.normalizedLabel.includes(normalizedSuggestionQuery)) return true;
+        return queryTokens.every((token) => item.normalizedLabel.includes(token));
+      })
+      .sort((current, next) => {
+        const currentStarts = current.normalizedLabel.startsWith(normalizedSuggestionQuery) ? 0 : 1;
+        const nextStarts = next.normalizedLabel.startsWith(normalizedSuggestionQuery) ? 0 : 1;
+        if (currentStarts !== nextStarts) return currentStarts - nextStarts;
+        if (current.priority !== next.priority) return current.priority - next.priority;
+        return current.label.localeCompare(next.label, "es");
+      })
+      .slice(0, 8);
+  }, [normalizedSuggestionQuery, searchSuggestions]);
+
+  const isSuggestionLoading = queryDraft !== suggestionQueryDraft;
+  const hasSearchContextError = hasTaxonomyError || hasProvidersError;
+  const showSuggestionPanel =
+    isSearchFocused &&
+    (isSuggestionLoading || suggestions.length > 0 || hasSearchContextError);
+
+  const handleSearchRetry = () => {
+    void refetchProviders();
+    void refetchTaxonomyCatalog();
+    if (searchState.tab === "materiales") {
+      void refetchMaterials();
+    }
+  };
+
+  const applySuggestion = (suggestion: SearchSuggestion) => {
+    const base = queryDraft.trim();
+    const shouldComposeLocation =
+      suggestion.kind === "ubicacion" && Boolean(base) && !/\ben\s+/i.test(base);
+    const nextQuery = shouldComposeLocation ? `${base} en ${suggestion.label}` : suggestion.value;
+    setQueryDraft(nextQuery);
+    applyPatch({ q: nextQuery.trim() }, false);
+    setIsSearchFocused(false);
   };
 
   const handleTabChange = (tab: SearchTab) => {
@@ -239,7 +491,8 @@ const SearchPage = () => {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const normalized = buildSearchNormalization(queryDraft.trim());
+    const trimmedQuery = queryDraft.trim();
+    const normalized = buildSearchNormalization(trimmedQuery);
     if (normalized.normalizedQuery) {
       trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.NormalizedSearchExecuted, {
         source: "search_page",
@@ -249,7 +502,9 @@ const SearchPage = () => {
         matched_synonym_count: normalized.matchedSynonymIds.length,
       });
     }
-    applyPatch({ q: queryDraft.trim() }, false);
+    setIsDebouncingQuery(false);
+    applyPatch({ q: trimmedQuery }, false);
+    setIsSearchFocused(false);
   };
 
   const onCategoryChange = (value: string) => {
@@ -376,8 +631,6 @@ const SearchPage = () => {
     }
   }, [disciplineOptions, serviceOptions, workTypeOptions, searchState]);
 
-  const normalizedSearchTerms = searchNormalization.searchTerms;
-
   const providerSearchIndex = useMemo(
     () =>
       providers.map((provider) => {
@@ -452,11 +705,15 @@ const SearchPage = () => {
             .filter(Boolean)
             .join(" "),
         );
+        const providerLocationHaystack = normalizeSearchText(
+          [provider.location, provider.city, ...(provider.serviceAreas ?? [])].join(" "),
+        );
 
         return {
           provider,
           mapping,
           providerHaystack,
+          providerLocationHaystack,
           stageSlugs,
           disciplineSlugs,
           serviceSlugs,
@@ -475,6 +732,31 @@ const SearchPage = () => {
             normalizedSearchTerms.some(
               (term) => term.length >= 2 && item.providerHaystack.includes(term),
             );
+          const matchesFriendlyLocation =
+            !friendlyIntent.locationNormalized ||
+            item.providerLocationHaystack.includes(friendlyIntent.locationNormalized);
+
+          const serviceHints = searchNormalization.canonicalHints.serviceSlugs;
+          const disciplineHints = searchNormalization.canonicalHints.disciplineSlugs;
+          const stageHints = searchNormalization.canonicalHints.stageSlugs;
+          const workTypeHints = searchNormalization.canonicalHints.workTypeSlugs;
+
+          const matchesServiceHint =
+            serviceHints.length === 0 || serviceHints.some((slug) => item.serviceSlugs.has(slug));
+          const matchesDisciplineHint =
+            disciplineHints.length === 0 ||
+            disciplineHints.some((slug) => item.disciplineSlugs.has(slug));
+          const matchesStageHint =
+            stageHints.length === 0 || stageHints.some((slug) => item.stageSlugs.has(slug));
+          const matchesWorkTypeHint =
+            workTypeHints.length === 0 || workTypeHints.some((slug) => item.workTypeSlugs.has(slug));
+
+          const matchesCanonicalHints =
+            (serviceHints.length > 0
+              ? matchesServiceHint
+              : disciplineHints.length > 0
+                ? matchesDisciplineHint
+                : matchesStageHint) && matchesWorkTypeHint;
 
           const matchesLegacyCategory =
             !searchState.categoria ||
@@ -496,6 +778,8 @@ const SearchPage = () => {
 
           return (
             matchesQuery &&
+            matchesFriendlyLocation &&
+            matchesCanonicalHints &&
             matchesLegacyCategory &&
             matchesStage &&
             matchesDiscipline &&
@@ -506,7 +790,12 @@ const SearchPage = () => {
         .map((item) => item.provider),
     [
       providerSearchIndex,
+      friendlyIntent.locationNormalized,
       normalizedSearchTerms,
+      searchNormalization.canonicalHints.disciplineSlugs,
+      searchNormalization.canonicalHints.serviceSlugs,
+      searchNormalization.canonicalHints.stageSlugs,
+      searchNormalization.canonicalHints.workTypeSlugs,
       searchState.categoria,
       searchState.etapa,
       searchState.disciplina,
@@ -540,14 +829,86 @@ const SearchPage = () => {
 
           <form onSubmit={handleSearchSubmit} className="relative mb-4">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <label htmlFor="marketplace-search-input" className="sr-only">
+              Buscar servicios, empresas o ubicaciones
+            </label>
             <input
+              id="marketplace-search-input"
               type="text"
-              placeholder="Buscar servicio, etapa, disciplina o material..."
+              placeholder="Ej.: arquitecto en Santiago, impermeabilizacion, plomero en Punta Cana"
               value={queryDraft}
               onChange={(event) => setQueryDraft(event.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => {
+                window.setTimeout(() => setIsSearchFocused(false), 120);
+              }}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={showSuggestionPanel}
+              aria-controls="marketplace-search-suggestions"
+              aria-describedby="marketplace-search-helper marketplace-search-status"
               className="w-full rounded-lg bg-card py-3 pl-10 pr-4 text-foreground obra-shadow outline-none transition-all placeholder:text-muted-foreground focus:ring-2 focus:ring-accent"
             />
+            {showSuggestionPanel && (
+              <div
+                id="marketplace-search-suggestions"
+                role="listbox"
+                className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 rounded-xl border border-border bg-card p-2 obra-shadow"
+              >
+                {isSuggestionLoading ? (
+                  <div className="flex items-center gap-2 rounded-lg px-3 py-3 text-xs text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Buscando sugerencias...
+                  </div>
+                ) : suggestions.length > 0 ? (
+                  suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.id}
+                      type="button"
+                      role="option"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applySuggestion(suggestion)}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
+                    >
+                      <span className="text-sm text-foreground">{suggestion.label}</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                        {suggestion.helper}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="rounded-lg px-3 py-3 text-xs text-muted-foreground">
+                    Sin sugerencias para ese termino.
+                  </p>
+                )}
+              </div>
+            )}
           </form>
+          <div id="marketplace-search-helper" className="mb-4 flex flex-col gap-1 text-xs text-muted-foreground">
+            <p>Escribe oficio, categoria, empresa o zona. Funciona con frases como "servicio en ciudad".</p>
+            {friendlyIntent.locationLabel && (
+              <p className="text-foreground/80">
+                Ubicacion detectada: {friendlyIntent.locationLabel}.
+              </p>
+            )}
+          </div>
+          <div id="marketplace-search-status" className="mb-4 min-h-5 text-xs text-muted-foreground">
+            {isDebouncingQuery ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Actualizando resultados...
+              </span>
+            ) : isProvidersLoading || isTaxonomyLoading ? (
+              "Preparando datos de busqueda..."
+            ) : hasSearchContextError ? (
+              <span className="inline-flex items-center gap-2 text-amber-700">
+                Hubo un problema cargando datos de busqueda.
+                <Button type="button" variant="ghost" size="sm" className="h-auto px-1 py-0 text-xs" onClick={handleSearchRetry}>
+                  Reintentar
+                </Button>
+              </span>
+            ) : null}
+          </div>
 
           <div className="mb-4 flex gap-2">
             <button
