@@ -9,6 +9,8 @@ export const OBRASRD_ANALYTICS_EVENTS = {
   FilterApplied: "filter_applied",
   NormalizedSearchExecuted: "normalized_search_executed",
   SearchUnmatchedNormalizedQuery: "search_unmatched_normalized_query",
+  SearchRecoveryStateViewed: "search_recovery_state_viewed",
+  SearchRecoveryActionClicked: "search_recovery_action_clicked",
 } as const;
 
 export type ObrasRdAnalyticsEventName =
@@ -55,8 +57,19 @@ type EventPayloadMap = {
     failed_count: number;
   };
   [OBRASRD_ANALYTICS_EVENTS.FilterApplied]: AnalyticsStructuredIds & {
-    source: "search_filters" | "project_intake" | "publish_service";
-    filter_name: "categoria" | "etapa" | "disciplina" | "servicio" | "tipo_obra" | "clear_all";
+    source: "search_filters" | "project_intake" | "publish_service" | "phase_page";
+    filter_name:
+      | "categoria"
+      | "ubicacion"
+      | "tipo_proveedor"
+      | "etapa"
+      | "disciplina"
+      | "servicio"
+      | "tipo_obra"
+      | "solo_verificados"
+      | "solo_identidad_verificada"
+      | "solo_portafolio_validado"
+      | "clear_all";
     has_value: boolean;
   };
   [OBRASRD_ANALYTICS_EVENTS.NormalizedSearchExecuted]: AnalyticsStructuredIds & {
@@ -71,6 +84,25 @@ type EventPayloadMap = {
     tokenCount: number;
     characterCount: number;
     [key: string]: unknown;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.SearchRecoveryStateViewed]: {
+    source: "search_page" | "phase_page";
+    state_type: "no_results" | "low_supply";
+    entity_type: "providers";
+    result_count: number;
+    active_filter_count: number;
+    stage_slug?: string;
+    category_slug?: string;
+    location_slug?: string;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.SearchRecoveryActionClicked]: {
+    source: "search_page" | "phase_page";
+    state_type: "no_results" | "low_supply";
+    action_type: "nearby_location" | "related_category" | "lead_capture";
+    target_value?: string;
+    stage_slug?: string;
+    category_slug?: string;
+    location_slug?: string;
   };
 };
 

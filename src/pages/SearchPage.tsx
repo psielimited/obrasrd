@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Loader2, Search } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MaterialCard from "@/components/MaterialCard";
@@ -24,6 +24,7 @@ import { buildSearchNormalization, normalizeSearchText } from "@/lib/search/sear
 import { logUnmatchedNormalizedSearchQuery } from "@/lib/search/search-analytics";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 import {
   clearStructuredFilters,
   countActiveStructuredFilters,
@@ -698,6 +699,27 @@ const SearchPage = () => {
     });
   };
 
+  const onApplyNearbyLocationSuggestion = (
+    stateType: "no_results" | "low_supply",
+    locationSlug: string,
+  ) => {
+    trackSearchRecoveryAction(stateType, "nearby_location", locationSlug);
+    onLocationChange(locationSlug);
+  };
+
+  const onApplyRelatedCategorySuggestion = (
+    stateType: "no_results" | "low_supply",
+    categorySlug: string,
+  ) => {
+    trackSearchRecoveryAction(stateType, "related_category", categorySlug);
+    onCategoryChange(categorySlug);
+  };
+
+  const onOpenLeadCapture = (stateType: "no_results" | "low_supply") => {
+    trackSearchRecoveryAction(stateType, "lead_capture", PUBLIC_ROUTES.empresas);
+    navigate(PUBLIC_ROUTES.empresas);
+  };
+
   useEffect(() => {
     const validDisciplineSlugs = new Set(disciplineOptions.map((item) => item.value));
     const validServiceSlugs = new Set(serviceOptions.map((item) => item.value));
@@ -995,10 +1017,90 @@ const SearchPage = () => {
     [materials, normalizedSearchTerms],
   );
 
+  const displayedRecoveryStateKeys = useRef<Set<string>>(new Set());
   const activeFilterCount = countActiveStructuredFilters(searchState);
   const isSparseProviders = searchState.tab === "servicios" && filteredProviders.length > 0 && filteredProviders.length <= 3;
   const isSparseMaterials = searchState.tab === "materiales" && filteredMaterials.length > 0 && filteredMaterials.length <= 3;
   const isNewestSortFallback = searchState.sort === "mas_recientes";
+  const selectedLocationLabel =
+    locationOptions.find((location) => location.normalized === searchState.ubicacion)?.label ?? "";
+
+  const nearbyLocationSuggestions = useMemo(() => {
+    const locationCounter = new Map<string, { label: string; count: number }>();
+    for (const item of providerSearchIndex) {
+      const candidateLocations = [item.provider.city, item.provider.location, ...(item.provider.serviceAreas ?? [])];
+      for (const location of candidateLocations) {
+        const normalized = normalizeSearchText(location ?? "");
+        if (!normalized || normalized === searchState.ubicacion) continue;
+        const existing = locationCounter.get(normalized);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          locationCounter.set(normalized, { label: location ?? "", count: 1 });
+        }
+      }
+    }
+
+    return Array.from(locationCounter.entries())
+      .map(([normalized, value]) => ({ value: normalized, label: value.label, count: value.count }))
+      .sort((current, next) => next.count - current.count)
+      .slice(0, 3);
+  }, [providerSearchIndex, searchState.ubicacion]);
+
+  const relatedCategorySuggestions = useMemo(() => {
+    if (searchState.categoria) {
+      return categoryOptions
+        .filter((item) => item.value !== searchState.categoria)
+        .slice(0, 3);
+    }
+
+    return categoryOptions.slice(0, 3);
+  }, [categoryOptions, searchState.categoria]);
+
+  useEffect(() => {
+    if (searchState.tab !== "servicios" || isProvidersLoading || hasProvidersError) return;
+
+    const stateType = filteredProviders.length === 0 ? "no_results" : filteredProviders.length <= 3 ? "low_supply" : null;
+    if (!stateType) return;
+
+    const key = `${stateType}|${searchState.q}|${searchState.categoria}|${searchState.ubicacion}|${searchState.etapa}|${searchState.disciplina}|${searchState.servicio}|${searchState.tipoObra}|${searchState.tipoProveedor}|${searchState.soloVerificados}|${searchState.soloIdentidadVerificada}|${searchState.soloPortafolioValidado}`;
+
+    if (displayedRecoveryStateKeys.current.has(key)) return;
+    displayedRecoveryStateKeys.current.add(key);
+
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.SearchRecoveryStateViewed, {
+      source: "search_page",
+      state_type: stateType,
+      entity_type: "providers",
+      result_count: filteredProviders.length,
+      active_filter_count: activeFilterCount,
+      category_slug: searchState.categoria || undefined,
+      location_slug: searchState.ubicacion || undefined,
+      stage_slug: searchState.etapa || undefined,
+    });
+  }, [
+    activeFilterCount,
+    filteredProviders.length,
+    hasProvidersError,
+    isProvidersLoading,
+    searchState,
+  ]);
+
+  const trackSearchRecoveryAction = (
+    stateType: "no_results" | "low_supply",
+    actionType: "nearby_location" | "related_category" | "lead_capture",
+    targetValue?: string,
+  ) => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.SearchRecoveryActionClicked, {
+      source: "search_page",
+      state_type: stateType,
+      action_type: actionType,
+      target_value: targetValue,
+      category_slug: searchState.categoria || undefined,
+      location_slug: searchState.ubicacion || undefined,
+      stage_slug: searchState.etapa || undefined,
+    });
+  };
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
@@ -1163,22 +1265,92 @@ const SearchPage = () => {
                   ))}
                 </div>
               ) : filteredProviders.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {filteredProviders.map((provider) => (
-                    <ProviderCard
-                      key={provider.id}
-                      provider={provider}
-                      phases={phases}
-                      taxonomyCatalog={taxonomyCatalog}
-                    />
-                  ))}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {filteredProviders.map((provider) => (
+                      <ProviderCard
+                        key={provider.id}
+                        provider={provider}
+                        phases={phases}
+                        taxonomyCatalog={taxonomyCatalog}
+                      />
+                    ))}
+                  </div>
+                  {isSparseProviders && (
+                    <div className="rounded-xl border border-border bg-card p-4">
+                      <p className="text-sm font-semibold text-foreground">
+                        Tienes pocas opciones ({filteredProviders.length}). Te ayudamos a ampliar sin perder enfoque.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {nearbyLocationSuggestions.length > 0 && nearbyLocationSuggestions.map((location) => (
+                          <Button
+                            key={location.value}
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onApplyNearbyLocationSuggestion("low_supply", location.value)}
+                          >
+                            Ver en {location.label}
+                          </Button>
+                        ))}
+                        {relatedCategorySuggestions.map((category) => (
+                          <Button
+                            key={category.value}
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onApplyRelatedCategorySuggestion("low_supply", category.value)}
+                          >
+                            Categoria: {category.label}
+                          </Button>
+                        ))}
+                        <Button type="button" size="sm" variant="ghost" onClick={() => onOpenLeadCapture("low_supply")}>
+                          Solicitar cotizacion guiada
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="rounded-xl bg-card p-8 text-center obra-shadow">
                     <p className="text-sm text-muted-foreground">
-                      No encontramos proveedores con esos filtros. Ajusta etapa, disciplina, ubicacion o confianza.
+                      No encontramos proveedores con esos filtros en este momento.
                     </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-card p-4">
+                    <p className="text-sm text-foreground">
+                      {selectedLocationLabel
+                        ? `No hay oferta suficiente en ${selectedLocationLabel}. Prueba zonas cercanas o categorias relacionadas.`
+                        : "Prueba ampliar zona o categoria para encontrar mas disponibilidad."}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {nearbyLocationSuggestions.length > 0 && nearbyLocationSuggestions.map((location) => (
+                        <Button
+                          key={location.value}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onApplyNearbyLocationSuggestion("no_results", location.value)}
+                        >
+                          Buscar en {location.label}
+                        </Button>
+                      ))}
+                      {relatedCategorySuggestions.map((category) => (
+                        <Button
+                          key={category.value}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onApplyRelatedCategorySuggestion("no_results", category.value)}
+                        >
+                          Probar {category.label}
+                        </Button>
+                      ))}
+                      <Button type="button" size="sm" variant="ghost" onClick={() => onOpenLeadCapture("no_results")}>
+                        Publicar solicitud de servicio
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex justify-center">
                     <Button variant="outline" onClick={onClearFilters}>
@@ -1218,9 +1390,9 @@ const SearchPage = () => {
                 </div>
               </div>
             )}
-            {(isSparseProviders || isSparseMaterials) && (
+            {isSparseMaterials && (
               <div className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
-                Pocos resultados ({searchState.tab === "servicios" ? filteredProviders.length : filteredMaterials.length}). Amplia ubicacion o quita filtros para comparar mas opciones.
+                Pocos resultados ({filteredMaterials.length}). Amplia ubicacion o quita filtros para comparar mas opciones.
               </div>
             )}
           </div>
