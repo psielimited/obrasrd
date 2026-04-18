@@ -1,5 +1,6 @@
 ﻿import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ProviderDashboardLayout from "@/components/dashboard/ProviderDashboardLayout";
 import SectionCard from "@/components/dashboard/SectionCard";
 import EmptyState from "@/components/dashboard/EmptyState";
@@ -24,10 +25,17 @@ import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 import { upsertMyProviderProfile } from "@/lib/profile-api";
 import { deleteProviderPortfolioImageByUrl, linkMyProviderProfileMedia, uploadImageAsset } from "@/lib/media-api";
 import { getProviderProfileQualitySnapshot } from "@/lib/provider-trust";
+import {
+  clearStoredProviderOnboardingDraft,
+  getProviderSignupTypeOption,
+  readStoredProviderOnboardingDraft,
+} from "@/lib/provider-onboarding";
 import type { Provider } from "@/data/marketplace";
 import { ArrowDown, ArrowUp, ImagePlus, Loader2, Trash2, Upload, UserRoundCog } from "lucide-react";
 
 const ProviderProfileEditorPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: phases = [] } = usePhases();
@@ -57,6 +65,9 @@ const ProviderProfileEditorPage = () => {
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
   const [selectedWorkTypeIds, setSelectedWorkTypeIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [onboardingDraft, setOnboardingDraft] = useState(() => readStoredProviderOnboardingDraft());
+  const [hasAppliedOnboardingDraft, setHasAppliedOnboardingDraft] = useState(false);
+  const onboardingMode = searchParams.get("onboarding") === "1";
 
   const selectedPhase = phases.find((phase) => phase.id === phaseId);
   const availableCategories = useMemo(() => selectedPhase?.categories ?? [], [selectedPhase]);
@@ -119,6 +130,19 @@ const ProviderProfileEditorPage = () => {
     if (primaryServiceId == null) return;
     setSelectedServiceIds((prev) => (prev.includes(primaryServiceId) ? prev : [...prev, primaryServiceId]));
   }, [primaryServiceId]);
+
+  useEffect(() => {
+    if (providerProfile || hasAppliedOnboardingDraft || !onboardingDraft) return;
+
+    setName((prev) => (prev.trim() ? prev : onboardingDraft.displayName));
+    setTrade((prev) => (prev.trim() ? prev : onboardingDraft.trade));
+    setCity((prev) => (prev.trim() ? prev : onboardingDraft.city));
+    setLocation((prev) => (prev.trim() ? prev : onboardingDraft.city));
+    if (onboardingDraft.whatsapp) {
+      setWhatsapp((prev) => (prev.trim() ? prev : onboardingDraft.whatsapp ?? ""));
+    }
+    setHasAppliedOnboardingDraft(true);
+  }, [hasAppliedOnboardingDraft, onboardingDraft, providerProfile]);
 
   const serviceAreas = useMemo(
     () =>
@@ -188,6 +212,10 @@ const ProviderProfileEditorPage = () => {
     () => getProviderProfileQualitySnapshot(draftProviderForQuality),
     [draftProviderForQuality],
   );
+  const onboardingTypeOption = onboardingDraft
+    ? getProviderSignupTypeOption(onboardingDraft.providerType)
+    : null;
+  const onboardingHints = qualitySnapshot.recommendations.slice(0, 3);
 
   const isValid =
     name.trim() &&
@@ -308,6 +336,11 @@ const ProviderProfileEditorPage = () => {
         queryClient.invalidateQueries({ queryKey: ["marketplace", "providers"] }),
         queryClient.invalidateQueries({ queryKey: profileQueryKeys.myProviderProfile }),
       ]);
+      clearStoredProviderOnboardingDraft();
+      setOnboardingDraft(null);
+      if (onboardingMode) {
+        navigate("/dashboard/proveedor/perfil", { replace: true });
+      }
 
       toast({
         title: "Perfil actualizado",
@@ -351,6 +384,44 @@ const ProviderProfileEditorPage = () => {
       actionDisabled={!isValid || isSaving}
     >
       <div className="space-y-6 pb-20">
+        {(onboardingMode || (!providerProfile && Boolean(onboardingDraft))) && (
+          <SectionCard
+            title="Activa tu perfil en 3 pasos"
+            description="Ya tenemos tus datos basicos. Completa estos campos para mejorar visibilidad y confianza."
+          >
+            <div className="space-y-3">
+              <div className="rounded-xl border border-border bg-card p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  {onboardingTypeOption
+                    ? `${onboardingTypeOption.label}: ${onboardingTypeOption.helper}`
+                    : "Completa tu ficha inicial de proveedor."}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recomendado: completa especialidad, cobertura, descripcion y portafolio antes de publicar.
+                </p>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-foreground">Progreso actual</span>
+                  <span className="font-semibold text-foreground">{qualitySnapshot.score}%</span>
+                </div>
+                <Progress value={qualitySnapshot.score} className="h-2 bg-muted" />
+              </div>
+
+              {onboardingHints.length > 0 && (
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {onboardingHints.map((hint) => (
+                    <div key={hint} className="rounded-lg border border-border bg-card p-2.5 text-xs text-muted-foreground">
+                      {hint}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </SectionCard>
+        )}
+
         <SectionCard title="Completitud del perfil" description="Mejora confianza y visibilidad con estos senales">
           <div className="space-y-4">
             <div>
@@ -381,15 +452,21 @@ const ProviderProfileEditorPage = () => {
           </div>
         </SectionCard>
 
-        <SectionCard title="Informacion comercial" description="Nombre y oficio principal para aparecer en busquedas">
+        <SectionCard title="Informacion comercial" description="Nombre y especialidad principal para aparecer en busquedas relevantes">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre comercial</Label>
+              <Label htmlFor="name">{onboardingTypeOption?.businessNameLabel ?? "Nombre comercial"}</Label>
               <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="trade">Oficio</Label>
-              <Input id="trade" value={trade} onChange={(event) => setTrade(event.target.value)} />
+              <Label htmlFor="trade">{onboardingTypeOption?.tradeLabel ?? "Oficio principal"}</Label>
+              <Input
+                id="trade"
+                value={trade}
+                onChange={(event) => setTrade(event.target.value)}
+                placeholder={onboardingTypeOption?.tradePlaceholder}
+              />
+              <p className="text-xs text-muted-foreground">Describe el servicio por el que quieres que te encuentren primero.</p>
             </div>
           </div>
         </SectionCard>
@@ -524,14 +601,14 @@ const ProviderProfileEditorPage = () => {
           </div>
         </SectionCard>
 
-        <SectionCard title="Cobertura" description="Ubicacion principal y zonas de trabajo">
+        <SectionCard title="Cobertura" description="Ubicacion base y zonas donde puedes atender solicitudes">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="location">Ubicacion</Label>
+              <Label htmlFor="location">Ubicacion de referencia</Label>
               <Input id="location" value={location} onChange={(event) => setLocation(event.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city">Ciudad</Label>
+              <Label htmlFor="city">Ciudad base</Label>
               <Input id="city" value={city} onChange={(event) => setCity(event.target.value)} />
             </div>
           </div>
@@ -547,11 +624,12 @@ const ProviderProfileEditorPage = () => {
           </div>
         </SectionCard>
 
-        <SectionCard title="Precios y contacto" description="Datos para cotizaciones y respuestas rapidas">
+        <SectionCard title="Precios y contacto" description="Facilita cotizaciones con datos claros y un canal directo">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="whatsapp">WhatsApp</Label>
               <Input id="whatsapp" value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} />
+              <p className="text-xs text-muted-foreground">Usa un numero activo para responder leads rapido.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="price">Precio inicial (RD$)</Label>

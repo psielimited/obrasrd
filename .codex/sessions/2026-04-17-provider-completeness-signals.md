@@ -153,3 +153,40 @@ Improve article and project pages so they guide users into relevant next actions
 ### Next steps
 1. Optional: add a dashboard report for `content_to_directory_click` CTA performance by `source` and `cta_type`.
 2. Optional: A/B test CTA copy per stage to improve click-through to directory/provider pages.
+
+---
+
+## Update: Provider onboarding by provider type (2026-04-17)
+
+### Goal
+Refactor provider signup so onboarding adapts to provider type (`empresa`, `profesional independiente`, `suplidor`, `servicio tecnico`) with progressive steps, minimal early data, and post-signup completeness guidance.
+
+### In scope / out of scope
+- In scope: auth/signup UX for provider types, progressive multi-step provider onboarding, improved Spanish labels/helper copy, carry-forward onboarding draft into provider profile editor, post-signup profile completeness guidance.
+- Out of scope: database schema changes/migrations, route changes, replacing existing provider profile save logic.
+
+### Decisions
+- Kept existing auth and provider data flows; no schema migration was introduced.
+- Added a dedicated shared onboarding module (`provider-onboarding`) for provider type definitions plus local draft persistence (`localStorage`) to bridge signup -> profile editor.
+- Implemented progressive signup in `AuthPage`:
+  - Step 1: account intent + provider type selection.
+  - Step 2: minimum account credentials.
+  - Step 3 (providers only): minimum provider basics (especialidad + ciudad; WhatsApp optional).
+- Kept provider profile persistence in existing editor flow (`upsertMyProviderProfile`) and added onboarding prefill + targeted completion guidance when entering from signup (`?onboarding=1`).
+- Best-effort role bootstrap on signup (`upsertMyProfile` role `provider`) while preserving current Supabase auth behavior.
+
+### Files changed
+- src/lib/provider-onboarding.ts
+- src/pages/AuthPage.tsx
+- src/pages/ProviderProfileEditorPage.tsx
+
+### Validation results
+- `npm run build` -> Passed.
+- `npm run lint` -> Failed due environment file lookup issue in repo (`ENOENT` reading generated `vite.config.ts.timestamp-*.mjs`), unrelated to the onboarding code paths.
+
+### Known issues
+- Signup role promotion to provider is best-effort if profile upsert cannot run immediately (for example, edge auth timing), but onboarding draft and provider-profile prefill still work.
+
+### Next steps
+1. Optional: add explicit analytics events for onboarding step progression and completion drop-off by `provider_type`.
+2. Optional: persist provider type in first-class backend schema once `provider_type` is available in provider/user profile tables.
