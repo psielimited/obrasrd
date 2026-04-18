@@ -13,8 +13,15 @@ export interface ProviderPortfolioProject {
   summary?: string;
   location?: string;
   status: string;
+  stageId?: number;
+  disciplineId?: number;
+  primaryServiceId?: number;
   primaryWorkTypeId?: number;
+  startedOn?: string;
   completedOn?: string;
+  budgetRange?: string;
+  isFeatured?: boolean;
+  coverImageUrl?: string;
 }
 
 export interface Phase {

@@ -17,6 +17,7 @@ const PhasePage = lazy(() => import("./pages/PhasePage"));
 const ProviderProfile = lazy(() => import("./pages/ProviderProfile"));
 const MaterialsPage = lazy(() => import("./pages/MaterialsPage"));
 const ProjectBuilder = lazy(() => import("./pages/ProjectBuilder"));
+const PortfolioProjectDetailPage = lazy(() => import("./pages/PortfolioProjectDetailPage"));
 const PublishService = lazy(() => import("./pages/PublishService"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
@@ -79,6 +80,7 @@ const AppContent = () => {
           <Route path="/proveedor/:id" element={<ProviderProfile />} />
           <Route path="/materiales" element={<MaterialsPage />} />
           <Route path="/proyectos" element={<ProjectBuilder />} />
+          <Route path="/proyectos/reales/:projectId" element={<PortfolioProjectDetailPage />} />
           <Route path={PUBLIC_ROUTES.empresas} element={<PublishService />} />
           <Route path={LEGACY_PUBLIC_ROUTE_ALIASES.publicar} element={<LegacyRouteRedirect to={PUBLIC_ROUTES.empresas} />} />
           <Route path="/precios" element={<PricingPage />} />

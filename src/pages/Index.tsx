@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
 import ProviderCard from "@/components/ProviderCard";
-import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
+import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard";
 import { Button } from "@/components/ui/button";
-import { useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
+import { useFeaturedPortfolioProjects, useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
@@ -26,6 +26,7 @@ const Index = () => {
   const location = useLocation();
   const [shouldLoadDeferredData, setShouldLoadDeferredData] = useState(false);
   const { data: providers = [] } = useFeaturedProviders(4, shouldLoadDeferredData);
+  const { data: featuredProjects = [] } = useFeaturedPortfolioProjects(6, shouldLoadDeferredData);
   const { data: phases = [] } = usePhases(shouldLoadDeferredData);
   const { data: taxonomyCatalog } = useTaxonomyCatalog(shouldLoadDeferredData);
 
@@ -41,9 +42,7 @@ const Index = () => {
     )
     .slice(0, 8);
   const shortcuts = categoryShortcuts.length > 0 ? categoryShortcuts : CATEGORY_SHORTCUT_FALLBACKS;
-  const projectProofProviders = featuredProviders
-    .filter((provider) => provider.portfolioImages?.[0])
-    .slice(0, 3);
+  const projectCards = featuredProjects.slice(0, 6);
 
   const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), `${PUBLIC_ROUTES.directorio}?categoria=planificacion`);
   const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), `${PUBLIC_ROUTES.directorio}?categoria=construccion`);
@@ -163,40 +162,57 @@ const Index = () => {
           <div className="mb-5">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Prueba de trabajo</p>
             <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              Compara obras reales por etapa, categoria tecnica y responsable para tomar decisiones con mayor confianza.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {projectProofProviders.length > 0 ? (
-              projectProofProviders.map((provider) => (
-                <Link key={provider.id} to={`/proveedor/${provider.id}`} className="block">
-                  <MarketplaceVisualFrame categorySlug={provider.categorySlug} categoryLabel={provider.trade}>
-                    <img
-                      src={provider.portfolioImages[0]}
-                      alt={`Proyecto de ${provider.name}`}
-                      className="h-48 w-full object-cover"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                    />
-                  </MarketplaceVisualFrame>
-                  <div className="mt-2 px-1">
-                    <p className="text-sm font-semibold text-foreground">{provider.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {provider.completedProjects} proyectos completados · {provider.city || provider.location}
-                    </p>
-                  </div>
-                </Link>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {projectCards.length > 0 ? (
+              projectCards.map((project) => (
+                <PortfolioProjectCard
+                  key={project.id}
+                  project={project}
+                  providerName={project.provider.name}
+                  providerId={project.provider.id}
+                  projectHref={`/proyectos/reales/${project.id}`}
+                  imageUrl={project.coverImageUrl || project.provider.portfolioImages?.[0]}
+                  stageLabel={
+                    project.stageId
+                      ? phases.find((item) => item.id === project.stageId)?.name
+                      : phases.find((item) => item.id === project.provider.phaseId)?.name
+                  }
+                  categoryLabel={
+                    project.primaryServiceId
+                      ? taxonomyCatalog?.services.find((item) => item.id === project.primaryServiceId)?.name
+                      : project.disciplineId
+                        ? taxonomyCatalog?.disciplines.find((item) => item.id === project.disciplineId)?.name
+                        : undefined
+                  }
+                  workTypeLabel={
+                    project.primaryWorkTypeId
+                      ? taxonomyCatalog?.workTypes.find((item) => item.id === project.primaryWorkTypeId)?.name
+                      : undefined
+                  }
+                  locationLabel={project.location || project.provider.city || project.provider.location}
+                />
               ))
             ) : (
               <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground md:col-span-3">
-                Estamos actualizando evidencia de proyectos. Puedes ver mas perfiles directamente en el directorio.
+                Todavia no hay proyectos visibles. Puedes revisar perfiles con portafolio en el directorio.
               </div>
             )}
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild variant="ghost" className="px-0">
               <Link to={PUBLIC_ROUTES.directorio}>Ver mas perfiles con evidencia de obra</Link>
             </Button>
+            {projectCards.length > 0 && (
+              <Button asChild variant="outline">
+                <Link to={`/proyectos/reales/${projectCards[0].id}`}>Explorar detalle de proyecto</Link>
+              </Button>
+            )}
           </div>
         </div>
       </section>

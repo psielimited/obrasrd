@@ -5,6 +5,8 @@ export const PUBLIC_ROUTES = {
   conocimiento: "/conocimiento",
   conocimientoDetail: (slug: string) => `/conocimiento/${slug}`,
   materiales: "/materiales",
+  proyectosReales: "/proyectos/reales",
+  proyectosRealesDetail: (projectId: string) => `/proyectos/reales/${projectId}`,
   perfil: "/perfil",
 } as const;
 

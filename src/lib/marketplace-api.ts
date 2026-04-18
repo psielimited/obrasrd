@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { MATERIALS, PHASES, PROVIDERS, Material, Phase, Provider } from "@/data/marketplace";
+import type { ProviderPortfolioProject } from "@/data/marketplace";
 
 export interface PublishServiceInput {
   postType: string;
@@ -28,6 +29,13 @@ type TrustSignalsRow = {
   rapid_response: boolean;
   active_this_month: boolean;
 };
+
+export interface PortfolioProjectWithProvider extends ProviderPortfolioProject {
+  provider: Pick<
+    Provider,
+    "id" | "name" | "trade" | "categorySlug" | "phaseId" | "city" | "location" | "verified" | "description" | "portfolioImages"
+  >;
+}
 
 type ProviderSummaryRow = {
   id: string;
@@ -65,15 +73,56 @@ const getMonthWindowStartIso = () => {
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 };
 
-const toPortfolioProject = (row: Tables<"portfolio_projects">) => ({
+const toPortfolioProject = (row: Tables<"portfolio_projects">) => {
+  const coverMediaAsset = (row as any).cover_media_asset as { public_url?: string | null } | null | undefined;
+
+  return {
+    id: row.id,
+    title: row.title,
+    summary: row.summary ?? undefined,
+    location: row.location ?? undefined,
+    status: row.status,
+    stageId: row.stage_id ?? undefined,
+    disciplineId: row.discipline_id ?? undefined,
+    primaryServiceId: row.primary_service_id ?? undefined,
+    primaryWorkTypeId: row.primary_work_type_id ?? undefined,
+    startedOn: row.started_on ?? undefined,
+    completedOn: row.completed_on ?? undefined,
+    budgetRange: row.budget_range ?? undefined,
+    isFeatured: row.is_featured,
+    coverImageUrl: coverMediaAsset?.public_url ?? undefined,
+  };
+};
+
+const toProjectProvider = (
+  row: Pick<
+    Tables<"providers">,
+    "id" | "name" | "trade" | "category_slug" | "phase_id" | "city" | "location" | "verified" | "description" | "portfolio_images"
+  >,
+): PortfolioProjectWithProvider["provider"] => ({
   id: row.id,
-  title: row.title,
-  summary: row.summary ?? undefined,
-  location: row.location ?? undefined,
-  status: row.status,
-  primaryWorkTypeId: row.primary_work_type_id ?? undefined,
-  completedOn: row.completed_on ?? undefined,
+  name: row.name,
+  trade: row.trade,
+  categorySlug: row.category_slug,
+  phaseId: row.phase_id,
+  city: row.city,
+  location: row.location,
+  verified: row.verified,
+  description: row.description,
+  portfolioImages: row.portfolio_images ?? [],
 });
+
+const mapPortfolioProjectWithProvider = (row: any): PortfolioProjectWithProvider | null => {
+  const providerRow = row?.provider as Tables<"providers"> | null | undefined;
+  if (!providerRow) return null;
+
+  const project = toPortfolioProject(row as Tables<"portfolio_projects">);
+
+  return {
+    ...project,
+    provider: toProjectProvider(providerRow),
+  };
+};
 
 const toProvider = (
   row: Tables<"providers">,
@@ -274,8 +323,9 @@ export const fetchProviderById = async (id: string): Promise<Provider | null> =>
       .eq("provider_id", data.id)
       .limit(1),
     (supabase.from as any)("portfolio_projects")
-      .select("id,title,summary,location,status,completed_on,primary_work_type_id")
+      .select("id,title,summary,location,status,stage_id,discipline_id,primary_service_id,primary_work_type_id,started_on,completed_on,budget_range,is_featured,cover_media_asset:media_assets!portfolio_projects_cover_media_asset_id_fkey(public_url)")
       .eq("provider_id", data.id)
+      .order("is_featured", { ascending: false })
       .order("completed_on", { ascending: false }),
   ]);
 
@@ -327,6 +377,84 @@ export const fetchPhases = async (): Promise<Phase[]> => {
         icon: category.icon,
       })),
   }));
+};
+
+export const fetchFeaturedPortfolioProjects = async (limit = 6): Promise<PortfolioProjectWithProvider[]> => {
+  if (!hasSupabaseConfig) {
+    return PROVIDERS.flatMap((provider) =>
+      (provider.portfolioProjects ?? []).map((project) => ({
+        ...project,
+        provider: {
+          id: provider.id,
+          name: provider.name,
+          trade: provider.trade,
+          categorySlug: provider.categorySlug,
+          phaseId: provider.phaseId,
+          city: provider.city,
+          location: provider.location,
+          verified: provider.verified,
+          description: provider.description,
+          portfolioImages: provider.portfolioImages ?? [],
+        },
+      })),
+    ).slice(0, limit);
+  }
+
+  const { data, error } = await (supabase.from as any)("portfolio_projects")
+    .select(
+      "id,title,summary,location,status,stage_id,discipline_id,primary_service_id,primary_work_type_id,started_on,completed_on,budget_range,is_featured,cover_media_asset:media_assets!portfolio_projects_cover_media_asset_id_fkey(public_url),provider:providers!portfolio_projects_provider_id_fkey(id,name,trade,category_slug,phase_id,city,location,verified,description,portfolio_images)",
+    )
+    .order("is_featured", { ascending: false })
+    .order("completed_on", { ascending: false })
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data?.length) {
+    return [];
+  }
+
+  return (data as any[])
+    .map(mapPortfolioProjectWithProvider)
+    .filter((item): item is PortfolioProjectWithProvider => Boolean(item));
+};
+
+export const fetchPortfolioProjectById = async (projectId: string): Promise<PortfolioProjectWithProvider | null> => {
+  if (!projectId) return null;
+
+  if (!hasSupabaseConfig) {
+    const fallback = PROVIDERS.flatMap((provider) =>
+      (provider.portfolioProjects ?? []).map((project) => ({
+        ...project,
+        provider: {
+          id: provider.id,
+          name: provider.name,
+          trade: provider.trade,
+          categorySlug: provider.categorySlug,
+          phaseId: provider.phaseId,
+          city: provider.city,
+          location: provider.location,
+          verified: provider.verified,
+          description: provider.description,
+          portfolioImages: provider.portfolioImages ?? [],
+        },
+      })),
+    ).find((project) => project.id === projectId);
+
+    return fallback ?? null;
+  }
+
+  const { data, error } = await (supabase.from as any)("portfolio_projects")
+    .select(
+      "id,title,summary,location,status,stage_id,discipline_id,primary_service_id,primary_work_type_id,started_on,completed_on,budget_range,is_featured,cover_media_asset:media_assets!portfolio_projects_cover_media_asset_id_fkey(public_url),provider:providers!portfolio_projects_provider_id_fkey(id,name,trade,category_slug,phase_id,city,location,verified,description,portfolio_images)",
+    )
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return mapPortfolioProjectWithProvider(data);
 };
 
 export const createServicePost = async (payload: PublishServiceInput): Promise<void> => {

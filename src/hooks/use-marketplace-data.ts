@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   createServicePost,
+  fetchFeaturedPortfolioProjects,
   fetchFeaturedProviders,
   fetchMaterials,
   fetchPhases,
+  fetchPortfolioProjectById,
   fetchProviderById,
   fetchProviderSummaries,
   fetchProviders,
+  type PortfolioProjectWithProvider,
   PublishServiceInput,
 } from "@/lib/marketplace-api";
 import {
@@ -18,6 +21,8 @@ export const marketplaceQueryKeys = {
   providers: ["marketplace", "providers"] as const,
   providerSummaries: ["marketplace", "provider-summaries"] as const,
   featuredProviders: (limit: number) => ["marketplace", "featured-providers", limit] as const,
+  featuredPortfolioProjects: (limit: number) => ["marketplace", "featured-portfolio-projects", limit] as const,
+  portfolioProject: (id: string) => ["marketplace", "portfolio-project", id] as const,
   provider: (id: string) => ["marketplace", "providers", id] as const,
   materials: ["marketplace", "materials"] as const,
   phases: ["marketplace", "phases"] as const,
@@ -43,6 +48,21 @@ export const useFeaturedProviders = (limit = 4, enabled = true) =>
     queryFn: () => fetchFeaturedProviders(limit),
     enabled,
     ...MARKETPLACE_LIST_QUERY_OPTIONS,
+  });
+
+export const useFeaturedPortfolioProjects = (limit = 6, enabled = true) =>
+  useQuery<PortfolioProjectWithProvider[]>({
+    queryKey: marketplaceQueryKeys.featuredPortfolioProjects(limit),
+    queryFn: () => fetchFeaturedPortfolioProjects(limit),
+    enabled,
+    ...MARKETPLACE_LIST_QUERY_OPTIONS,
+  });
+
+export const usePortfolioProject = (id?: string) =>
+  useQuery<PortfolioProjectWithProvider | null>({
+    queryKey: marketplaceQueryKeys.portfolioProject(id ?? ""),
+    queryFn: () => fetchPortfolioProjectById(id ?? ""),
+    enabled: Boolean(id),
   });
 
 export const useProvider = (id?: string) =>

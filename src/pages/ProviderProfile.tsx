@@ -480,6 +480,22 @@ const ProviderProfile = () => {
                   key={project.id}
                   project={project}
                   trustSnapshot={provider.trustSnapshot}
+                  providerName={provider.name}
+                  providerId={provider.id}
+                  projectHref={`/proyectos/reales/${project.id}`}
+                  imageUrl={project.coverImageUrl || images[0]}
+                  stageLabel={
+                    project.stageId
+                      ? phases.find((item) => item.id === project.stageId)?.name
+                      : undefined
+                  }
+                  categoryLabel={
+                    project.primaryServiceId
+                      ? services.find((item) => item.id === project.primaryServiceId)?.name
+                      : project.disciplineId
+                        ? disciplines.find((item) => item.id === project.disciplineId)?.name
+                        : undefined
+                  }
                   workTypeLabel={
                     project.primaryWorkTypeId
                       ? workTypes.find((item) => item.id === project.primaryWorkTypeId)?.name
