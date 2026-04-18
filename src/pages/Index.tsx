@@ -218,17 +218,18 @@ const Index = () => {
                 Explorar conocimiento por etapas
               </Link>
             </div>
+            </div>
 
-            <div className="mt-6 hidden gap-2 text-[11px] sm:grid sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+            <div className="mt-6 hidden gap-2 text-[11px] sm:grid sm:grid-cols-2 md:grid-cols-3">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-4 py-3">
                 <p className="font-semibold text-background">Visibilidad por categoria</p>
                 <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
               </div>
-              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-4 py-3">
                 <p className="font-semibold text-background">Leads con contexto</p>
                 <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
               </div>
-              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-4 py-3 sm:col-span-2 md:col-span-1">
                 <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
                 <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
               </div>
