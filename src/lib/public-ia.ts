@@ -19,5 +19,5 @@ export const LEGACY_PUBLIC_ROUTE_ALIASES = {
 export const PRIMARY_PUBLIC_NAV_ITEMS = [
   { to: PUBLIC_ROUTES.directorio, label: "Directorio" },
   { to: PUBLIC_ROUTES.empresas, label: "Empresas" },
-  { to: PUBLIC_ROUTES.conocimiento, label: "Conocimiento" },
+  { to: PUBLIC_ROUTES.conocimiento, label: "Conocimiento tecnico" },
 ] as const;

@@ -6,7 +6,7 @@ const navItems = [
   { icon: Home, label: "Inicio", path: PUBLIC_ROUTES.home },
   { icon: Search, label: "Directorio", path: PUBLIC_ROUTES.directorio },
   { icon: Building2, label: "Empresas", path: PUBLIC_ROUTES.empresas },
-  { icon: BookOpen, label: "Conocimiento", path: PUBLIC_ROUTES.conocimiento },
+  { icon: BookOpen, label: "Etapas", path: PUBLIC_ROUTES.conocimiento },
   { icon: User, label: "Perfil", path: PUBLIC_ROUTES.perfil },
 ];
 

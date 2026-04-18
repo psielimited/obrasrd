@@ -6,6 +6,7 @@ import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import {
   getCustomerJourneyBySlug,
   getJourneyDisciplineLabels,
+  getJourneyResourceTypeLabel,
   getJourneyServiceLabels,
   getJourneyStageLabel,
   getJourneyWorkTypeLabel,
@@ -42,6 +43,11 @@ const JourneyGuidePage = () => {
     return getJourneyStageLabel(journey);
   }, [journey]);
 
+  const resourceTypeLabel = useMemo(() => {
+    if (!journey) return "";
+    return getJourneyResourceTypeLabel(journey);
+  }, [journey]);
+
   const workTypeLabel = useMemo(() => {
     if (!journey) return undefined;
     if (!journey.workTypeSlug) return undefined;
@@ -67,6 +73,8 @@ const JourneyGuidePage = () => {
     <JourneyTemplate
       journey={journey}
       stageLabel={stageLabel}
+      resourceTypeLabel={resourceTypeLabel}
+      dominicanContextNote={journey.dominicanContextNote}
       workTypeLabel={workTypeLabel}
       disciplineLabels={disciplineLabels}
       serviceLabels={serviceLabels}

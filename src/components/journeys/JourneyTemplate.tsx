@@ -9,6 +9,8 @@ import { PUBLIC_ROUTES } from "@/lib/public-ia";
 interface JourneyTemplateProps {
   journey: CustomerJourneyDefinition;
   stageLabel: string;
+  resourceTypeLabel: string;
+  dominicanContextNote: string;
   workTypeLabel?: string;
   disciplineLabels: string[];
   serviceLabels: string[];
@@ -19,6 +21,8 @@ interface JourneyTemplateProps {
 const JourneyTemplate = ({
   journey,
   stageLabel,
+  resourceTypeLabel,
+  dominicanContextNote,
   workTypeLabel,
   disciplineLabels,
   serviceLabels,
@@ -37,15 +41,16 @@ const JourneyTemplate = ({
           </Button>
 
           <Card className="border-border/80 bg-card p-5 md:p-6">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              Ruta guiada de proyecto
-            </p>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Archivo de conocimiento</p>
             <h1 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">{journey.title}</h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{journey.summary}</p>
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
                 Etapa: {stageLabel}
+              </Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                Recurso: {resourceTypeLabel}
               </Badge>
               {workTypeLabel && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
@@ -81,6 +86,11 @@ const JourneyTemplate = ({
                 </div>
               </div>
             </div>
+
+            <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Contexto dominicano</p>
+              <p className="mt-1 text-sm text-foreground">{dominicanContextNote}</p>
+            </div>
           </Card>
 
           <Card className="mt-4 border-border/80 bg-card p-5 md:p-6">
@@ -98,16 +108,16 @@ const JourneyTemplate = ({
           </Card>
 
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-            <Button asChild className="flex-1 justify-between" variant="accent">
-              <Link to={intakeHref}>
-                Iniciar solicitud guiada
-                <ClipboardList className="h-4 w-4" />
-              </Link>
-            </Button>
             <Button asChild className="flex-1 justify-between" variant="outline">
               <Link to={searchHref}>
                 Ver proveedores filtrados
                 <Search className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild className="flex-1 justify-between" variant="ghost">
+              <Link to={intakeHref}>
+                Iniciar solicitud guiada
+                <ClipboardList className="h-4 w-4" />
               </Link>
             </Button>
           </div>

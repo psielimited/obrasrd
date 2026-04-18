@@ -71,3 +71,44 @@ Strengthen the public "Proyectos reales" experience with production-ready projec
 ### Next steps
 1. Optional: add a dedicated `/proyectos/reales` listing page with filters (etapa/ubicacion/tipo) for broader SEO coverage.
 2. Optional: add analytics events for project detail view and provider click-through from project cards.
+
+---
+
+## Update: Knowledge lifecycle refactor (2026-04-17)
+
+### Goal
+Refactor the knowledge/content area so technical content is organized by lifecycle stages: Planificacion, Construccion, Mantenimiento.
+
+### In scope / out of scope
+- In scope: lifecycle-first archive structure, stage/resource filters, label/navigation updates for content area, detail template updates, Dominican context copy updates.
+- Out of scope: backend schema changes, new CMS/content tables, route removals.
+
+### Decisions
+- Reused existing journey content model and expanded it with resource metadata (`articulo_tecnico`, `guia_practica`, `conocimiento_practico`) and `dominicanContextNote`.
+- Implemented lifecycle archive grouping helpers in shared content logic (`customer-journeys`) so stage taxonomy is canonical and reusable.
+- Converted knowledge archive page to stage-first organization with query-driven filters:
+  - `?etapa=planificacion|construccion|mantenimiento`
+  - `?recurso=articulo_tecnico|guia_practica|conocimiento_practico`
+- Updated detail template to surface stage + resource type + explicit Dominican context note per resource.
+- Kept knowledge as complementary in homepage copy to avoid competing with primary marketplace actions.
+- Updated public nav wording to "Conocimiento tecnico" and mobile bottom nav label to "Etapas" for lifecycle clarity.
+
+### Files changed
+- src/lib/customer-journeys.ts
+- src/pages/JourneyGuidesPage.tsx
+- src/pages/JourneyGuidePage.tsx
+- src/components/journeys/JourneyTemplate.tsx
+- src/lib/public-ia.ts
+- src/components/BottomNav.tsx
+- src/pages/Index.tsx
+
+### Validation results
+- `npm run build` -> Passed.
+- `npx eslint src/lib/customer-journeys.ts src/pages/JourneyGuidesPage.tsx src/pages/JourneyGuidePage.tsx src/components/journeys/JourneyTemplate.tsx src/lib/public-ia.ts src/pages/Index.tsx src/components/BottomNav.tsx` -> Passed.
+
+### Known issues
+- None introduced in this scope.
+
+### Next steps
+1. Optional: add static landing pages per lifecycle stage (`/conocimiento/planificacion`, etc.) for deeper SEO indexing.
+2. Optional: instrument analytics for knowledge filter usage (`etapa`/`recurso`) and click-through to directory/intake.

@@ -101,7 +101,7 @@ const Index = () => {
               to={PUBLIC_ROUTES.conocimiento}
               className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
             >
-              Ver guias y conocimiento del sector
+              Explorar conocimiento por etapas (complementario)
             </Link>
           </div>
         </div>
