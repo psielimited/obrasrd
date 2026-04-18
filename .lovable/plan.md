@@ -1,62 +1,53 @@
 
+## Issue
+The "Años de experiencia" field on the provider profile editor (`/dashboard/proveedor/perfil`) is a native `<input type="number">`. When a user types or pastes "010", the displayed value keeps the leading zero(s). The underlying state is already a `Number`, but because the input is uncontrolled-on-display (the raw text is preserved by the browser until blur in some cases) and there's no normalization, users see "010", "02", etc.
 
-## Design System Refinements — Inspired by the Mockup
+## Fix
+In `src/pages/ProviderProfileEditorPage.tsx` (lines 519–528), normalize the displayed value so it always reflects a clean integer starting from 0, 1, 2, …
 
-The mockup uses a **navy + orange + emerald + blue** four-color system with iconography, photo-driven hero, and chip-style category shortcuts. Our current site is **pure B&W + orange accent**. We should NOT adopt their color palette (it would dilute our minimalist edge), but we CAN borrow specific structural ideas that strengthen hierarchy without adding visual noise.
+Changes:
+1. **Coerce the displayed value** to a plain integer string. Since `yearsExperience` is already a number in state, bind `value={String(yearsExperience)}` — this strips any leading zeros on every render.
+2. **Sanitize input on change**: parse the input, clamp to `>= 0`, fall back to `0` for empty/NaN. Use `Number.parseInt(..., 10)` so "010" becomes `10`.
+3. **Add `inputMode="numeric"`** and **`max={80}`** for a sensible upper bound and better mobile keyboard.
+4. **Block leading-zero entry** by re-setting state to the parsed integer immediately, so the field re-renders as "10" (not "010") even mid-typing.
 
-### What to keep (do NOT change)
-- Pure black/white + single orange accent
-- Bold black typography, no serifs
-- Flat borders, no gradients, no decorative blue/green
-- Mobile-first density
+### Code change (single block, lines 519–528)
 
-### Targeted improvements
+```tsx
+<div className="space-y-2">
+  <Label htmlFor="years">Años de experiencia</Label>
+  <Input
+    id="years"
+    type="number"
+    inputMode="numeric"
+    min={0}
+    max={80}
+    step={1}
+    value={String(yearsExperience)}
+    onChange={(event) => {
+      const raw = event.target.value;
+      if (raw === "") {
+        setYearsExperience(0);
+        return;
+      }
+      const parsed = Number.parseInt(raw, 10);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        setYearsExperience(0);
+        return;
+      }
+      setYearsExperience(Math.min(parsed, 80));
+    }}
+  />
+</div>
+```
 
-**1. Hero — add a contextual photo band (not full bleed)**
-The mockup's strongest move is pairing bold copy with a real construction photo. Our current hero is a flat black slab, which feels generic.
-- Keep the black background and bold headline LEFT
-- Add a single high-contrast B&W (desaturated) construction photo on the RIGHT half (desktop) / behind the value-props (mobile), with a hard left-edge cutoff — no gradient blend
-- Photo is grayscale with low opacity overlay so the orange CTA still pops
-- Result: visual proof without breaking the monochrome system
+Result: typing "0" → shows "0"; typing "010" → immediately renders "10"; arrows step 0,1,2,3…; empty resets to 0.
 
-**2. Category shortcuts — promote to icon chips**
-Current shortcuts are plain text rectangles. The mockup uses small icons that aid scannability for low-literacy / fast-scan users (key in DR market).
-- Add a single Lucide icon (16px, stroke-only, currentColor) next to each shortcut name
-- Map: Arquitectura→Compass, Ingenieria→HardHat, Construccion→Hammer, Supervision→ClipboardCheck, Instalaciones→Plug, Mantenimiento→Wrench, Seguridad→ShieldCheck, Materiales→Package
-- Keeps minimalism (line icons, no fills, no color)
+## Out of scope
+- No schema changes (column already `years_experience integer`).
+- No analytics changes.
+- No other inputs on the page touched.
 
-**3. Inline search bar in hero**
-The mockup's hero search is its single strongest UX signal. We currently force users to a CTA → directory. Add a compact inline search (input + submit) below the hero CTAs that posts to `/directorio?q=...`. Keep it monochrome: black border, orange submit button.
-
-**4. Section headers — add subtle divider rule**
-Mockup uses an underline accent under section titles ("EMPRESAS DESTACADAS"). We can adapt this minimally:
-- Add a 24px wide, 2px tall orange accent bar UNDER the eyebrow label on each section
-- One token, applied via existing `.label-upper` companion class — zero color additions
-
-**5. Design tokens to add (index.css)**
-- `--accent-bar`: `2px` height divider utility class `.section-accent-bar`
-- Tighten section vertical rhythm: standardize `py-12 md:py-16` (currently inconsistent: `py-10`, `pb-10`, `py-12`)
-- Add `--radius-sm: 0.375rem` for the chip elements (slightly tighter than card radius)
-
-**6. Provider card — small density win**
-Current cards stack a lot of metadata badges. Mockup shows clean "name + trade + city" cards. We don't want to lose trust signals, but we can:
-- Move `% perfil completo` into the trust badge row (not its own boxed stat) — frees vertical space
-- Keep `Proyectos` boxed (it's the strongest proof signal)
-
-### What we explicitly reject from the mockup
-- Navy/blue/green palette — breaks brand
-- 3-column colored "info card" block (Buscar / Promocionar / Conocimiento) — we already have `IntentEntryCard` and a cleaner stage explainer
-- Heavy header with utility nav row — our top nav is intentionally minimal
-- Decorative isometric line illustrations — visual noise
-
-### Files to change
-- `src/index.css` — add `.section-accent-bar` utility, optional `--radius-sm` token
-- `src/pages/Index.tsx` — hero photo split, inline search, section accent bars, icon chips for shortcuts
-- `src/components/ProviderCard.tsx` — move profile-completeness into trust row
-- New asset: `public/hero-construction-bw.jpg` (one desaturated construction photo, ~80KB)
-
-### Out of scope
-- No new colors in the palette
-- No changes to TopNav, footer structure, or routes
-- No icon library swap (continue using lucide-react which is already installed)
-
+## Validation
+- `npm run lint` and `npm run build`.
+- Manual: open `/dashboard/proveedor/perfil` on mobile width, type "0", "5", "010", clear field — confirm display is always a clean integer with no leading zeros, and Save persists correctly.
