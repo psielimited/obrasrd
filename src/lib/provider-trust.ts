@@ -8,6 +8,8 @@ export type TrustBadgeType =
   | "rapid_response"
   | "active_this_month";
 
+export type ProviderResponseSignal = "rapid" | "standard";
+
 interface ProviderActivityContext {
   profileCompleteness?: number;
   hasRecentLeadActivity?: boolean;
@@ -69,4 +71,11 @@ export const getProviderTrustBadges = (
   if (trust?.activeThisMonth) badges.push("active_this_month");
 
   return badges;
+};
+
+export const getProviderResponseSignal = (
+  provider: Provider | null | undefined,
+): ProviderResponseSignal => {
+  if (!provider) return "standard";
+  return provider.trustSnapshot?.rapidResponse ? "rapid" : "standard";
 };

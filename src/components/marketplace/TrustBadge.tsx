@@ -8,27 +8,27 @@ const TRUST_BADGE_CONFIG: Record<
   { label: string; className: string; icon: typeof ShieldCheck }
 > = {
   provider_verified: {
-    label: "Proveedor verificado",
-    className: "border-border bg-muted text-foreground",
+    label: "Verificado en ObrasRD",
+    className: "border-emerald-500/30 bg-emerald-500/10 text-foreground",
     icon: ShieldCheck,
   },
   identity_confirmed: {
-    label: "Identidad confirmada",
+    label: "Identidad validada",
     className: "border-border bg-muted text-foreground",
     icon: IdCard,
   },
   portfolio_validated: {
-    label: "Portafolio validado",
+    label: "Portafolio revisado",
     className: "border-border bg-muted text-foreground",
     icon: FolderCheck,
   },
   project_registered: {
-    label: "Proyecto registrado",
+    label: "Proyecto documentado",
     className: "border-border bg-muted text-foreground",
     icon: BriefcaseBusiness,
   },
   rapid_response: {
-    label: "Respuesta rapida",
+    label: "Responde rapido",
     className: "border-border bg-muted text-foreground",
     icon: BadgeCheck,
   },

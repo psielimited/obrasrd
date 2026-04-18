@@ -84,7 +84,7 @@ const ConsumerCompareProvidersPage = () => {
                         <div>
                           <p className="text-sm font-semibold text-foreground">{provider.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {provider.trade} â€¢ {provider.city}
+                            {provider.trade} - {provider.city}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ const ConsumerCompareProvidersPage = () => {
                               <span>{provider.name}</span>
                               {provider.verified && (
                                 <Badge variant="outline" className="border-emerald-500/40 text-emerald-300">
-                                  Verificado
+                                  Verificado en ObrasRD
                                 </Badge>
                               )}
                             </div>

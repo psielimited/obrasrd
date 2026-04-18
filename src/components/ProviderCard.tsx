@@ -2,13 +2,15 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import TrustBadge from "@/components/marketplace/TrustBadge";
+import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
 import ProofFirstCard from "@/components/marketplace/ProofFirstCard";
 import type { Phase, Provider } from "@/data/marketplace";
 import type { TaxonomyCatalog } from "@/lib/taxonomy-api";
 import {
   calculateProviderProfileCompleteness,
+  getProviderResponseSignal,
   getProviderTrustBadges,
+  isProviderActive,
 } from "@/lib/provider-trust";
 import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
@@ -47,10 +49,20 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
       .find(Boolean) ||
     fallback?.workTypeLabel;
 
+  const profileCompleteness = calculateProviderProfileCompleteness(provider);
   const trustBadges = getProviderTrustBadges(provider, {
-    profileCompleteness: calculateProviderProfileCompleteness(provider),
+    profileCompleteness,
   });
-  const responseLabel = provider.trustSnapshot?.rapidResponse ? "Respuesta rapida" : "Respuesta estandar";
+  const responseSignal = getProviderResponseSignal(provider);
+  const isActive = isProviderActive(provider, { profileCompleteness });
+  const responseLabel = responseSignal === "rapid" ? "Responde rapido" : "Respuesta habitual";
+  const projectLabel = `${provider.completedProjects} proyecto${provider.completedProjects === 1 ? "" : "s"}`;
+  const coverageLabel = provider.serviceAreas.length
+    ? `${provider.serviceAreas.length} zona${provider.serviceAreas.length === 1 ? "" : "s"} de servicio`
+    : "Cobertura por confirmar";
+  const ratingLabel = provider.reviewCount > 0
+    ? `${provider.rating.toFixed(1)} / 5 (${provider.reviewCount} resenas)`
+    : "Sin resenas todavia";
 
   const whatsappUrl = `https://wa.me/${provider.whatsapp}?text=${encodeURIComponent(
     `Hola, me interesa cotizar ${provider.trade}. Vi su perfil en ObrasRD.`,
@@ -97,32 +109,51 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
       locationLabel={provider.location || provider.city || "Ubicacion no indicada"}
       providerNameLabel={provider.name}
       onCardClick={onOpenProfile}
-      topRightBadge={provider.isFeatured ? <Badge className="bg-accent text-accent-foreground">Destacado (Plan)</Badge> : undefined}
+      topRightBadge={
+        provider.isFeatured || isActive ? (
+          <div className="flex flex-col items-end gap-1">
+            {provider.isFeatured ? <Badge className="bg-accent text-accent-foreground">Destacado (Plan)</Badge> : null}
+            {isActive ? (
+              <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-[10px] text-foreground">
+                Activo este mes
+              </Badge>
+            ) : null}
+          </div>
+        ) : undefined
+      }
       trustContent={
-        <div className="space-y-2">
+        <div className="space-y-2.5">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Proyectos</p>
+              <p className="text-sm font-semibold text-foreground">{projectLabel}</p>
+            </div>
+            <div className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
+              <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Perfil</p>
+              <p className="text-sm font-semibold text-foreground">{profileCompleteness}% completo</p>
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary" className="text-[10px]">
-              {provider.rating.toFixed(1)} estrellas ({provider.reviewCount} resenas)
+              {ratingLabel}
             </Badge>
-            <Badge variant="secondary" className="text-[10px]">
-              {provider.completedProjects} proyectos
+            <Badge variant={responseSignal === "rapid" ? "default" : "outline"} className="text-[10px]">
+              {responseLabel}
             </Badge>
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="outline" className="text-[10px]">
+              {coverageLabel}
+            </Badge>
+            <Badge variant="outline" className="text-[10px]">
               {provider.yearsExperience} anos de experiencia
             </Badge>
           </div>
+
           {trustBadges.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {trustBadges.map((badge) => (
-                <TrustBadge key={badge} type={badge} className="px-2 py-0.5 text-[10px]" />
-              ))}
-            </div>
+            <TrustBadgeRow badges={trustBadges} badgeClassName="px-2 py-0.5 text-[10px]" />
           ) : (
-            <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Sin insignias de confianza verificadas
-            </Badge>
+            <p className="text-[11px] text-muted-foreground">Sin señales de confianza adicionales registradas.</p>
           )}
-          <p className="text-xs text-muted-foreground">{responseLabel}</p>
         </div>
       }
       primaryCta={
@@ -131,7 +162,7 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
         </Button>
       }
       secondaryCta={
-        <Button variant="outline" size="sm" onClick={onOpenProfile}>
+        <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={onOpenProfile}>
           Ver perfil
         </Button>
       }

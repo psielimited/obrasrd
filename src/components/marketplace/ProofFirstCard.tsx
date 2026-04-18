@@ -94,7 +94,7 @@ const ProofFirstCard = ({
         <div className="min-h-6">{trustContent}</div>
 
         {(primaryCta || secondaryCta) && (
-          <div className="flex gap-2" onClick={(event) => event.stopPropagation()}>
+          <div className="flex flex-col gap-2 sm:flex-row" onClick={(event) => event.stopPropagation()}>
             {primaryCta}
             {secondaryCta}
           </div>
