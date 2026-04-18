@@ -300,9 +300,9 @@ const Index = () => {
       <section id="proyectos-reales" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
           <div className="mb-6">
-            <p className="label-upper">Prueba de trabajo</p>
+            <p className="label-upper">Obras verificadas</p>
             <span aria-hidden="true" className="section-accent-bar" />
-            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos con evidencia publicados en el directorio</h2>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Compara obras reales por etapa, categoria tecnica y responsable para tomar decisiones con mayor confianza.
             </p>
