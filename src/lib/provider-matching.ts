@@ -102,7 +102,7 @@ const getReasons = (signals: ProviderMatchSignals): string[] => {
   if (signals.stageMatch) reasons.push("trabaja en esta etapa");
   if (signals.workTypeMatch) reasons.push("maneja este tipo de obra");
   if (signals.locationCoverage) reasons.push("trabaja en tu zona");
-  if (signals.verificationPresence) reasons.push("esta verificado");
+  if (signals.verificationPresence) reasons.push("perfil revisado");
   if (signals.portfolioPresence) reasons.push("tiene portafolio");
   if (signals.recentActivity) reasons.push("activo recientemente");
   return reasons;

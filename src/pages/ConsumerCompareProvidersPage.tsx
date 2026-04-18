@@ -138,7 +138,7 @@ const ConsumerCompareProvidersPage = () => {
                               <span>{provider.name}</span>
                               {provider.verified && (
                                 <Badge variant="outline" className="border-emerald-500/40 text-emerald-300">
-                                  Verificado en ObrasRD
+                                  Perfil revisado
                                 </Badge>
                               )}
                             </div>

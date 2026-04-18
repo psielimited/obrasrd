@@ -233,15 +233,15 @@ const FilterFields = ({
 
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <label className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-        <span className="text-sm text-foreground">Solo verificados</span>
+        <span className="text-sm text-foreground">Solo perfiles revisados</span>
         <Switch checked={state.soloVerificados} onCheckedChange={onVerifiedOnlyChange} />
       </label>
       <label className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-        <span className="text-sm text-foreground">Identidad validada</span>
+        <span className="text-sm text-foreground">Telefono confirmado</span>
         <Switch checked={state.soloIdentidadVerificada} onCheckedChange={onIdentityOnlyChange} />
       </label>
       <label className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-        <span className="text-sm text-foreground">Portafolio validado</span>
+        <span className="text-sm text-foreground">Documentos cargados</span>
         <Switch checked={state.soloPortafolioValidado} onCheckedChange={onPortfolioOnlyChange} />
       </label>
     </div>

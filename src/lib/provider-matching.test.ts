@@ -59,7 +59,7 @@ describe("provider deterministic matching", () => {
     expect(ranked[0].reasons).toContain("ofrece este servicio");
     expect(ranked[0].reasons).toContain("trabaja en tu zona");
     expect(ranked[0].reasons).toContain("tiene portafolio");
-    expect(ranked[0].reasons).toContain("esta verificado");
+    expect(ranked[0].reasons).toContain("perfil revisado");
   });
 
   it("uses featured as tie-breaker only", () => {

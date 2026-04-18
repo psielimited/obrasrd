@@ -23,7 +23,7 @@ const PortfolioProjectCard = ({ project, trustSnapshot, workTypeLabel }: Portfol
         <p className="text-sm font-semibold text-[#1A1612]">{project.title}</p>
         {trustSnapshot?.projectRegistered && (
           <Badge variant="outline" className="border-[#D2C7B9] bg-white text-[#3D342B]">
-            Proyecto registrado
+            Proyecto publicado
           </Badge>
         )}
       </div>

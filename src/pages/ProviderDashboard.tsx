@@ -186,8 +186,8 @@ const ProviderDashboard = () => {
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-card p-3">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Verificacion</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{providerProfile?.verified ? "Servicio verificado" : "Pendiente de verificacion"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Revision del perfil</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{providerProfile?.verified ? "Perfil revisado" : "Revision pendiente"}</p>
               </div>
               <div className="rounded-xl border border-border bg-card p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Estado de actividad</p>

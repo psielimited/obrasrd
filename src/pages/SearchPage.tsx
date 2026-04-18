@@ -79,7 +79,7 @@ const PROVIDER_TYPE_OPTIONS: { value: SearchProviderType; label: string }[] = [
 const SORT_OPTIONS: { value: SearchSortOption; label: string }[] = [
   { value: "relevancia", label: "Relevancia" },
   { value: "mejor_valorados", label: "Mejor valorados" },
-  { value: "mas_verificados", label: "Mas verificados" },
+  { value: "mas_verificados", label: "Perfiles revisados" },
   { value: "mas_recientes", label: "Mas recientes" },
 ];
 
