@@ -17,7 +17,6 @@ import ProviderCard from "@/components/ProviderCard";
 import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import heroConstructionPhoto from "/hero-construction-bw.jpg?url";
 import { useFeaturedPortfolioProjects, useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
@@ -63,7 +62,9 @@ const resolvePhaseHref = (phaseSlug: string, phaseExists: boolean, fallbackHref:
 
 const Index = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [shouldLoadDeferredData, setShouldLoadDeferredData] = useState(false);
+  const [heroSearchQuery, setHeroSearchQuery] = useState("");
   const { data: providers = [] } = useFeaturedProviders(4, shouldLoadDeferredData);
   const { data: featuredProjects = [] } = useFeaturedPortfolioProjects(6, shouldLoadDeferredData);
   const { data: phases = [] } = usePhases(shouldLoadDeferredData);
