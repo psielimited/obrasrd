@@ -165,10 +165,10 @@ const Index = () => {
           <div className="md:max-w-2xl lg:max-w-[58%]">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
             <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
-              Busca servicios, conecta con profesionales y avanza tu obra con criterio.
+              Encuentra el profesional correcto para tu obra en Republica Dominicana.
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-background/80 md:text-base">
-              Marketplace dominicano para construccion: aumenta visibilidad por categoria, recibe leads por WhatsApp, publica proyectos reales y fortalece confianza con senales verificables en una sola plataforma.
+              Compara empresas y tecnicos verificados por categoria, zona y experiencia. Contacta directo por WhatsApp y avanza tu proyecto con confianza.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
