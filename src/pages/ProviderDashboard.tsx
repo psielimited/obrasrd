@@ -24,7 +24,12 @@ import { useMyNotifications, useUnreadNotificationCount } from "@/hooks/use-noti
 import { usePhases } from "@/hooks/use-marketplace-data";
 import { useDashboardRealtimeSync } from "@/hooks/use-dashboard-realtime-sync";
 import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
-import { calculateProviderProfileCompleteness, getProviderTrustBadges, isProviderActive } from "@/lib/provider-trust";
+import {
+  calculateProviderProfileCompleteness,
+  getProviderProfileQualitySnapshot,
+  getProviderTrustBadges,
+  isProviderActive,
+} from "@/lib/provider-trust";
 import CategoryTag from "@/components/marketplace/CategoryTag";
 import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
 import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
@@ -50,6 +55,7 @@ const ProviderDashboard = () => {
   useDashboardRealtimeSync({ includeRequests: false, includeThread: false });
 
   const profileCompleteness = calculateProviderProfileCompleteness(providerProfile);
+  const qualitySnapshot = getProviderProfileQualitySnapshot(providerProfile);
   const leadsNewOrPending = leads.filter((lead) => lead.status === "new" || lead.status === "contacted").length;
   const unreadLeadThreads = leads.filter(
     (lead) =>
@@ -87,12 +93,7 @@ const ProviderDashboard = () => {
   const currentPhase = phases.find((phase) => phase.id === providerProfile?.phaseId);
   const currentCategory = currentPhase?.categories.find((category) => category.slug === providerProfile?.categorySlug);
 
-  const warnings: string[] = [];
-  if (!providerProfile?.description?.trim()) warnings.push("Completa tu descripcion para mejorar confianza.");
-  if (!providerProfile?.whatsapp?.trim()) warnings.push("Agrega tu WhatsApp para recibir respuestas mas rapido.");
-  if (!providerProfile?.serviceAreas?.length) warnings.push("Define al menos una area de servicio.");
-  if (portfolioImageCount === 0) warnings.push("Sube fotos reales de tus trabajos para generar confianza.");
-  if (portfolioImageCount > 0 && portfolioImageCount < 3) warnings.push("Agrega al menos 3 fotos para fortalecer tu perfil.");
+  const warnings = qualitySnapshot.recommendations;
 
   const greetingName = profile?.displayName || providerProfile?.name || "proveedor";
   const planProgress =
@@ -104,13 +105,10 @@ const ProviderDashboard = () => {
       : 0;
   const trustChecklist = useMemo(
     () => [
-      { label: "Sube 3 fotos reales de trabajos", done: portfolioImageCount >= 3 },
-      { label: "Completa tu descripcion", done: Boolean(providerProfile?.description?.trim()) },
-      { label: "Agrega WhatsApp", done: Boolean(providerProfile?.whatsapp?.trim()) },
-      { label: "Define zonas de servicio", done: Boolean(providerProfile?.serviceAreas?.length) },
-      { label: "Mantente activo en la plataforma", done: providerActive },
+      ...qualitySnapshot.items.map((item) => ({ label: item.label, done: item.done })),
+      { label: "Actividad reciente en plataforma", done: providerActive },
     ],
-    [portfolioImageCount, providerProfile?.description, providerProfile?.serviceAreas, providerProfile?.whatsapp, providerActive],
+    [providerActive, qualitySnapshot.items],
   );
 
   if (profile?.role !== "provider") {
@@ -197,7 +195,10 @@ const ProviderDashboard = () => {
               </div>
               <div className="rounded-xl border border-border bg-card p-3">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Completitud</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{profileCompleteness}%</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{qualitySnapshot.score}%</p>
+                <p className="text-xs text-muted-foreground">
+                  {qualitySnapshot.completedWeight}/{qualitySnapshot.totalWeight} puntos
+                </p>
               </div>
             </div>
 

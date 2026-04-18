@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,8 @@ import { useMyProfile, useMyProviderProfile, profileQueryKeys } from "@/hooks/us
 import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 import { upsertMyProviderProfile } from "@/lib/profile-api";
 import { deleteProviderPortfolioImageByUrl, linkMyProviderProfileMedia, uploadImageAsset } from "@/lib/media-api";
+import { getProviderProfileQualitySnapshot } from "@/lib/provider-trust";
+import type { Provider } from "@/data/marketplace";
 import { ArrowDown, ArrowUp, ImagePlus, Loader2, Trash2, Upload, UserRoundCog } from "lucide-react";
 
 const ProviderProfileEditorPage = () => {
@@ -124,6 +127,66 @@ const ProviderProfileEditorPage = () => {
         .map((item) => item.trim())
         .filter(Boolean),
     [serviceAreasRaw],
+  );
+
+  const draftProviderForQuality: Provider = useMemo(
+    () => ({
+      id: providerProfile?.id ?? "draft",
+      name,
+      trade,
+      categorySlug,
+      phaseId,
+      primaryDisciplineId,
+      primaryServiceId,
+      serviceIds: selectedServiceIds,
+      workTypeIds: selectedWorkTypeIds,
+      location,
+      city,
+      yearsExperience,
+      description,
+      rating: providerProfile?.rating ?? 0,
+      reviewCount: providerProfile?.reviewCount ?? 0,
+      completedProjects: providerProfile?.completedProjects ?? 0,
+      verified: providerProfile?.verified ?? false,
+      isFeatured,
+      whatsapp,
+      startingPrice: startingPrice.trim() ? Number(startingPrice) : undefined,
+      portfolioImages,
+      serviceAreas,
+      trustSnapshot: providerProfile?.trustSnapshot,
+      portfolioProjects: providerProfile?.portfolioProjects ?? [],
+    }),
+    [
+      categorySlug,
+      city,
+      description,
+      isFeatured,
+      location,
+      name,
+      phaseId,
+      portfolioImages,
+      primaryDisciplineId,
+      primaryServiceId,
+      providerProfile?.completedProjects,
+      providerProfile?.id,
+      providerProfile?.portfolioProjects,
+      providerProfile?.rating,
+      providerProfile?.reviewCount,
+      providerProfile?.trustSnapshot,
+      providerProfile?.verified,
+      selectedServiceIds,
+      selectedWorkTypeIds,
+      serviceAreas,
+      startingPrice,
+      trade,
+      whatsapp,
+      yearsExperience,
+    ],
+  );
+
+  const qualitySnapshot = useMemo(
+    () => getProviderProfileQualitySnapshot(draftProviderForQuality),
+    [draftProviderForQuality],
   );
 
   const isValid =
@@ -288,6 +351,36 @@ const ProviderProfileEditorPage = () => {
       actionDisabled={!isValid || isSaving}
     >
       <div className="space-y-6 pb-20">
+        <SectionCard title="Completitud del perfil" description="Mejora confianza y visibilidad con estos senales">
+          <div className="space-y-4">
+            <div>
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <span className="text-foreground">Puntaje actual</span>
+                <span className="font-semibold text-foreground">
+                  {qualitySnapshot.score}% ({qualitySnapshot.completedWeight}/{qualitySnapshot.totalWeight})
+                </span>
+              </div>
+              <Progress value={qualitySnapshot.score} className="h-2 bg-muted" />
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {qualitySnapshot.items.map((item) => (
+                <div key={item.id} className="rounded-lg border border-border bg-card p-2.5">
+                  <div className="flex items-start gap-2">
+                    <span className={`mt-1 h-2.5 w-2.5 rounded-full ${item.done ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+                    <div>
+                      <p className={`text-sm font-medium ${item.done ? "text-foreground" : "text-muted-foreground"}`}>
+                        {item.label}
+                      </p>
+                      {!item.done ? <p className="text-xs text-muted-foreground">{item.helpText}</p> : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+
         <SectionCard title="Informacion comercial" description="Nombre y oficio principal para aparecer en busquedas">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -599,7 +692,9 @@ const ProviderProfileEditorPage = () => {
 
         <div className="sticky bottom-4 z-20">
           <div className="bg-background/95 border border-border rounded-2xl p-3 flex items-center justify-between gap-3 shadow-lg">
-            <p className="text-sm text-muted-foreground">Guarda cambios para actualizar tu perfil publico.</p>
+            <p className="text-sm text-muted-foreground">
+              Perfil {qualitySnapshot.score}% completo. Guarda cambios para actualizar tu perfil publico.
+            </p>
             <Button variant="accent" onClick={onSave} disabled={!isValid || isSaving}>
               {isSaving ? "Guardando..." : "Guardar cambios"}
             </Button>

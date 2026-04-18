@@ -19,6 +19,7 @@ import { toggleSavedProvider } from "@/lib/saved-providers-api";
 import { savedProvidersQueryKeys, useMySavedProviderIds } from "@/hooks/use-saved-providers-data";
 import {
   calculateProviderProfileCompleteness,
+  getProviderProfileQualitySnapshot,
   getProviderTrustBadges,
   isProviderActive,
 } from "@/lib/provider-trust";
@@ -199,6 +200,7 @@ const ProviderProfile = () => {
   const canSubmitLead = requesterContact.trim() && message.trim();
   const isSaved = savedProviderIds.includes(provider.id);
   const completeness = calculateProviderProfileCompleteness(provider);
+  const qualitySnapshot = getProviderProfileQualitySnapshot(provider);
   const trustBadges = getProviderTrustBadges(provider, {
     profileCompleteness: completeness,
   });
@@ -447,7 +449,26 @@ const ProviderProfile = () => {
                 Sin resenas todavia
               </Badge>
             )}
+            <Badge variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#3D342B]">
+              Perfil {qualitySnapshot.score}% completo
+            </Badge>
+            <Badge variant="outline" className="border-[#E3DDD4] bg-[#F5F0E8] text-[#3D342B]">
+              Calidad: {qualitySnapshot.completedWeight}/{qualitySnapshot.totalWeight}
+            </Badge>
           </div>
+
+          {qualitySnapshot.recommendations.length > 0 ? (
+            <div className="mt-4 rounded-xl border border-[#E3DDD4] bg-[#F8F4EE] p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A6E64]">
+                Senales por fortalecer
+              </p>
+              <ul className="mt-2 space-y-1 text-xs text-[#5A4F45]">
+                {qualitySnapshot.recommendations.slice(0, 3).map((tip) => (
+                  <li key={tip}>- {tip}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </section>
 
         {provider.portfolioProjects && provider.portfolioProjects.length > 0 && (

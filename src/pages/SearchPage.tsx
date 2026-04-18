@@ -25,6 +25,7 @@ import { logUnmatchedNormalizedSearchQuery } from "@/lib/search/search-analytics
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
+import { calculateProviderProfileCompleteness } from "@/lib/provider-trust";
 import {
   clearStructuredFilters,
   countActiveStructuredFilters,
@@ -853,6 +854,7 @@ const SearchPage = () => {
           (providerTrustSnapshot?.portfolioValidated ? 1 : 0) +
           (providerTrustSnapshot?.projectRegistered ? 1 : 0) +
           (providerTrustSnapshot?.rapidResponse ? 1 : 0);
+        const completenessScore = calculateProviderProfileCompleteness(provider);
 
         return {
           provider,
@@ -861,6 +863,7 @@ const SearchPage = () => {
           providerLocationHaystack,
           inferredProviderType,
           trustScore,
+          completenessScore,
           stageSlugs,
           disciplineSlugs,
           serviceSlugs,
@@ -958,6 +961,9 @@ const SearchPage = () => {
           if (searchState.sort === "mas_verificados") {
             if (next.trustScore !== current.trustScore) return next.trustScore - current.trustScore;
             if (next.provider.verified !== current.provider.verified) return Number(next.provider.verified) - Number(current.provider.verified);
+            if (next.completenessScore !== current.completenessScore) {
+              return next.completenessScore - current.completenessScore;
+            }
             return next.provider.completedProjects - current.provider.completedProjects;
           }
 
@@ -977,6 +983,9 @@ const SearchPage = () => {
           );
           if (nextTextScore !== currentTextScore) return nextTextScore - currentTextScore;
           if (next.trustScore !== current.trustScore) return next.trustScore - current.trustScore;
+          if (next.completenessScore !== current.completenessScore) {
+            return next.completenessScore - current.completenessScore;
+          }
           if (next.provider.completedProjects !== current.provider.completedProjects) {
             return next.provider.completedProjects - current.provider.completedProjects;
           }
