@@ -268,6 +268,15 @@ const Index = () => {
               );
             })}
           </div>
+
+          <div className="mt-5">
+            <Button asChild variant="link" className="h-auto justify-start p-0 text-foreground hover:text-accent">
+              <Link to={PUBLIC_ROUTES.directorio}>
+                Ver todas las categorias
+                <span aria-hidden="true" className="ml-1">&rarr;</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
