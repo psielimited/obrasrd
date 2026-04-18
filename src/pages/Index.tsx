@@ -239,11 +239,12 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="atajos-categorias" className="px-4 py-10 md:py-12">
+      <section id="atajos-categorias" className="px-4 py-12 md:py-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Directorio</p>
-            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Atajos por categoria clave</h2>
+          <div className="mb-6">
+            <p className="label-upper">Directorio</p>
+            <span aria-hidden="true" className="section-accent-bar" />
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Atajos por categoria clave</h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Entra directo a categorias de alta demanda y reduce tiempo de busqueda.
             </p>
@@ -252,15 +253,21 @@ const Index = () => {
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {shortcuts.map((shortcut) => {
               const targetHref = `${PUBLIC_ROUTES.directorio}?categoria=${shortcut.slug}`;
+              const Icon = getShortcutIcon(shortcut.slug);
               return (
                 <Link
                   key={`${shortcut.slug}-${shortcut.phase}`}
                   to={targetHref}
                   onClick={() => trackCategoryShortcutClick(shortcut, targetHref)}
-                  className="rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/25"
+                  className="group flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/40 hover:bg-muted/40"
                 >
-                  <p className="text-sm font-semibold text-foreground">{shortcut.name}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors group-hover:border-accent group-hover:text-accent">
+                    <Icon aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
+                  </span>
+                  <span className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{shortcut.name}</p>
+                    <p className="mt-0.5 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
+                  </span>
                 </Link>
               );
             })}
