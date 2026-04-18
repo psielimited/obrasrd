@@ -112,3 +112,44 @@ Refactor the knowledge/content area so technical content is organized by lifecyc
 ### Next steps
 1. Optional: add static landing pages per lifecycle stage (`/conocimiento/planificacion`, etc.) for deeper SEO indexing.
 2. Optional: instrument analytics for knowledge filter usage (`etapa`/`recurso`) and click-through to directory/intake.
+
+---
+
+## Update: Content-to-directory actions on articles/projects (2026-04-17)
+
+### Goal
+Improve article and project pages so they guide users into relevant next actions (providers/categories/directory transitions) with contextual CTAs and analytics instrumentation.
+
+### In scope / out of scope
+- In scope: topic-aware related actions on guide/project detail pages, related provider blocks, contextual directory links, click analytics for content-to-directory transitions.
+- Out of scope: backend schema changes, search ranking changes, CMS authoring changes.
+
+### Decisions
+- Added a dedicated analytics event `content_to_directory_click` with structured taxonomy IDs and CTA type.
+- Added a shared helper to build directory URLs from content context (`buildDirectoryTopicHref`).
+- Extended guide detail template to show:
+  - related providers,
+  - contextual topic actions (ver empresas relacionadas / buscar este servicio / ver categoria relacionada),
+  - tracked clicks for directory/provider transitions.
+- Extended project detail page to show:
+  - contextual action buttons linked to stage/service/category/location,
+  - related providers scored from project taxonomy signals,
+  - tracked clicks for all content-to-directory/provider transitions.
+
+### Files changed
+- src/lib/analytics/events.ts
+- src/lib/content-directory-links.ts
+- src/components/journeys/JourneyTemplate.tsx
+- src/pages/JourneyGuidePage.tsx
+- src/pages/PortfolioProjectDetailPage.tsx
+
+### Validation results
+- `npm run build` -> Passed.
+- `npx eslint src/lib/analytics/events.ts src/lib/content-directory-links.ts src/pages/JourneyGuidePage.tsx src/components/journeys/JourneyTemplate.tsx src/pages/PortfolioProjectDetailPage.tsx` -> Passed.
+
+### Known issues
+- None introduced in this scope.
+
+### Next steps
+1. Optional: add a dashboard report for `content_to_directory_click` CTA performance by `source` and `cta_type`.
+2. Optional: A/B test CTA copy per stage to improve click-through to directory/provider pages.

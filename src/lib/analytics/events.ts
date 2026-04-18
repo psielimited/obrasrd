@@ -11,6 +11,7 @@ export const OBRASRD_ANALYTICS_EVENTS = {
   SearchUnmatchedNormalizedQuery: "search_unmatched_normalized_query",
   SearchRecoveryStateViewed: "search_recovery_state_viewed",
   SearchRecoveryActionClicked: "search_recovery_action_clicked",
+  ContentToDirectoryClick: "content_to_directory_click",
 } as const;
 
 export type ObrasRdAnalyticsEventName =
@@ -103,6 +104,13 @@ type EventPayloadMap = {
     stage_slug?: string;
     category_slug?: string;
     location_slug?: string;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.ContentToDirectoryClick]: AnalyticsStructuredIds & {
+    source: "knowledge_guide" | "project_detail";
+    content_slug?: string;
+    project_id?: string;
+    cta_type: "ver_empresas_relacionadas" | "buscar_este_servicio" | "ver_categoria_relacionada" | "ver_proveedor_relacionado";
+    target_href: string;
   };
 };
 

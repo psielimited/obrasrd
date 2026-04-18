@@ -3,8 +3,15 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { Provider } from "@/data/marketplace";
 import type { CustomerJourneyDefinition } from "@/lib/customer-journeys";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
+
+interface TopicDirectoryLink {
+  label: string;
+  href: string;
+  ctaType: "ver_empresas_relacionadas" | "buscar_este_servicio" | "ver_categoria_relacionada";
+}
 
 interface JourneyTemplateProps {
   journey: CustomerJourneyDefinition;
@@ -16,6 +23,9 @@ interface JourneyTemplateProps {
   serviceLabels: string[];
   intakeHref: string;
   searchHref: string;
+  topicDirectoryLinks: TopicDirectoryLink[];
+  relatedProviders: Pick<Provider, "id" | "name" | "trade" | "city" | "location" | "verified">[];
+  onContentDirectoryClick: (payload: { ctaType: TopicDirectoryLink["ctaType"] | "ver_proveedor_relacionado"; href: string }) => void;
 }
 
 const JourneyTemplate = ({
@@ -28,6 +38,9 @@ const JourneyTemplate = ({
   serviceLabels,
   intakeHref,
   searchHref,
+  topicDirectoryLinks,
+  relatedProviders,
+  onContentDirectoryClick,
 }: JourneyTemplateProps) => {
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
@@ -109,7 +122,15 @@ const JourneyTemplate = ({
 
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             <Button asChild className="flex-1 justify-between" variant="outline">
-              <Link to={searchHref}>
+              <Link
+                to={searchHref}
+                onClick={() =>
+                  onContentDirectoryClick({
+                    ctaType: "ver_empresas_relacionadas",
+                    href: searchHref,
+                  })
+                }
+              >
                 Ver proveedores filtrados
                 <Search className="h-4 w-4" />
               </Link>
@@ -121,6 +142,65 @@ const JourneyTemplate = ({
               </Link>
             </Button>
           </div>
+
+          {topicDirectoryLinks.length > 0 && (
+            <Card className="mt-4 border-border/80 bg-card p-5 md:p-6">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Siguientes acciones utiles</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {topicDirectoryLinks.map((item) => (
+                  <Button key={item.href} asChild variant="outline" size="sm" className="justify-between">
+                    <Link
+                      to={item.href}
+                      onClick={() =>
+                        onContentDirectoryClick({
+                          ctaType: item.ctaType,
+                          href: item.href,
+                        })
+                      }
+                    >
+                      {item.label}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {relatedProviders.length > 0 && (
+            <Card className="mt-4 border-border/80 bg-card p-5 md:p-6">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Empresas relacionadas</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {relatedProviders.map((provider) => (
+                  <div key={provider.id} className="rounded-lg border border-border bg-muted/20 p-3">
+                    <p className="text-sm font-semibold text-foreground">{provider.name}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{provider.trade}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{provider.city || provider.location || "Republica Dominicana"}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      {provider.verified && (
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                          Verificado
+                        </Badge>
+                      )}
+                      <Button asChild size="sm" variant="ghost" className="h-7 px-0 text-xs">
+                        <Link
+                          to={`/proveedor/${provider.id}`}
+                          onClick={() =>
+                            onContentDirectoryClick({
+                              ctaType: "ver_proveedor_relacionado",
+                              href: `/proveedor/${provider.id}`,
+                            })
+                          }
+                        >
+                          Ver perfil
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Button asChild variant="ghost" className="mt-2 w-full justify-between sm:w-auto">
             <Link to="/proyectos">
