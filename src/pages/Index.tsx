@@ -275,12 +275,13 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="proveedores-destacados" className="px-4 pb-10 md:pb-12">
+      <section id="proveedores-destacados" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Confianza</p>
-              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Empresas y profesionales destacados</h2>
+              <p className="label-upper">Confianza</p>
+              <span aria-hidden="true" className="section-accent-bar" />
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Empresas y profesionales destacados</h2>
             </div>
             <Button asChild variant="ghost" className="justify-start md:justify-center">
               <Link to={PUBLIC_ROUTES.directorio}>Ver todo en directorio</Link>
@@ -300,11 +301,12 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="proyectos-reales" className="px-4 pb-10 md:pb-12">
+      <section id="proyectos-reales" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Prueba de trabajo</p>
-            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
+          <div className="mb-6">
+            <p className="label-upper">Prueba de trabajo</p>
+            <span aria-hidden="true" className="section-accent-bar" />
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Compara obras reales por etapa, categoria tecnica y responsable para tomar decisiones con mayor confianza.
             </p>
@@ -366,11 +368,12 @@ const Index = () => {
         maintenanceHref={maintenanceHref}
       />
 
-      <section id="cta-empresas" className="px-4 pb-10 md:pb-12">
+      <section id="cta-empresas" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Empresas</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-foreground md:text-3xl">
+            <p className="label-upper">Empresas</p>
+            <span aria-hidden="true" className="section-accent-bar" />
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">
               Tienes empresa, cuadrilla o servicio tecnico? Entra al flujo de captacion de ObrasRD.
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
