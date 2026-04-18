@@ -6,6 +6,8 @@ import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard"
 import { Button } from "@/components/ui/button";
 import { useFeaturedPortfolioProjects, useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const CATEGORY_SHORTCUT_FALLBACKS = [
@@ -75,6 +77,30 @@ const Index = () => {
     });
   }, [location.hash]);
 
+  const trackHomepageSearchSubmitted = (source: "hero_cta" | "intent_card", targetHref: string) => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.HomepageSearchSubmitted, {
+      source,
+      target_href: targetHref,
+    });
+  };
+
+  const trackCategoryShortcutClick = (shortcut: { slug: string; name: string; phase: string }, targetHref: string) => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.HomepageCategoryShortcutClicked, {
+      source: "homepage_shortcuts",
+      category_slug: shortcut.slug,
+      category_name: shortcut.name,
+      phase_name: shortcut.phase,
+      target_href: targetHref,
+    });
+  };
+
+  const trackRegisterCompanyClick = (source: "homepage_hero" | "homepage_cta_section", targetHref: string) => {
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.RegisterCompanyCtaClicked, {
+      source,
+      target_href: targetHref,
+    });
+  };
+
   return (
     <div className="min-h-screen pb-16 md:pb-0">
       <section className="border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
@@ -89,10 +115,20 @@ const Index = () => {
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button asChild variant="accent" size="lg" className="sm:w-auto">
-              <Link to={PUBLIC_ROUTES.directorio}>Buscar servicios</Link>
+              <Link
+                to={PUBLIC_ROUTES.directorio}
+                onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}
+              >
+                Buscar servicios
+              </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
-              <Link to={PUBLIC_ROUTES.empresas}>Registrar empresa</Link>
+              <Link
+                to={PUBLIC_ROUTES.empresas}
+                onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
+              >
+                Registrar empresa
+              </Link>
             </Button>
           </div>
 
@@ -118,16 +154,20 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {shortcuts.map((shortcut) => (
-              <Link
-                key={`${shortcut.slug}-${shortcut.phase}`}
-                to={`${PUBLIC_ROUTES.directorio}?categoria=${shortcut.slug}`}
-                className="rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/25"
-              >
-                <p className="text-sm font-semibold text-foreground">{shortcut.name}</p>
-                <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
-              </Link>
-            ))}
+            {shortcuts.map((shortcut) => {
+              const targetHref = `${PUBLIC_ROUTES.directorio}?categoria=${shortcut.slug}`;
+              return (
+                <Link
+                  key={`${shortcut.slug}-${shortcut.phase}`}
+                  to={targetHref}
+                  onClick={() => trackCategoryShortcutClick(shortcut, targetHref)}
+                  className="rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/25"
+                >
+                  <p className="text-sm font-semibold text-foreground">{shortcut.name}</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -235,7 +275,12 @@ const Index = () => {
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button asChild variant="accent">
-                <Link to={PUBLIC_ROUTES.empresas}>Registrar empresa</Link>
+                <Link
+                  to={PUBLIC_ROUTES.empresas}
+                  onClick={() => trackRegisterCompanyClick("homepage_cta_section", PUBLIC_ROUTES.empresas)}
+                >
+                  Registrar empresa
+                </Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/precios">Ver planes para empresas</Link>

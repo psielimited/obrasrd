@@ -190,3 +190,49 @@ Refactor provider signup so onboarding adapts to provider type (`empresa`, `prof
 ### Next steps
 1. Optional: add explicit analytics events for onboarding step progression and completion drop-off by `provider_type`.
 2. Optional: persist provider type in first-class backend schema once `provider_type` is available in provider/user profile tables.
+
+---
+
+## Update: Public + provider acquisition funnel analytics instrumentation (2026-04-17)
+
+### Goal
+Add production-ready analytics instrumentation across the ObrasRD public and provider acquisition funnel while reusing existing analytics utilities and event conventions.
+
+### In scope / out of scope
+- In scope: add/extend event catalog and wire interactions for homepage search intent, category shortcut click, register-company CTA click, onboarding started/completed, no-results search, and existing content-to-directory coverage confirmation.
+- Out of scope: adding new analytics SDK dependencies, backend analytics pipeline changes.
+
+### Decisions
+- Reused existing `trackObrasRdEvent` and `OBRASRD_ANALYTICS_EVENTS` (no new analytics dependency).
+- Extended the event catalog with typed payloads for:
+  - `homepage_search_submitted`
+  - `homepage_category_shortcut_clicked`
+  - `register_company_cta_clicked`
+  - `onboarding_started`
+  - `onboarding_completed`
+  - `no_results_search`
+- Preserved existing events already covering funnel requirements:
+  - `provider_viewed`
+  - `provider_contacted` (WhatsApp/contact intent)
+  - `content_to_directory_click`
+- Added an in-code naming convention comment to keep event naming consistent and discoverable.
+
+### Files changed
+- src/lib/analytics/events.ts
+- src/pages/Index.tsx
+- src/components/TopNav.tsx
+- src/components/home/IntentEntryCard.tsx
+- src/pages/SearchPage.tsx
+- src/pages/AuthPage.tsx
+- src/pages/ProviderProfileEditorPage.tsx
+
+### Validation results
+- `npm run build` -> Passed.
+- `npx eslint src/lib/analytics/events.ts src/pages/Index.tsx src/components/TopNav.tsx src/components/home/IntentEntryCard.tsx src/pages/SearchPage.tsx src/pages/AuthPage.tsx src/pages/ProviderProfileEditorPage.tsx` -> Passed with pre-existing warnings only (`react-hooks/exhaustive-deps`), no errors.
+
+### Known issues
+- Existing repository warnings around hook dependency arrays remain unchanged from baseline in `SearchPage` and `ProviderProfileEditorPage`.
+
+### Next steps
+1. Optional: add a lightweight analytics QA checklist page (DEV only) that simulates and verifies each funnel event payload.
+2. Optional: add funnel conversion dashboards grouped by `source` and `provider_type`.

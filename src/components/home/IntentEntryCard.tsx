@@ -31,6 +31,14 @@ const IntentEntryCard = ({
     });
   };
 
+  const onSearchIntentClick = () => {
+    trackIntentClick("search");
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.HomepageSearchSubmitted, {
+      source: "intent_card",
+      target_href: searchHref,
+    });
+  };
+
   return (
     <Card className="h-full overflow-hidden border-border/70 bg-card/95 p-5 obra-shadow-md">
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -55,7 +63,7 @@ const IntentEntryCard = ({
 
       <div className="space-y-2">
         <Button asChild className="w-full justify-between" variant="accent">
-          <Link to={searchHref} onClick={() => trackIntentClick("search")}>
+          <Link to={searchHref} onClick={onSearchIntentClick}>
             Ver opciones
             <Search className="h-4 w-4" />
           </Link>

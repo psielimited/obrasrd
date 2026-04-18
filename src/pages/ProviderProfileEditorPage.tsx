@@ -25,6 +25,8 @@ import { useMyProviderPlanSnapshot } from "@/hooks/use-provider-plan-data";
 import { upsertMyProviderProfile } from "@/lib/profile-api";
 import { deleteProviderPortfolioImageByUrl, linkMyProviderProfileMedia, uploadImageAsset } from "@/lib/media-api";
 import { getProviderProfileQualitySnapshot } from "@/lib/provider-trust";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import {
   clearStoredProviderOnboardingDraft,
   getProviderSignupTypeOption,
@@ -336,6 +338,15 @@ const ProviderProfileEditorPage = () => {
         queryClient.invalidateQueries({ queryKey: ["marketplace", "providers"] }),
         queryClient.invalidateQueries({ queryKey: profileQueryKeys.myProviderProfile }),
       ]);
+
+      if (onboardingMode || !providerProfile) {
+        trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.OnboardingCompleted, {
+          source: "provider_profile_editor",
+          role: "provider",
+          provider_type: onboardingDraft?.providerType,
+        });
+      }
+
       clearStoredProviderOnboardingDraft();
       setOnboardingDraft(null);
       if (onboardingMode) {

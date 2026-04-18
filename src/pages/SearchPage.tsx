@@ -1087,11 +1087,26 @@ const SearchPage = () => {
       location_slug: searchState.ubicacion || undefined,
       stage_slug: searchState.etapa || undefined,
     });
+
+    if (stateType === "no_results") {
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.NoResultsSearch, {
+        source: "search_page",
+        query_hash: searchNormalization.normalizedQuery
+          ? hashFnv1a(searchNormalization.normalizedQuery)
+          : undefined,
+        category_slug: searchState.categoria || undefined,
+        location_slug: searchState.ubicacion || undefined,
+        stage_slug: searchState.etapa || undefined,
+        provider_type: searchState.tipoProveedor || undefined,
+        active_filter_count: activeFilterCount,
+      });
+    }
   }, [
     activeFilterCount,
     filteredProviders.length,
     hasProvidersError,
     isProvidersLoading,
+    searchNormalization.normalizedQuery,
     searchState,
   ]);
 

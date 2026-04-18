@@ -1,13 +1,20 @@
 export const OBRASRD_ANALYTICS_EVENTS = {
+  // Naming convention: snake_case + verb in past tense where possible.
   HomepageIntentClick: "homepage_intent_click",
+  HomepageSearchSubmitted: "homepage_search_submitted",
+  HomepageCategoryShortcutClicked: "homepage_category_shortcut_clicked",
+  RegisterCompanyCtaClicked: "register_company_cta_clicked",
   StageSelected: "stage_selected",
   DisciplineSelected: "discipline_selected",
   ServiceSelected: "service_selected",
   ProviderViewed: "provider_viewed",
   ProviderContacted: "provider_contacted",
+  OnboardingStarted: "onboarding_started",
+  OnboardingCompleted: "onboarding_completed",
   ProjectRequestCreated: "project_request_created",
   FilterApplied: "filter_applied",
   NormalizedSearchExecuted: "normalized_search_executed",
+  NoResultsSearch: "no_results_search",
   SearchUnmatchedNormalizedQuery: "search_unmatched_normalized_query",
   SearchRecoveryStateViewed: "search_recovery_state_viewed",
   SearchRecoveryActionClicked: "search_recovery_action_clicked",
@@ -30,6 +37,23 @@ type EventPayloadMap = {
     intent_id: string;
     cta: "search" | "intake" | "journey";
   };
+  [OBRASRD_ANALYTICS_EVENTS.HomepageSearchSubmitted]: {
+    source: "hero_cta" | "intent_card";
+    query?: string;
+    category_slug?: string;
+    target_href: string;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.HomepageCategoryShortcutClicked]: {
+    source: "homepage_shortcuts";
+    category_slug: string;
+    category_name: string;
+    phase_name?: string;
+    target_href: string;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.RegisterCompanyCtaClicked]: {
+    source: "homepage_hero" | "homepage_cta_section" | "top_nav" | "mobile_nav";
+    target_href: string;
+  };
   [OBRASRD_ANALYTICS_EVENTS.StageSelected]: AnalyticsStructuredIds & {
     source: "search_filters" | "project_intake" | "publish_service";
     stage_slug?: string;
@@ -50,6 +74,25 @@ type EventPayloadMap = {
     provider_id: string;
     method: "whatsapp" | "quote_form";
     source: "provider_card" | "provider_profile";
+  };
+  [OBRASRD_ANALYTICS_EVENTS.OnboardingStarted]: {
+    source: "auth_signup";
+    role: "provider";
+    provider_type:
+      | "empresa"
+      | "profesional_independiente"
+      | "suplidor"
+      | "servicio_tecnico";
+    step: 1 | 2 | 3;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.OnboardingCompleted]: {
+    source: "auth_signup" | "provider_profile_editor";
+    role: "provider";
+    provider_type?:
+      | "empresa"
+      | "profesional_independiente"
+      | "suplidor"
+      | "servicio_tecnico";
   };
   [OBRASRD_ANALYTICS_EVENTS.ProjectRequestCreated]: AnalyticsStructuredIds & {
     source: "project_builder" | "provider_profile" | "publish_service";
@@ -79,6 +122,15 @@ type EventPayloadMap = {
     token_count: number;
     character_count: number;
     matched_synonym_count: number;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.NoResultsSearch]: {
+    source: "search_page" | "phase_page";
+    query_hash?: string;
+    category_slug?: string;
+    location_slug?: string;
+    stage_slug?: string;
+    provider_type?: string;
+    active_filter_count: number;
   };
   [OBRASRD_ANALYTICS_EVENTS.SearchUnmatchedNormalizedQuery]: {
     hash: string;

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
+import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { upsertMyProfile, type UserRole } from "@/lib/profile-api";
 import {
   PROVIDER_SIGNUP_TYPE_OPTIONS,
@@ -84,6 +86,12 @@ const AuthPage = () => {
             whatsapp: whatsapp.trim() || undefined,
           });
 
+          trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.OnboardingCompleted, {
+            source: "auth_signup",
+            role: "provider",
+            provider_type: providerType,
+          });
+
           try {
             await upsertMyProfile({
               displayName: displayName.trim() || undefined,
@@ -131,6 +139,14 @@ const AuthPage = () => {
 
   const continueFromTypeStep = () => {
     if (signupStep !== 1) return;
+    if (signupRole === "provider") {
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.OnboardingStarted, {
+        source: "auth_signup",
+        role: "provider",
+        provider_type: providerType,
+        step: 1,
+      });
+    }
     setSignupStep(2);
   };
 
