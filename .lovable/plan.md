@@ -1,53 +1,63 @@
 
-## Issue
-The "Años de experiencia" field on the provider profile editor (`/dashboard/proveedor/perfil`) is a native `<input type="number">`. When a user types or pastes "010", the displayed value keeps the leading zero(s). The underlying state is already a `Number`, but because the input is uncontrolled-on-display (the raw text is preserved by the browser until blur in some cases) and there's no normalization, users see "010", "02", etc.
+## Goal
+Expand the hero content container to span the full width of the hero section on tablet and desktop (currently capped at `md:max-w-2xl lg:max-w-[58%]`), while keeping content readable and visually balanced against the background image on the right.
 
-## Fix
-In `src/pages/ProviderProfileEditorPage.tsx` (lines 519–528), normalize the displayed value so it always reflects a clean integer starting from 0, 1, 2, …
-
-Changes:
-1. **Coerce the displayed value** to a plain integer string. Since `yearsExperience` is already a number in state, bind `value={String(yearsExperience)}` — this strips any leading zeros on every render.
-2. **Sanitize input on change**: parse the input, clamp to `>= 0`, fall back to `0` for empty/NaN. Use `Number.parseInt(..., 10)` so "010" becomes `10`.
-3. **Add `inputMode="numeric"`** and **`max={80}`** for a sensible upper bound and better mobile keyboard.
-4. **Block leading-zero entry** by re-setting state to the parsed integer immediately, so the field re-renders as "10" (not "010") even mid-typing.
-
-### Code change (single block, lines 519–528)
-
+## Current state (src/pages/Index.tsx, line 165)
 ```tsx
-<div className="space-y-2">
-  <Label htmlFor="years">Años de experiencia</Label>
-  <Input
-    id="years"
-    type="number"
-    inputMode="numeric"
-    min={0}
-    max={80}
-    step={1}
-    value={String(yearsExperience)}
-    onChange={(event) => {
-      const raw = event.target.value;
-      if (raw === "") {
-        setYearsExperience(0);
-        return;
-      }
-      const parsed = Number.parseInt(raw, 10);
-      if (Number.isNaN(parsed) || parsed < 0) {
-        setYearsExperience(0);
-        return;
-      }
-      setYearsExperience(Math.min(parsed, 80));
-    }}
-  />
-</div>
+<div className="md:max-w-2xl lg:max-w-[58%]">
+```
+The hero text column sits on the left half, with a B&W construction image filling the right half (`md:block` background image at `right-0 w-1/2 lg:w-[55%]`). Expanding the text container to 100% will collide with that background image and crowd the chips/feature grid.
+
+## Plan
+
+### 1. Expand container width (line 165)
+Remove the max-width caps so the content uses the full hero width:
+```tsx
+<div className="w-full">
 ```
 
-Result: typing "0" → shows "0"; typing "010" → immediately renders "10"; arrows step 0,1,2,3…; empty resets to 0.
+### 2. Rebalance background image so it doesn't fight the text
+With text now full-width, the right-side image needs to recede. Reduce its opacity and let the left gradient cover more of the hero so text remains legible:
+- Image opacity: `opacity-40` → `opacity-20`
+- Left gradient: `w-2/3` → `w-full` with softer stops, so the image becomes a subtle texture behind the whole hero rather than a hard right-half block.
+
+### 3. Reorganize inner elements into a 2-column layout on md+
+To "blend well with the hero space" at full width, restructure the inner content so it doesn't stretch into one long line:
+
+- **Top block (full width)**: eyebrow label, H1, subtitle, search form, secondary links — capped at `md:max-w-3xl` for readability (text lines >75ch hurt scannability).
+- **Bottom block (feature chips grid)**: expand to a true 3-column grid on `md:grid-cols-3` filling the full width, instead of the current `sm:grid-cols-2 lg:grid-cols-3` that left awkward gaps.
+
+```text
++----------------------------------------------------+
+| eyebrow                                            |
+| H1 (max 3xl)                                       |
+| subtitle (max 3xl)                                 |
+| [search form] (max-xl)                             |
+| links row                                          |
+|                                                    |
+| [chip 1]      [chip 2]      [chip 3]               |  <- 3 cols full-width
++----------------------------------------------------+
+```
+
+### 4. Feature chips grid (lines 219–232)
+- Change wrapper from `sm:grid-cols-2 lg:grid-cols-3` to `md:grid-cols-3`.
+- Remove the `sm:col-span-2 lg:col-span-1` override on the third chip (no longer needed).
+- Slightly increase padding (`px-4 py-3`) so chips feel proportionate at full width.
+
+### 5. Wrap top block for readability
+Wrap the eyebrow → links section in a `<div className="md:max-w-3xl">` so headlines and prose don't stretch edge-to-edge while the chips below still span full width.
+
+## Files touched
+- `src/pages/Index.tsx` — hero `<section>` only (lines ~157–235). No other sections, no new components, no analytics changes.
 
 ## Out of scope
-- No schema changes (column already `years_experience integer`).
-- No analytics changes.
-- No other inputs on the page touched.
+- Mobile layout (already vertical full-width; unchanged).
+- Background image asset itself.
+- Any other homepage section.
 
 ## Validation
 - `npm run lint` and `npm run build`.
-- Manual: open `/dashboard/proveedor/perfil` on mobile width, type "0", "5", "010", clear field — confirm display is always a clean integer with no leading zeros, and Save persists correctly.
+- Visual check at 1280px, 1024px (tablet), 768px (tablet portrait), and 390px (mobile) to confirm:
+  - Text remains legible over the background.
+  - Chips form a clean 3-column row on md+.
+  - Mobile is unchanged.
