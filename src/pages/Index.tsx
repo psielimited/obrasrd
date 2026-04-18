@@ -171,29 +171,10 @@ const Index = () => {
               Compara empresas y tecnicos verificados por categoria, zona y experiencia. Contacta directo por WhatsApp y avanza tu proyecto con confianza.
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button asChild variant="accent" size="lg" className="sm:w-auto">
-                <Link
-                  to={PUBLIC_ROUTES.directorio}
-                  onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}
-                >
-                  Buscar servicios
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
-                <Link
-                  to={PUBLIC_ROUTES.empresas}
-                  onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
-                >
-                  Registrar empresa
-                </Link>
-              </Button>
-            </div>
-
             <form
               role="search"
               onSubmit={handleHeroSearchSubmit}
-              className="mt-5 flex w-full max-w-xl items-center gap-2 rounded-lg border border-background/25 bg-background/5 p-1.5 backdrop-blur-sm focus-within:border-background/60"
+              className="mt-7 flex w-full max-w-xl items-center gap-2 rounded-lg border border-background/25 bg-background/5 p-1.5 backdrop-blur-sm focus-within:border-background/60"
             >
               <label htmlFor="hero-search" className="sr-only">
                 Buscar servicios, oficios o categorias
@@ -205,19 +186,35 @@ const Index = () => {
                 value={heroSearchQuery}
                 onChange={(event) => setHeroSearchQuery(event.target.value)}
                 placeholder="Plomero, electricista, ingeniero estructural..."
-                className="h-9 flex-1 border-0 bg-transparent px-1 text-sm text-background shadow-none placeholder:text-background/50 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="h-10 flex-1 border-0 bg-transparent px-1 text-sm text-background shadow-none placeholder:text-background/50 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
-              <Button type="submit" variant="accent" size="sm" className="h-9 shrink-0">
+              <Button type="submit" variant="accent" size="sm" className="h-10 shrink-0 px-4">
                 Buscar
               </Button>
             </form>
 
+            <div className="mt-4 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:gap-5">
+              <Button asChild variant="link" className="h-auto justify-start p-0 text-background/80 hover:text-background">
+                <Link to={PUBLIC_ROUTES.directorio} onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}>
+                  Explorar todo el directorio
+                </Link>
+              </Button>
+              <span aria-hidden="true" className="hidden h-3 w-px bg-background/25 sm:block" />
+              <Link
+                to={PUBLIC_ROUTES.empresas}
+                onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
+                className="inline-flex font-semibold text-background/70 transition-colors hover:text-background"
+              >
+                Eres empresa? Registra tu negocio
+              </Link>
+            </div>
+
             <div className="mt-5">
               <Link
                 to={PUBLIC_ROUTES.conocimiento}
-                className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
+                className="inline-flex text-xs font-semibold uppercase tracking-wide text-background/60 transition-colors hover:text-background"
               >
-                Explorar conocimiento por etapas (complementario)
+                Explorar conocimiento por etapas
               </Link>
             </div>
 
