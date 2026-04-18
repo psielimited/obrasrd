@@ -431,7 +431,7 @@ const Index = () => {
             </div>
 
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Conocimiento tecnico</p>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Guias</p>
               <div className="space-y-1 text-sm">
                 <Link to={PUBLIC_ROUTES.conocimiento} className="block text-muted-foreground transition-colors hover:text-foreground">Guias por escenario</Link>
                 <Link to={planningHref} className="block text-muted-foreground transition-colors hover:text-foreground">Planificacion</Link>
