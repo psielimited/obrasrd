@@ -139,58 +139,101 @@ const Index = () => {
     });
   };
 
+  const handleHeroSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = heroSearchQuery.trim();
+    const targetHref = trimmed
+      ? `${PUBLIC_ROUTES.directorio}?q=${encodeURIComponent(trimmed)}`
+      : PUBLIC_ROUTES.directorio;
+    trackHomepageSearchSubmitted("hero_cta", targetHref);
+    navigate(targetHref);
+  };
+
   return (
     <div className="min-h-screen pb-16 md:pb-0">
-      <section className="border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
-        <div className="container relative mx-auto max-w-5xl">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
-          <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
-            Busca servicios, conecta con profesionales y avanza tu obra con criterio.
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-background/80 md:text-base">
-            Marketplace dominicano para construccion: aumenta visibilidad por categoria, recibe leads por WhatsApp, publica proyectos reales y fortalece confianza con senales verificables en una sola plataforma.
-          </p>
+      <section className="relative overflow-hidden border-b border-border bg-foreground text-background">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 bg-cover bg-center opacity-40 mix-blend-luminosity md:block lg:w-[55%]"
+          style={{ backgroundImage: "url('/hero-construction-bw.jpg')" }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 hidden w-2/3 bg-gradient-to-r from-foreground via-foreground/95 to-transparent md:block"
+        />
+        <div className="container relative mx-auto max-w-5xl px-4 py-12 md:py-16">
+          <div className="md:max-w-2xl lg:max-w-[58%]">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
+            <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
+              Busca servicios, conecta con profesionales y avanza tu obra con criterio.
+            </h1>
+            <p className="mt-4 text-sm leading-relaxed text-background/80 md:text-base">
+              Marketplace dominicano para construccion: aumenta visibilidad por categoria, recibe leads por WhatsApp, publica proyectos reales y fortalece confianza con senales verificables en una sola plataforma.
+            </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button asChild variant="accent" size="lg" className="sm:w-auto">
-              <Link
-                to={PUBLIC_ROUTES.directorio}
-                onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}
-              >
-                Buscar servicios
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
-              <Link
-                to={PUBLIC_ROUTES.empresas}
-                onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
-              >
-                Registrar empresa
-              </Link>
-            </Button>
-          </div>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button asChild variant="accent" size="lg" className="sm:w-auto">
+                <Link
+                  to={PUBLIC_ROUTES.directorio}
+                  onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}
+                >
+                  Buscar servicios
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
+                <Link
+                  to={PUBLIC_ROUTES.empresas}
+                  onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
+                >
+                  Registrar empresa
+                </Link>
+              </Button>
+            </div>
 
-          <div className="mt-5">
-            <Link
-              to={PUBLIC_ROUTES.conocimiento}
-              className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
+            <form
+              role="search"
+              onSubmit={handleHeroSearchSubmit}
+              className="mt-5 flex w-full max-w-xl items-center gap-2 rounded-lg border border-background/25 bg-background/5 p-1.5 backdrop-blur-sm focus-within:border-background/60"
             >
-              Explorar conocimiento por etapas (complementario)
-            </Link>
-          </div>
+              <label htmlFor="hero-search" className="sr-only">
+                Buscar servicios, oficios o categorias
+              </label>
+              <Search aria-hidden="true" className="ml-2 h-4 w-4 shrink-0 text-background/70" />
+              <Input
+                id="hero-search"
+                type="search"
+                value={heroSearchQuery}
+                onChange={(event) => setHeroSearchQuery(event.target.value)}
+                placeholder="Plomero, electricista, ingeniero estructural..."
+                className="h-9 flex-1 border-0 bg-transparent px-1 text-sm text-background shadow-none placeholder:text-background/50 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <Button type="submit" variant="accent" size="sm" className="h-9 shrink-0">
+                Buscar
+              </Button>
+            </form>
 
-          <div className="mt-6 grid gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
-              <p className="font-semibold text-background">Visibilidad por categoria</p>
-              <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
+            <div className="mt-5">
+              <Link
+                to={PUBLIC_ROUTES.conocimiento}
+                className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
+              >
+                Explorar conocimiento por etapas (complementario)
+              </Link>
             </div>
-            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
-              <p className="font-semibold text-background">Leads con contexto</p>
-              <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
-            </div>
-            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
-              <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
-              <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
+
+            <div className="mt-6 grid gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+                <p className="font-semibold text-background">Visibilidad por categoria</p>
+                <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
+              </div>
+              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+                <p className="font-semibold text-background">Leads con contexto</p>
+                <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
+              </div>
+              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
+                <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
+                <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
+              </div>
             </div>
           </div>
         </div>
