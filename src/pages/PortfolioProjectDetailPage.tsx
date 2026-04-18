@@ -90,11 +90,12 @@ const PortfolioProjectDetailPage = () => {
       };
     }
 
+    const stageDiscipline = project.disciplineId
+      ? taxonomyCatalog.disciplines.find((item) => item.id === project.disciplineId)
+      : undefined;
     return {
-      stageSlug: project.stageId ? taxonomyCatalog.stages.find((item) => item.id === project.stageId)?.slug : undefined,
-      disciplineSlug: project.disciplineId
-        ? taxonomyCatalog.disciplines.find((item) => item.id === project.disciplineId)?.slug
-        : undefined,
+      stageSlug: undefined,
+      disciplineSlug: stageDiscipline?.slug,
       serviceSlug: project.primaryServiceId
         ? taxonomyCatalog.services.find((item) => item.id === project.primaryServiceId)?.slug
         : undefined,
