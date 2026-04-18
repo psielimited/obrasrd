@@ -1,14 +1,51 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Compass,
+  HardHat,
+  Hammer,
+  ClipboardCheck,
+  Plug,
+  Wrench,
+  ShieldCheck,
+  Package,
+  Search,
+  type LucideIcon,
+} from "lucide-react";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
 import ProviderCard from "@/components/ProviderCard";
 import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import heroConstructionPhoto from "/hero-construction-bw.jpg?url";
 import { useFeaturedPortfolioProjects, useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
+
+const SHORTCUT_ICON_MAP: Record<string, LucideIcon> = {
+  arquitectura: Compass,
+  ingenieria_civil: HardHat,
+  ingenieria: HardHat,
+  construccion_ejecucion: Hammer,
+  construccion: Hammer,
+  supervision_gerencia: ClipboardCheck,
+  supervision: ClipboardCheck,
+  instalaciones_especiales: Plug,
+  instalaciones: Plug,
+  mantenimiento_preventivo: Wrench,
+  mantenimiento: Wrench,
+  seguridad_salud: ShieldCheck,
+  seguridad: ShieldCheck,
+  materiales: Package,
+};
+
+const getShortcutIcon = (slug: string): LucideIcon => {
+  if (SHORTCUT_ICON_MAP[slug]) return SHORTCUT_ICON_MAP[slug];
+  const matchKey = Object.keys(SHORTCUT_ICON_MAP).find((key) => slug.includes(key));
+  return matchKey ? SHORTCUT_ICON_MAP[matchKey] : Hammer;
+};
 
 const CATEGORY_SHORTCUT_FALLBACKS = [
   { slug: "arquitectura", name: "Arquitectura", phase: "Planificacion" },
