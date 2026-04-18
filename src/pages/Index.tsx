@@ -263,7 +263,6 @@ const Index = () => {
                   </span>
                   <span className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{shortcut.name}</p>
-                    <p className="mt-0.5 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
                   </span>
                 </Link>
               );
