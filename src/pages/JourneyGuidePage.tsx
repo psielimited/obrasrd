@@ -63,15 +63,16 @@ const JourneyGuidePage = () => {
   const firstDisciplineSlug = journey?.disciplineSlugs[0];
   const firstServiceSlug = journey?.serviceSlugs[0];
 
-  const stageId = useMemo(() => {
-    if (!journey) return undefined;
-    return taxonomyCatalog?.stages.find((item) => item.slug === journey.stageSlug)?.id;
-  }, [journey, taxonomyCatalog?.stages]);
-
   const disciplineIds = useMemo(() => {
     if (!journey) return [] as number[];
     const bySlug = new Map((taxonomyCatalog?.disciplines ?? []).map((item) => [item.slug, item.id]));
     return journey.disciplineSlugs.map((slugKey) => bySlug.get(slugKey)).filter((item): item is number => Boolean(item));
+  }, [journey, taxonomyCatalog?.disciplines]);
+
+  const stageId = useMemo(() => {
+    if (!journey) return undefined;
+    const firstDiscipline = (taxonomyCatalog?.disciplines ?? []).find((item) => item.slug === journey.disciplineSlugs[0]);
+    return firstDiscipline?.stageId;
   }, [journey, taxonomyCatalog?.disciplines]);
 
   const serviceIds = useMemo(() => {

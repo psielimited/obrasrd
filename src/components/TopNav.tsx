@@ -10,7 +10,7 @@ const TopNavAuthActions = lazy(() => import("@/components/TopNavAuthActions"));
 const TopNav = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const mobileNavItems = [
+  const mobileNavItems: { to: string; label: string; badge?: string }[] = [
     ...PRIMARY_PUBLIC_NAV_ITEMS,
     { to: PUBLIC_ROUTES.materiales, label: "Materiales y suplidores", badge: "Nuevo" },
   ];
