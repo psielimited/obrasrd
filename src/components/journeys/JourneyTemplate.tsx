@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { CustomerJourneyDefinition } from "@/lib/customer-journeys";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 interface JourneyTemplateProps {
   journey: CustomerJourneyDefinition;
@@ -29,9 +30,9 @@ const JourneyTemplate = ({
       <div className="px-4 py-6 md:py-8">
         <div className="container mx-auto max-w-4xl">
           <Button asChild variant="ghost" size="sm" className="mb-4">
-            <Link to="/guias">
+            <Link to={PUBLIC_ROUTES.conocimiento}>
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Ver todas las guias
+              Ver todo el conocimiento
             </Link>
           </Button>
 

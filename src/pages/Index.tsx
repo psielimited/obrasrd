@@ -8,6 +8,7 @@ import ProviderCard from "@/components/ProviderCard";
 import { Button } from "@/components/ui/button";
 import { useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 interface IntentDefinition {
   id: string;
@@ -25,52 +26,52 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     title: "Voy a construir",
     description: "Necesito equipos para arrancar una obra nueva con plan claro y ejecucion segura.",
     tags: ["obra nueva", "estructura", "contratistas"],
-    searchHref: "/buscar?categoria=construccion&q=construccion",
+    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=construccion&q=construccion`,
     journeyLabel: "Ver guia: casa desde cero",
-    journeyHref: "/guias/construir-casa-desde-cero",
+    journeyHref: `${PUBLIC_ROUTES.conocimiento}/construir-casa-desde-cero`,
   },
   {
     id: "remodelar",
     title: "Voy a remodelar",
     description: "Quiero renovar espacios sin improvisar presupuesto, tiempos ni acabados.",
     tags: ["interiores", "acabados", "reforma"],
-    searchHref: "/buscar?categoria=remodelacion_de_cocina&q=remodelacion",
+    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=remodelacion_de_cocina&q=remodelacion`,
     journeyLabel: "Ver guia: cocina y bano",
-    journeyHref: "/guias/remodelar-cocina-bano",
+    journeyHref: `${PUBLIC_ROUTES.conocimiento}/remodelar-cocina-bano`,
   },
   {
     id: "diseno",
     title: "Necesito diseno",
     description: "Busco arquitectura o ingenieria para definir el proyecto antes de construir.",
     tags: ["arquitectura", "ingenieria", "planos"],
-    searchHref: "/buscar?categoria=planificacion&q=diseno",
+    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=planificacion&q=diseno`,
     journeyLabel: "Ver guia: planos y permisos",
-    journeyHref: "/guias/planos-y-permisos",
+    journeyHref: `${PUBLIC_ROUTES.conocimiento}/planos-y-permisos`,
   },
   {
     id: "supervision",
     title: "Necesito supervision",
     description: "Quiero control tecnico de obra para reducir riesgos, retrabajos y sobrecostos.",
     tags: ["control de obra", "calidad", "gerencia"],
-    searchHref: "/buscar?categoria=supervision_de_obra&q=supervision",
+    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=supervision_de_obra&q=supervision`,
     journeyLabel: "Ver guia: supervision de obra",
-    journeyHref: "/guias/supervision-de-obra",
+    journeyHref: `${PUBLIC_ROUTES.conocimiento}/supervision-de-obra`,
   },
   {
     id: "mantenimiento",
     title: "Necesito mantenimiento",
     description: "Busco servicios para mantener la propiedad operativa y prevenir fallas.",
     tags: ["preventivo", "correctivo", "diagnostico"],
-    searchHref: "/buscar?categoria=mantenimiento&q=mantenimiento",
+    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=mantenimiento&q=mantenimiento`,
     journeyLabel: "Ver guia: mantenimiento",
-    journeyHref: "/guias/mantenimiento-inmueble",
+    journeyHref: `${PUBLIC_ROUTES.conocimiento}/mantenimiento-inmueble`,
   },
   {
     id: "materiales",
     title: "Necesito materiales o suplidores",
     description: "Quiero comparar suplidores y materiales para comprar con confianza.",
     tags: ["suplidores", "materiales", "logistica"],
-    searchHref: "/buscar?categoria=materiales&q=materiales",
+    searchHref: `${PUBLIC_ROUTES.directorio}?categoria=materiales&q=materiales`,
     journeyLabel: "Ir al catalogo de materiales",
     journeyHref: "/materiales",
   },
@@ -91,9 +92,9 @@ const Index = () => {
 
   const intentCards = INTENT_DEFINITIONS.slice(0, 4);
 
-  const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), "/buscar?categoria=planificacion");
-  const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), "/buscar?categoria=construccion");
-  const maintenanceHref = resolvePhaseHref("mantenimiento", phaseSlugSet.has("mantenimiento"), "/buscar?categoria=mantenimiento");
+  const planningHref = resolvePhaseHref("planificacion", phaseSlugSet.has("planificacion"), `${PUBLIC_ROUTES.directorio}?categoria=planificacion`);
+  const constructionHref = resolvePhaseHref("construccion", phaseSlugSet.has("construccion"), `${PUBLIC_ROUTES.directorio}?categoria=construccion`);
+  const maintenanceHref = resolvePhaseHref("mantenimiento", phaseSlugSet.has("mantenimiento"), `${PUBLIC_ROUTES.directorio}?categoria=mantenimiento`);
 
   useEffect(() => {
     let animationFrameId = 0;
@@ -144,16 +145,16 @@ const Index = () => {
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button asChild variant="accent" size="lg" className="sm:w-auto">
-              <Link to="/buscar">Buscar servicios</Link>
+              <Link to={PUBLIC_ROUTES.directorio}>Buscar servicios</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
-              <Link to="/publicar">Registrar empresa</Link>
+              <Link to={PUBLIC_ROUTES.empresas}>Registrar empresa</Link>
             </Button>
           </div>
 
           <div className="mt-4">
             <Link
-              to="/guias"
+              to={PUBLIC_ROUTES.conocimiento}
               className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
             >
               Ver guias y conocimiento del sector
@@ -179,7 +180,7 @@ const Index = () => {
                 Compara opciones por especialidad, etapa y ubicacion para cotizar con mas claridad.
               </p>
               <Button asChild className="mt-4 w-full" variant="accent">
-                <Link to="/buscar">Buscar servicios</Link>
+                <Link to={PUBLIC_ROUTES.directorio}>Buscar servicios</Link>
               </Button>
             </article>
 
@@ -192,7 +193,7 @@ const Index = () => {
                 Muestra tus servicios y aumenta tu visibilidad ante clientes listos para contratar.
               </p>
               <Button asChild className="mt-4 w-full" variant="outline">
-                <Link to="/publicar">Registrar empresa</Link>
+                <Link to={PUBLIC_ROUTES.empresas}>Registrar empresa</Link>
               </Button>
             </article>
 
@@ -205,7 +206,7 @@ const Index = () => {
                 Consulta guias por escenario para planificar mejor y tomar decisiones tecnicas con contexto.
               </p>
               <Button asChild className="mt-4 w-full" variant="ghost">
-                <Link to="/guias">Ver guias</Link>
+                <Link to={PUBLIC_ROUTES.conocimiento}>Ver guias</Link>
               </Button>
             </article>
           </div>
@@ -216,11 +217,11 @@ const Index = () => {
         <div className="container mx-auto max-w-5xl">
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Explora por necesidad</p>
-              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Empieza por tu tipo de proyecto</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Directorio por casos</p>
+              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Elige un caso y filtra resultados</h2>
             </div>
             <Button asChild variant="ghost" className="justify-start md:justify-center">
-              <Link to="/buscar">Ver todo en buscador</Link>
+              <Link to={PUBLIC_ROUTES.directorio}>Ver todo en directorio</Link>
             </Button>
           </div>
 
@@ -274,18 +275,19 @@ const Index = () => {
             </div>
 
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Explorar</p>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Directorio</p>
               <div className="space-y-1 text-sm">
-                <Link to="/buscar" className="block text-muted-foreground transition-colors hover:text-foreground">Buscar servicios</Link>
-                <Link to="/proyectos" className="block text-muted-foreground transition-colors hover:text-foreground">Publicar proyecto</Link>
-                <Link to="/buscar?tab=servicios" className="block text-muted-foreground transition-colors hover:text-foreground">Proveedores</Link>
+                <Link to={PUBLIC_ROUTES.directorio} className="block text-muted-foreground transition-colors hover:text-foreground">Directorio de servicios</Link>
+                <Link to={`${PUBLIC_ROUTES.directorio}?tab=servicios`} className="block text-muted-foreground transition-colors hover:text-foreground">Profesionales</Link>
                 <Link to="/materiales" className="block text-muted-foreground transition-colors hover:text-foreground">Materiales / Suplidores</Link>
               </div>
             </div>
 
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Etapas</p>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Conocimiento</p>
               <div className="space-y-1 text-sm">
+                <Link to={PUBLIC_ROUTES.conocimiento} className="block text-muted-foreground transition-colors hover:text-foreground">Guias por escenario</Link>
+                <p className="pt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Arquitectura por etapas</p>
                 <Link to={planningHref} className="block text-muted-foreground transition-colors hover:text-foreground">Planificacion</Link>
                 <Link to={constructionHref} className="block text-muted-foreground transition-colors hover:text-foreground">Construccion</Link>
                 <Link to={maintenanceHref} className="block text-muted-foreground transition-colors hover:text-foreground">Mantenimiento</Link>
@@ -293,12 +295,11 @@ const Index = () => {
             </div>
 
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Recursos</p>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Empresas</p>
               <div className="space-y-1 text-sm">
-                <Link to="/#como-funciona" className="block text-muted-foreground transition-colors hover:text-foreground">Como funciona</Link>
-                <Link to="/guias" className="block text-muted-foreground transition-colors hover:text-foreground">Guias por escenario</Link>
-                <Link to="/publicar" className="block text-muted-foreground transition-colors hover:text-foreground">Soy proveedor</Link>
+                <Link to={PUBLIC_ROUTES.empresas} className="block text-muted-foreground transition-colors hover:text-foreground">Registrar empresa</Link>
                 <Link to="/precios" className="block text-muted-foreground transition-colors hover:text-foreground">Planes</Link>
+                <Link to="/proyectos" className="block text-muted-foreground transition-colors hover:text-foreground">Publicar proyecto</Link>
               </div>
             </div>
           </div>

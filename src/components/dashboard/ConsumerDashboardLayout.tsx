@@ -19,6 +19,7 @@ import SidebarNav, { type ProviderNavItem } from "@/components/dashboard/Sidebar
 import { useMyProfile } from "@/hooks/use-profile-data";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 import { supabase } from "@/integrations/supabase/client";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 interface ConsumerDashboardLayoutProps {
   title: string;
@@ -50,8 +51,8 @@ const ConsumerDashboardLayout = ({
     { label: "Proveedores guardados", to: "/dashboard/cliente/guardados", icon: Heart },
     { label: "Comparar proveedores", to: "/dashboard/cliente/comparar", icon: Scale },
     { label: "Notificaciones", to: "/notificaciones", icon: Bell },
-    { label: "Publicar servicio", to: "/publicar", icon: FilePlus2 },
-    { label: "Marketplace", to: "/buscar", icon: Search },
+    { label: "Publicar servicio", to: PUBLIC_ROUTES.empresas, icon: FilePlus2 },
+    { label: "Marketplace", to: PUBLIC_ROUTES.directorio, icon: Search },
     { label: "Ajustes / Cuenta", to: "/perfil", icon: Settings },
   ];
 

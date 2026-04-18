@@ -8,6 +8,7 @@ import {
   type CanonicalStageSlug,
   type CanonicalWorkTypeSlug,
 } from "@/lib/taxonomy";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 export const CUSTOMER_JOURNEY_SLUGS = [
   "construir-casa-desde-cero",
@@ -170,7 +171,7 @@ export const toJourneySearchHref = (journey: CustomerJourneyDefinition) => {
   if (target.servicio) params.set("servicio", target.servicio);
   if (target.tipoObra) params.set("tipo_obra", target.tipoObra);
 
-  return `/buscar?${params.toString()}`;
+  return `${PUBLIC_ROUTES.directorio}?${params.toString()}`;
 };
 
 export const toJourneyIntakeHref = (journey: CustomerJourneyDefinition) =>

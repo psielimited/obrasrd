@@ -29,6 +29,7 @@ import CategoryTag from "@/components/marketplace/CategoryTag";
 import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
 import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
 import { useMemo } from "react";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   active: "Activo",
@@ -168,8 +169,8 @@ const ProviderDashboard = () => {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <QuickActionCard to="/dashboard/proveedor/perfil" title="Editar perfil" description="Actualiza tu ficha profesional" icon={<UserRoundCog className="h-5 w-5" />} />
           <QuickActionCard to="/dashboard/leads" title="Ver leads" description="Da seguimiento a solicitudes" icon={<ClipboardList className="h-5 w-5" />} />
-          <QuickActionCard to={providerProfile?.id ? `/proveedor/${providerProfile.id}` : "/buscar"} title="Ver perfil publico" description="Revisa como te ven clientes" icon={<Eye className="h-5 w-5" />} />
-          <QuickActionCard to="/publicar" title="Publicar servicio" description="Crea una nueva oferta" icon={<FilePlus2 className="h-5 w-5" />} />
+          <QuickActionCard to={providerProfile?.id ? `/proveedor/${providerProfile.id}` : PUBLIC_ROUTES.directorio} title="Ver perfil publico" description="Revisa como te ven clientes" icon={<Eye className="h-5 w-5" />} />
+          <QuickActionCard to={PUBLIC_ROUTES.empresas} title="Publicar servicio" description="Crea una nueva oferta" icon={<FilePlus2 className="h-5 w-5" />} />
         </div>
 
         <SectionCard title="Confianza visual" description="Tu evidencia visual y consistencia de actividad elevan conversiones">

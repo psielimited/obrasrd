@@ -9,6 +9,7 @@ import {
   toJourneyIntakeHref,
   toJourneySearchHref,
 } from "@/lib/customer-journeys";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const JourneyGuidesPage = () => {
   return (
@@ -16,10 +17,10 @@ const JourneyGuidesPage = () => {
       <section className="border-b border-border px-4 py-8 md:py-10">
         <div className="container mx-auto max-w-5xl">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-            Guias por escenario
+            Conocimiento por escenario
           </p>
           <h1 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">
-            Rutas practicas para proyectos reales en RD
+            Conocimiento practico para proyectos reales en RD
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Elige tu caso y entra con etapa, disciplinas y servicios recomendados para tomar mejores decisiones.
@@ -45,7 +46,7 @@ const JourneyGuidesPage = () => {
 
               <div className="mt-4 flex flex-col gap-2">
                 <Button asChild variant="outline" className="justify-between">
-                  <Link to={`/guias/${journey.slug}`}>
+                  <Link to={PUBLIC_ROUTES.conocimientoDetail(journey.slug)}>
                     Ver guia
                     <ArrowRight className="h-4 w-4" />
                   </Link>

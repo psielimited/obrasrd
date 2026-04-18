@@ -1,8 +1,9 @@
 import { lazy, Suspense, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Bell, Menu, Plus, X } from "lucide-react";
+import { Bell, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { PRIMARY_PUBLIC_NAV_ITEMS, PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const TopNavAuthActions = lazy(() => import("@/components/TopNavAuthActions"));
 
@@ -10,12 +11,8 @@ const TopNav = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const mobileNavItems = [
-    { to: "/buscar", label: "Buscar servicios" },
-    { to: "/proyectos", label: "Publicar proyecto" },
-    { to: "/guias", label: "Guias de proyecto" },
-    { to: "/#proveedores-destacados", label: "Proveedores" },
-    { to: "/#como-funciona", label: "Como funciona" },
-    { to: "/materiales", label: "Materiales / Suplidores", badge: "Nuevo" },
+    ...PRIMARY_PUBLIC_NAV_ITEMS,
+    { to: PUBLIC_ROUTES.materiales, label: "Materiales y suplidores", badge: "Nuevo" },
   ];
 
   const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -28,37 +25,27 @@ const TopNav = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
       <div className="container mx-auto flex h-[60px] max-w-5xl items-center justify-between px-3 md:px-4">
-        <Link to="/" className="text-[22px] font-black tracking-tight text-foreground">
+        <Link to={PUBLIC_ROUTES.home} className="text-[22px] font-black tracking-tight text-foreground">
           Obras<span className="text-accent">RD</span>
         </Link>
 
         <nav className="hidden items-center gap-0 md:flex">
-          <NavLink to="/buscar" className={desktopLinkClass}>
-            Buscar servicios
-          </NavLink>
-          <NavLink to="/proyectos" className={desktopLinkClass}>
-            Publicar proyecto
-          </NavLink>
-          <Link to="/#proveedores-destacados" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
-            Proveedores
-          </Link>
-          <Link to="/#como-funciona" className="relative inline-flex h-[60px] items-center px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
-            Como funciona
-          </Link>
-          <NavLink to="/guias" className={desktopLinkClass}>
-            Guias
-          </NavLink>
-          <NavLink to="/materiales" className={desktopLinkClass}>
+          {PRIMARY_PUBLIC_NAV_ITEMS.map((item) => (
+            <NavLink key={item.to} to={item.to} className={desktopLinkClass}>
+              {item.label}
+            </NavLink>
+          ))}
+          <NavLink to={PUBLIC_ROUTES.materiales} className={desktopLinkClass}>
             Materiales
             <span className="ml-1.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-foreground">
               Nuevo
             </span>
           </NavLink>
 
-          <Link to="/publicar" className="ml-2">
+          <Link to={PUBLIC_ROUTES.empresas} className="ml-2">
             <Button size="sm">
               <Plus className="h-3.5 w-3.5" />
-              Publicar
+              Registrar empresa
             </Button>
           </Link>
 
@@ -97,7 +84,7 @@ const TopNav = () => {
           <div className="flex h-full flex-col">
             <div className="flex items-center border-b border-border px-5 py-4">
               <Link
-                to="/"
+                to={PUBLIC_ROUTES.home}
                 className="text-[20px] font-black tracking-tight"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -130,10 +117,10 @@ const TopNav = () => {
             </nav>
 
             <div className="mt-auto flex gap-2 border-t border-border p-4">
-              <Link to="/publicar" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+              <Link to={PUBLIC_ROUTES.empresas} className="flex-1" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full" size="sm">
                   <Plus className="h-3.5 w-3.5" />
-                  Soy proveedor
+                  Registrar empresa
                 </Button>
               </Link>
             </div>

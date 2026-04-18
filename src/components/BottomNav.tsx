@@ -1,12 +1,13 @@
-import { Search, ClipboardList, User, Home, BookOpen } from "lucide-react";
+import { Search, Building2, User, Home, BookOpen } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const navItems = [
-  { icon: Home, label: "Inicio", path: "/" },
-  { icon: Search, label: "Buscar", path: "/buscar" },
-  { icon: ClipboardList, label: "Proyecto", path: "/proyectos" },
-  { icon: BookOpen, label: "Guias", path: "/guias" },
-  { icon: User, label: "Perfil", path: "/perfil" },
+  { icon: Home, label: "Inicio", path: PUBLIC_ROUTES.home },
+  { icon: Search, label: "Directorio", path: PUBLIC_ROUTES.directorio },
+  { icon: Building2, label: "Empresas", path: PUBLIC_ROUTES.empresas },
+  { icon: BookOpen, label: "Conocimiento", path: PUBLIC_ROUTES.conocimiento },
+  { icon: User, label: "Perfil", path: PUBLIC_ROUTES.perfil },
 ];
 
 const BottomNav = () => {

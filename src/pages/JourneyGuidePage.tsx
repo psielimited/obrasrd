@@ -12,6 +12,7 @@ import {
   toJourneyIntakeHref,
   toJourneySearchHref,
 } from "@/lib/customer-journeys";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const JourneyGuidePage = () => {
   const { slug } = useParams();
@@ -55,7 +56,7 @@ const JourneyGuidePage = () => {
           <p className="text-lg font-semibold text-foreground">Guia no encontrada</p>
           <p className="mt-1 text-sm text-muted-foreground">Esta ruta no existe o fue movida.</p>
           <Button asChild className="mt-4" variant="outline">
-            <Link to="/guias">Ir a guias</Link>
+            <Link to={PUBLIC_ROUTES.conocimiento}>Ir a conocimiento</Link>
           </Button>
         </div>
       </div>

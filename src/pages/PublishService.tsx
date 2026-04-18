@@ -14,7 +14,7 @@ const PublishService = () => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [postType, setPostType] = useState("Necesito un profesional");
+  const [postType, setPostType] = useState("Ofrezco servicios");
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
@@ -105,15 +105,15 @@ const PublishService = () => {
             Volver
           </Button>
 
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Publicar Servicio</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Empresas: registrar o promocionar</h1>
           <p className="text-sm text-muted-foreground mb-6">
-            Publica tu servicio o necesidad de contratacion.
+            Crea una publicacion para captar clientes o compartir una necesidad de contratacion.
           </p>
 
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                Que necesitas
+                Tipo de publicacion
               </label>
               <select
                 value={postType}
