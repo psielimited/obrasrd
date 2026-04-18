@@ -154,15 +154,16 @@ const Index = () => {
       <section className="relative overflow-hidden border-b border-border bg-foreground text-background">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 bg-cover bg-center opacity-40 mix-blend-luminosity md:block lg:w-[55%]"
+          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 bg-cover bg-center opacity-20 mix-blend-luminosity md:block lg:w-[55%]"
           style={{ backgroundImage: "url('/hero-construction-bw.jpg')" }}
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 hidden w-2/3 bg-gradient-to-r from-foreground via-foreground/95 to-transparent md:block"
+          className="pointer-events-none absolute inset-y-0 left-0 hidden w-full bg-gradient-to-r from-foreground via-foreground/85 to-foreground/40 md:block"
         />
         <div className="container relative mx-auto max-w-5xl px-4 py-12 md:py-16">
-          <div className="md:max-w-2xl lg:max-w-[58%]">
+          <div className="w-full">
+            <div className="md:max-w-3xl">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
             <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
               Encuentra el profesional correcto para tu obra en Republica Dominicana.
@@ -217,17 +218,18 @@ const Index = () => {
                 Explorar conocimiento por etapas
               </Link>
             </div>
+            </div>
 
-            <div className="mt-6 hidden gap-2 text-[11px] sm:grid sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+            <div className="mt-6 hidden gap-2 text-[11px] sm:grid sm:grid-cols-2 md:grid-cols-3">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-4 py-3">
                 <p className="font-semibold text-background">Visibilidad por categoria</p>
                 <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
               </div>
-              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-4 py-3">
                 <p className="font-semibold text-background">Leads con contexto</p>
                 <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
               </div>
-              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-4 py-3 sm:col-span-2 md:col-span-1">
                 <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
                 <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
               </div>
