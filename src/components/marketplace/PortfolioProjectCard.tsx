@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ProviderPortfolioProject, ProviderTrustSnapshot } from "@/data/marketplace";
-import { CalendarDays, ImageOff, MapPin, UserRoundCheck } from "lucide-react";
+import { ImageOff, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PortfolioProjectCardProps {
