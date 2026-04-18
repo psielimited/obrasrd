@@ -110,7 +110,7 @@ const Index = () => {
             Busca servicios, conecta con profesionales y avanza tu obra con criterio.
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-background/80 md:text-base">
-            Marketplace dominicano para construccion: descubre opciones confiables, registra tu empresa y consulta guias del sector en un mismo lugar.
+            Marketplace dominicano para construccion: aumenta visibilidad por categoria, recibe leads por WhatsApp, publica proyectos reales y fortalece confianza con senales verificables en una sola plataforma.
           </p>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -139,6 +139,21 @@ const Index = () => {
             >
               Explorar conocimiento por etapas (complementario)
             </Link>
+          </div>
+
+          <div className="mt-6 grid gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+              <p className="font-semibold text-background">Visibilidad por categoria</p>
+              <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
+            </div>
+            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+              <p className="font-semibold text-background">Leads con contexto</p>
+              <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
+            </div>
+            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
+              <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
+              <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -268,11 +283,17 @@ const Index = () => {
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Empresas</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-foreground md:text-3xl">
-              Tienes una empresa o servicio? Publica tu perfil y consigue mas contactos.
+              Tienes empresa, cuadrilla o servicio tecnico? Entra al flujo de captacion de ObrasRD.
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-              Muestra experiencia, portafolio y zonas de servicio para recibir oportunidades desde ObrasRD.
+              Registra tu perfil para ganar presencia en categorias de alta demanda, demostrar ejecucion con proyectos reales y captar leads en Republica Dominicana.
             </p>
+            <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Visibilidad operativa en tu categoria y zona de servicio.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Leads directos con intencion de contratacion y contacto por WhatsApp.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Vitrina de proyectos ejecutados para aumentar cierre comercial.</div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Senales de confianza del perfil para elevar credibilidad ante clientes.</div>
+            </div>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button asChild variant="accent">
                 <Link

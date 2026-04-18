@@ -236,3 +236,42 @@ Add production-ready analytics instrumentation across the ObrasRD public and pro
 ### Next steps
 1. Optional: add a lightweight analytics QA checklist page (DEV only) that simulates and verifies each funnel event payload.
 2. Optional: add funnel conversion dashboards grouped by `source` and `provider_type`.
+
+---
+
+## Update: Provider acquisition conversion surfaces refresh (2026-04-17)
+
+### Goal
+Improve public provider-facing conversion surfaces so the value of joining ObrasRD is explicit, operational, and specific to the Dominican construction market.
+
+### In scope / out of scope
+- In scope: public `Registrar empresa` surfaces in home and `/empresas` page copy/layout, value proposition clarity, reduction of generic marketing language.
+- Out of scope: backend/schema changes, onboarding/auth flow changes, dashboard behavior changes.
+
+### Decisions
+- Reframed hero + CTA copy in home to emphasize practical provider outcomes:
+  - visibility by category/stage/location,
+  - lead capture with context and WhatsApp,
+  - project showcase value,
+  - trust-signal impact.
+- Added concise operational value blocks in home (instead of generic claims).
+- Refactored `/empresas` intro into:
+  - explicit “why join” benefit grid,
+  - “how this becomes work” 4-step operational flow,
+  - stronger form helper copy (title/description/WhatsApp) for better lead quality.
+- Kept existing component patterns and visual hierarchy; no new dependencies.
+
+### Files changed
+- src/pages/Index.tsx
+- src/pages/PublishService.tsx
+
+### Validation results
+- `npm run build` -> Passed.
+- `npx eslint src/pages/Index.tsx src/pages/PublishService.tsx` -> Passed.
+
+### Known issues
+- None introduced in this scope.
+
+### Next steps
+1. Optional: mirror this provider-value language in `/precios` comparison microcopy for consistency across the acquisition funnel.
+2. Optional: A/B test the `/empresas` benefit-ordering (visibilidad-first vs leads-first) with existing analytics events.

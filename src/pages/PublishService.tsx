@@ -105,10 +105,42 @@ const PublishService = () => {
             Volver
           </Button>
 
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Empresas: registrar o promocionar</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Crea una publicacion para captar clientes o compartir una necesidad de contratacion.
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Empresas y profesionales: activa captacion en ObrasRD</h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Este espacio convierte tu operacion en una ficha comercial visible para clientes que buscan servicios de construccion en Republica Dominicana.
           </p>
+
+          <div className="mb-6 rounded-xl border border-border bg-card p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Por que unirte como proveedor</p>
+            <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
+                <p className="font-semibold text-foreground">Visibilidad por categoria y etapa</p>
+                <p className="mt-1">Aparece donde el cliente filtra por disciplina, servicio y ciudad.</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
+                <p className="font-semibold text-foreground">Leads con intencion real</p>
+                <p className="mt-1">Recibes solicitudes con contexto operativo y contacto directo por WhatsApp.</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
+                <p className="font-semibold text-foreground">Vitrina de proyectos</p>
+                <p className="mt-1">Publica ejecuciones reales para respaldar capacidad tecnica y cierre comercial.</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
+                <p className="font-semibold text-foreground">Confianza de plataforma</p>
+                <p className="mt-1">Un perfil completo mejora senales de credibilidad frente a clientes y compras.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6 rounded-xl border border-border bg-card p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Como se traduce en trabajo</p>
+            <ol className="mt-3 space-y-2 text-xs text-muted-foreground">
+              <li><span className="font-semibold text-foreground">1.</span> Publicas una oferta clara con categoria, ubicacion y alcance.</li>
+              <li><span className="font-semibold text-foreground">2.</span> Tu perfil entra al flujo de descubrimiento y comparacion del directorio.</li>
+              <li><span className="font-semibold text-foreground">3.</span> El cliente contacta por WhatsApp o solicitud guiada segun necesidad.</li>
+              <li><span className="font-semibold text-foreground">4.</span> Actualizas portafolio y cobertura para mantener traccion por categoria.</li>
+            </ol>
+          </div>
 
           <div className="space-y-4">
             <div>
@@ -120,9 +152,9 @@ const PublishService = () => {
                 onChange={(event) => setPostType(event.target.value)}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground outline-none focus:ring-2 focus:ring-accent"
               >
-                <option>Necesito un profesional</option>
                 <option>Ofrezco servicios</option>
                 <option>Vendo materiales</option>
+                <option>Necesito un profesional</option>
               </select>
             </div>
 
@@ -132,7 +164,7 @@ const PublishService = () => {
               </label>
               <input
                 type="text"
-                placeholder="Ej: Necesito un contratista para casa en Santiago"
+                placeholder="Ej: Empresa de impermeabilizacion para proyectos residenciales en Santo Domingo"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent"
@@ -158,7 +190,7 @@ const PublishService = () => {
               </label>
               <textarea
                 rows={4}
-                placeholder="Describe tu proyecto o servicio..."
+                placeholder="Incluye tipo de obra, alcance, zonas que atiendes, tiempos de respuesta y evidencia de ejecucion."
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent resize-none"
@@ -328,6 +360,9 @@ const PublishService = () => {
                 onChange={(event) => setWhatsapp(event.target.value)}
                 className="w-full px-4 py-3 rounded-lg bg-card obra-shadow text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent font-tabular"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Recomendado: numero activo en horario laboral para convertir leads en visitas y cotizaciones.
+              </p>
             </div>
 
             <Button
