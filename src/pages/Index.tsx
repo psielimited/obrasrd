@@ -411,15 +411,20 @@ const Index = () => {
               <div className="space-y-1 text-sm">
                 <Link to={PUBLIC_ROUTES.directorio} className="block text-muted-foreground transition-colors hover:text-foreground">Directorio de servicios</Link>
                 <Link to={`${PUBLIC_ROUTES.directorio}?tab=servicios`} className="block text-muted-foreground transition-colors hover:text-foreground">Profesionales</Link>
-                <Link to="/materiales" className="block text-muted-foreground transition-colors hover:text-foreground">Materiales / Suplidores</Link>
               </div>
             </div>
 
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Conocimiento</p>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Materiales</p>
+              <div className="space-y-1 text-sm">
+                <Link to={PUBLIC_ROUTES.materiales} className="block text-muted-foreground transition-colors hover:text-foreground">Materiales y suplidores</Link>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Conocimiento tecnico</p>
               <div className="space-y-1 text-sm">
                 <Link to={PUBLIC_ROUTES.conocimiento} className="block text-muted-foreground transition-colors hover:text-foreground">Guias por escenario</Link>
-                <p className="pt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Arquitectura por etapas</p>
                 <Link to={planningHref} className="block text-muted-foreground transition-colors hover:text-foreground">Planificacion</Link>
                 <Link to={constructionHref} className="block text-muted-foreground transition-colors hover:text-foreground">Construccion</Link>
                 <Link to={maintenanceHref} className="block text-muted-foreground transition-colors hover:text-foreground">Mantenimiento</Link>
