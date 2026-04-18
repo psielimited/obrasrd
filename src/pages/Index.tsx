@@ -1,14 +1,50 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Compass,
+  HardHat,
+  Hammer,
+  ClipboardCheck,
+  Plug,
+  Wrench,
+  ShieldCheck,
+  Package,
+  Search,
+  type LucideIcon,
+} from "lucide-react";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
 import ProviderCard from "@/components/ProviderCard";
 import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useFeaturedPortfolioProjects, useFeaturedProviders, usePhases } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
+
+const SHORTCUT_ICON_MAP: Record<string, LucideIcon> = {
+  arquitectura: Compass,
+  ingenieria_civil: HardHat,
+  ingenieria: HardHat,
+  construccion_ejecucion: Hammer,
+  construccion: Hammer,
+  supervision_gerencia: ClipboardCheck,
+  supervision: ClipboardCheck,
+  instalaciones_especiales: Plug,
+  instalaciones: Plug,
+  mantenimiento_preventivo: Wrench,
+  mantenimiento: Wrench,
+  seguridad_salud: ShieldCheck,
+  seguridad: ShieldCheck,
+  materiales: Package,
+};
+
+const getShortcutIcon = (slug: string): LucideIcon => {
+  if (SHORTCUT_ICON_MAP[slug]) return SHORTCUT_ICON_MAP[slug];
+  const matchKey = Object.keys(SHORTCUT_ICON_MAP).find((key) => slug.includes(key));
+  return matchKey ? SHORTCUT_ICON_MAP[matchKey] : Hammer;
+};
 
 const CATEGORY_SHORTCUT_FALLBACKS = [
   { slug: "arquitectura", name: "Arquitectura", phase: "Planificacion" },
@@ -26,7 +62,9 @@ const resolvePhaseHref = (phaseSlug: string, phaseExists: boolean, fallbackHref:
 
 const Index = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [shouldLoadDeferredData, setShouldLoadDeferredData] = useState(false);
+  const [heroSearchQuery, setHeroSearchQuery] = useState("");
   const { data: providers = [] } = useFeaturedProviders(4, shouldLoadDeferredData);
   const { data: featuredProjects = [] } = useFeaturedPortfolioProjects(6, shouldLoadDeferredData);
   const { data: phases = [] } = usePhases(shouldLoadDeferredData);
@@ -101,68 +139,112 @@ const Index = () => {
     });
   };
 
+  const handleHeroSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = heroSearchQuery.trim();
+    const targetHref = trimmed
+      ? `${PUBLIC_ROUTES.directorio}?q=${encodeURIComponent(trimmed)}`
+      : PUBLIC_ROUTES.directorio;
+    trackHomepageSearchSubmitted("hero_cta", targetHref);
+    navigate(targetHref);
+  };
+
   return (
     <div className="min-h-screen pb-16 md:pb-0">
-      <section className="border-b border-border bg-foreground px-4 py-12 text-background md:py-16">
-        <div className="container relative mx-auto max-w-5xl">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
-          <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight md:text-5xl">
-            Busca servicios, conecta con profesionales y avanza tu obra con criterio.
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-background/80 md:text-base">
-            Marketplace dominicano para construccion: aumenta visibilidad por categoria, recibe leads por WhatsApp, publica proyectos reales y fortalece confianza con senales verificables en una sola plataforma.
-          </p>
+      <section className="relative overflow-hidden border-b border-border bg-foreground text-background">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 bg-cover bg-center opacity-40 mix-blend-luminosity md:block lg:w-[55%]"
+          style={{ backgroundImage: "url('/hero-construction-bw.jpg')" }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 hidden w-2/3 bg-gradient-to-r from-foreground via-foreground/95 to-transparent md:block"
+        />
+        <div className="container relative mx-auto max-w-5xl px-4 py-12 md:py-16">
+          <div className="md:max-w-2xl lg:max-w-[58%]">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
+            <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
+              Busca servicios, conecta con profesionales y avanza tu obra con criterio.
+            </h1>
+            <p className="mt-4 text-sm leading-relaxed text-background/80 md:text-base">
+              Marketplace dominicano para construccion: aumenta visibilidad por categoria, recibe leads por WhatsApp, publica proyectos reales y fortalece confianza con senales verificables en una sola plataforma.
+            </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button asChild variant="accent" size="lg" className="sm:w-auto">
-              <Link
-                to={PUBLIC_ROUTES.directorio}
-                onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}
-              >
-                Buscar servicios
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
-              <Link
-                to={PUBLIC_ROUTES.empresas}
-                onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
-              >
-                Registrar empresa
-              </Link>
-            </Button>
-          </div>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button asChild variant="accent" size="lg" className="sm:w-auto">
+                <Link
+                  to={PUBLIC_ROUTES.directorio}
+                  onClick={() => trackHomepageSearchSubmitted("hero_cta", PUBLIC_ROUTES.directorio)}
+                >
+                  Buscar servicios
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-background/25 bg-transparent text-background hover:bg-background/10 hover:text-background sm:w-auto">
+                <Link
+                  to={PUBLIC_ROUTES.empresas}
+                  onClick={() => trackRegisterCompanyClick("homepage_hero", PUBLIC_ROUTES.empresas)}
+                >
+                  Registrar empresa
+                </Link>
+              </Button>
+            </div>
 
-          <div className="mt-5">
-            <Link
-              to={PUBLIC_ROUTES.conocimiento}
-              className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
+            <form
+              role="search"
+              onSubmit={handleHeroSearchSubmit}
+              className="mt-5 flex w-full max-w-xl items-center gap-2 rounded-lg border border-background/25 bg-background/5 p-1.5 backdrop-blur-sm focus-within:border-background/60"
             >
-              Explorar conocimiento por etapas (complementario)
-            </Link>
-          </div>
+              <label htmlFor="hero-search" className="sr-only">
+                Buscar servicios, oficios o categorias
+              </label>
+              <Search aria-hidden="true" className="ml-2 h-4 w-4 shrink-0 text-background/70" />
+              <Input
+                id="hero-search"
+                type="search"
+                value={heroSearchQuery}
+                onChange={(event) => setHeroSearchQuery(event.target.value)}
+                placeholder="Plomero, electricista, ingeniero estructural..."
+                className="h-9 flex-1 border-0 bg-transparent px-1 text-sm text-background shadow-none placeholder:text-background/50 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <Button type="submit" variant="accent" size="sm" className="h-9 shrink-0">
+                Buscar
+              </Button>
+            </form>
 
-          <div className="mt-6 grid gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
-              <p className="font-semibold text-background">Visibilidad por categoria</p>
-              <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
+            <div className="mt-5">
+              <Link
+                to={PUBLIC_ROUTES.conocimiento}
+                className="inline-flex text-sm font-semibold text-background/80 transition-colors hover:text-background"
+              >
+                Explorar conocimiento por etapas (complementario)
+              </Link>
             </div>
-            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
-              <p className="font-semibold text-background">Leads con contexto</p>
-              <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
-            </div>
-            <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
-              <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
-              <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
+
+            <div className="mt-6 grid gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+                <p className="font-semibold text-background">Visibilidad por categoria</p>
+                <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
+              </div>
+              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
+                <p className="font-semibold text-background">Leads con contexto</p>
+                <p className="text-background/75">Recibe solicitudes con zona, alcance y contacto directo.</p>
+              </div>
+              <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2 sm:col-span-2 lg:col-span-1">
+                <p className="font-semibold text-background">Prueba de trabajo + confianza</p>
+                <p className="text-background/75">Muestra portafolio y fortalece tu perfil con senales de calidad.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="atajos-categorias" className="px-4 py-10 md:py-12">
+      <section id="atajos-categorias" className="px-4 py-12 md:py-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Directorio</p>
-            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Atajos por categoria clave</h2>
+          <div className="mb-6">
+            <p className="label-upper">Directorio</p>
+            <span aria-hidden="true" className="section-accent-bar" />
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Atajos por categoria clave</h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Entra directo a categorias de alta demanda y reduce tiempo de busqueda.
             </p>
@@ -171,15 +253,21 @@ const Index = () => {
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {shortcuts.map((shortcut) => {
               const targetHref = `${PUBLIC_ROUTES.directorio}?categoria=${shortcut.slug}`;
+              const Icon = getShortcutIcon(shortcut.slug);
               return (
                 <Link
                   key={`${shortcut.slug}-${shortcut.phase}`}
                   to={targetHref}
                   onClick={() => trackCategoryShortcutClick(shortcut, targetHref)}
-                  className="rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/25"
+                  className="group flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/40 hover:bg-muted/40"
                 >
-                  <p className="text-sm font-semibold text-foreground">{shortcut.name}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors group-hover:border-accent group-hover:text-accent">
+                    <Icon aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
+                  </span>
+                  <span className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{shortcut.name}</p>
+                    <p className="mt-0.5 text-[11px] uppercase tracking-wide text-muted-foreground">{shortcut.phase}</p>
+                  </span>
                 </Link>
               );
             })}
@@ -187,12 +275,13 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="proveedores-destacados" className="px-4 pb-10 md:pb-12">
+      <section id="proveedores-destacados" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Confianza</p>
-              <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Empresas y profesionales destacados</h2>
+              <p className="label-upper">Confianza</p>
+              <span aria-hidden="true" className="section-accent-bar" />
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Empresas y profesionales destacados</h2>
             </div>
             <Button asChild variant="ghost" className="justify-start md:justify-center">
               <Link to={PUBLIC_ROUTES.directorio}>Ver todo en directorio</Link>
@@ -212,11 +301,12 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="proyectos-reales" className="px-4 pb-10 md:pb-12">
+      <section id="proyectos-reales" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Prueba de trabajo</p>
-            <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
+          <div className="mb-6">
+            <p className="label-upper">Prueba de trabajo</p>
+            <span aria-hidden="true" className="section-accent-bar" />
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">Proyectos reales publicados en el directorio</h2>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Compara obras reales por etapa, categoria tecnica y responsable para tomar decisiones con mayor confianza.
             </p>
@@ -278,11 +368,12 @@ const Index = () => {
         maintenanceHref={maintenanceHref}
       />
 
-      <section id="cta-empresas" className="px-4 pb-10 md:pb-12">
+      <section id="cta-empresas" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Empresas</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-foreground md:text-3xl">
+            <p className="label-upper">Empresas</p>
+            <span aria-hidden="true" className="section-accent-bar" />
+            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">
               Tienes empresa, cuadrilla o servicio tecnico? Entra al flujo de captacion de ObrasRD.
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
