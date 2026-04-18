@@ -50,6 +50,7 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
   const trustBadges = getProviderTrustBadges(provider, {
     profileCompleteness: calculateProviderProfileCompleteness(provider),
   });
+  const responseLabel = provider.trustSnapshot?.rapidResponse ? "Respuesta rapida" : "Respuesta estandar";
 
   const whatsappUrl = `https://wa.me/${provider.whatsapp}?text=${encodeURIComponent(
     `Hola, me interesa cotizar ${provider.trade}. Vi su perfil en ObrasRD.`,
@@ -98,17 +99,31 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
       onCardClick={onOpenProfile}
       topRightBadge={provider.isFeatured ? <Badge className="bg-accent text-accent-foreground">Destacado (Plan)</Badge> : undefined}
       trustContent={
-        trustBadges.length > 0 ? (
+        <div className="space-y-2">
           <div className="flex flex-wrap gap-1.5">
-            {trustBadges.map((badge) => (
-              <TrustBadge key={badge} type={badge} className="px-2 py-0.5 text-[10px]" />
-            ))}
+            <Badge variant="secondary" className="text-[10px]">
+              {provider.rating.toFixed(1)} estrellas ({provider.reviewCount} resenas)
+            </Badge>
+            <Badge variant="secondary" className="text-[10px]">
+              {provider.completedProjects} proyectos
+            </Badge>
+            <Badge variant="secondary" className="text-[10px]">
+              {provider.yearsExperience} anos de experiencia
+            </Badge>
           </div>
-        ) : (
-          <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            Sin insignias de confianza verificadas
-          </Badge>
-        )
+          {trustBadges.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {trustBadges.map((badge) => (
+                <TrustBadge key={badge} type={badge} className="px-2 py-0.5 text-[10px]" />
+              ))}
+            </div>
+          ) : (
+            <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              Sin insignias de confianza verificadas
+            </Badge>
+          )}
+          <p className="text-xs text-muted-foreground">{responseLabel}</p>
+        </div>
       }
       primaryCta={
         <Button className="flex-1" size="sm" onClick={onContactViaWhatsapp}>

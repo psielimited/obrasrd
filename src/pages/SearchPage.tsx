@@ -31,6 +31,8 @@ import {
   patchSearchFilterState,
   toSearchParams,
   type SearchFilterState,
+  type SearchProviderType,
+  type SearchSortOption,
   type SearchTab,
 } from "@/lib/search/search-filter-state";
 
@@ -66,6 +68,38 @@ interface FriendlyQueryIntent {
   locationNormalized?: string;
   intentQuery: string;
 }
+
+const PROVIDER_TYPE_OPTIONS: { value: SearchProviderType; label: string }[] = [
+  { value: "empresa", label: "Empresa" },
+  { value: "profesional", label: "Profesional independiente" },
+];
+
+const SORT_OPTIONS: { value: SearchSortOption; label: string }[] = [
+  { value: "relevancia", label: "Relevancia" },
+  { value: "mejor_valorados", label: "Mejor valorados" },
+  { value: "mas_verificados", label: "Mas verificados" },
+  { value: "mas_recientes", label: "Mas recientes" },
+];
+
+const inferProviderType = (providerName: string, providerTrade: string): SearchProviderType => {
+  const normalizedName = normalizeSearchText(providerName);
+  const normalizedTrade = normalizeSearchText(providerTrade);
+
+  if (
+    normalizedName.startsWith("arq ") ||
+    normalizedName.startsWith("ing ") ||
+    normalizedName.startsWith("lic ") ||
+    normalizedTrade.includes("arquitecto") ||
+    normalizedTrade.includes("ingeniero") ||
+    normalizedTrade.includes("plomero") ||
+    normalizedTrade.includes("electricista")
+  ) {
+    return "profesional";
+  }
+
+  // TODO: replace heuristic with explicit backend field (`provider_type`) once exposed by provider_summary_view.
+  return "empresa";
+};
 
 const parseFriendlyQueryIntent = (
   rawQuery: string,
@@ -312,6 +346,16 @@ const SearchPage = () => {
       .map(([normalized, label]) => ({ normalized, label }))
       .sort((current, next) => current.label.localeCompare(next.label, "es"));
   }, [materials, providers]);
+  const locationFilterOptions = useMemo(
+    () =>
+      locationOptions.map((item) => ({
+        value: item.normalized,
+        label: item.label,
+      })),
+    [locationOptions],
+  );
+  const providerTypeOptions = useMemo(() => PROVIDER_TYPE_OPTIONS, []);
+  const sortOptions = useMemo(() => SORT_OPTIONS, []);
 
   const applyState = (nextState: SearchFilterState, replace = true) => {
     setSearchParams(toSearchParams(nextState), { replace });
@@ -516,6 +560,25 @@ const SearchPage = () => {
     });
   };
 
+  const onLocationChange = (value: string) => {
+    applyPatch({ ubicacion: value }, false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "ubicacion",
+      has_value: Boolean(value),
+    });
+  };
+
+  const onProviderTypeChange = (value: string) => {
+    const nextValue = value as SearchProviderType | "";
+    applyPatch({ tipoProveedor: nextValue }, false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "tipo_proveedor",
+      has_value: Boolean(nextValue),
+    });
+  };
+
   const onStageChange = (value: string) => {
     const stageId = value ? phaseIdBySlug.get(value) : undefined;
     applyPatch({ etapa: value, disciplina: "", servicio: "" }, false);
@@ -594,6 +657,38 @@ const SearchPage = () => {
     });
   };
 
+  const onVerifiedOnlyChange = (checked: boolean) => {
+    applyPatch({ soloVerificados: checked }, false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "solo_verificados",
+      has_value: checked,
+    });
+  };
+
+  const onIdentityOnlyChange = (checked: boolean) => {
+    applyPatch({ soloIdentidadVerificada: checked }, false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "solo_identidad_verificada",
+      has_value: checked,
+    });
+  };
+
+  const onPortfolioOnlyChange = (checked: boolean) => {
+    applyPatch({ soloPortafolioValidado: checked }, false);
+    trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
+      source: "search_filters",
+      filter_name: "solo_portafolio_validado",
+      has_value: checked,
+    });
+  };
+
+  const onSortChange = (value: string) => {
+    const sort = value as SearchSortOption;
+    applyPatch({ sort }, false);
+  };
+
   const onClearFilters = () => {
     applyState(clearStructuredFilters(searchState), false);
     trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.FilterApplied, {
@@ -607,6 +702,8 @@ const SearchPage = () => {
     const validDisciplineSlugs = new Set(disciplineOptions.map((item) => item.value));
     const validServiceSlugs = new Set(serviceOptions.map((item) => item.value));
     const validWorkTypeSlugs = new Set(workTypeOptions.map((item) => item.value));
+    const validLocationSlugs = new Set(locationFilterOptions.map((item) => item.value));
+    const validProviderTypes = new Set(providerTypeOptions.map((item) => item.value));
 
     let next = searchState;
     let changed = false;
@@ -626,10 +723,28 @@ const SearchPage = () => {
       changed = true;
     }
 
+    if (next.ubicacion && !validLocationSlugs.has(next.ubicacion)) {
+      next = patchSearchFilterState(next, { ubicacion: "" });
+      changed = true;
+    }
+
+    if (next.tipoProveedor && !validProviderTypes.has(next.tipoProveedor)) {
+      next = patchSearchFilterState(next, { tipoProveedor: "" });
+      changed = true;
+    }
+
     if (changed) {
       applyState(next, true);
     }
-  }, [disciplineOptions, serviceOptions, workTypeOptions, searchState]);
+  }, [
+    applyState,
+    disciplineOptions,
+    locationFilterOptions,
+    providerTypeOptions,
+    searchState,
+    serviceOptions,
+    workTypeOptions,
+  ]);
 
   const providerSearchIndex = useMemo(
     () =>
@@ -708,12 +823,22 @@ const SearchPage = () => {
         const providerLocationHaystack = normalizeSearchText(
           [provider.location, provider.city, ...(provider.serviceAreas ?? [])].join(" "),
         );
+        const inferredProviderType = inferProviderType(provider.name, provider.trade);
+        const providerTrustSnapshot = provider.trustSnapshot;
+        const trustScore =
+          (provider.verified ? 1 : 0) +
+          (providerTrustSnapshot?.identityConfirmed ? 1 : 0) +
+          (providerTrustSnapshot?.portfolioValidated ? 1 : 0) +
+          (providerTrustSnapshot?.projectRegistered ? 1 : 0) +
+          (providerTrustSnapshot?.rapidResponse ? 1 : 0);
 
         return {
           provider,
           mapping,
           providerHaystack,
           providerLocationHaystack,
+          inferredProviderType,
+          trustScore,
           stageSlugs,
           disciplineSlugs,
           serviceSlugs,
@@ -735,6 +860,16 @@ const SearchPage = () => {
           const matchesFriendlyLocation =
             !friendlyIntent.locationNormalized ||
             item.providerLocationHaystack.includes(friendlyIntent.locationNormalized);
+          const matchesSelectedLocation =
+            !searchState.ubicacion || item.providerLocationHaystack.includes(searchState.ubicacion);
+          const matchesProviderType =
+            !searchState.tipoProveedor || item.inferredProviderType === searchState.tipoProveedor;
+          const matchesVerified =
+            !searchState.soloVerificados || item.provider.verified || Boolean(item.provider.trustSnapshot?.providerVerified);
+          const matchesIdentity =
+            !searchState.soloIdentidadVerificada || Boolean(item.provider.trustSnapshot?.identityConfirmed);
+          const matchesPortfolio =
+            !searchState.soloPortafolioValidado || Boolean(item.provider.trustSnapshot?.portfolioValidated);
 
           const serviceHints = searchNormalization.canonicalHints.serviceSlugs;
           const disciplineHints = searchNormalization.canonicalHints.disciplineSlugs;
@@ -779,6 +914,11 @@ const SearchPage = () => {
           return (
             matchesQuery &&
             matchesFriendlyLocation &&
+            matchesSelectedLocation &&
+            matchesProviderType &&
+            matchesVerified &&
+            matchesIdentity &&
+            matchesPortfolio &&
             matchesCanonicalHints &&
             matchesLegacyCategory &&
             matchesStage &&
@@ -787,11 +927,50 @@ const SearchPage = () => {
             matchesWorkType
           );
         })
+        .sort((current, next) => {
+          if (searchState.sort === "mejor_valorados") {
+            if (next.provider.rating !== current.provider.rating) return next.provider.rating - current.provider.rating;
+            return next.provider.reviewCount - current.provider.reviewCount;
+          }
+
+          if (searchState.sort === "mas_verificados") {
+            if (next.trustScore !== current.trustScore) return next.trustScore - current.trustScore;
+            if (next.provider.verified !== current.provider.verified) return Number(next.provider.verified) - Number(current.provider.verified);
+            return next.provider.completedProjects - current.provider.completedProjects;
+          }
+
+          if (searchState.sort === "mas_recientes") {
+            // TODO: replace fallback ordering with backend `created_at`/`updated_at` once available in provider_summary_view.
+            return next.provider.id.localeCompare(current.provider.id);
+          }
+
+          // Relevancia: priorizar coincidencia textual + señales de confianza + evidencia de trabajo.
+          const currentTextScore = normalizedSearchTerms.reduce(
+            (score, term) => (current.providerHaystack.includes(term) ? score + 1 : score),
+            0,
+          );
+          const nextTextScore = normalizedSearchTerms.reduce(
+            (score, term) => (next.providerHaystack.includes(term) ? score + 1 : score),
+            0,
+          );
+          if (nextTextScore !== currentTextScore) return nextTextScore - currentTextScore;
+          if (next.trustScore !== current.trustScore) return next.trustScore - current.trustScore;
+          if (next.provider.completedProjects !== current.provider.completedProjects) {
+            return next.provider.completedProjects - current.provider.completedProjects;
+          }
+          return next.provider.rating - current.provider.rating;
+        })
         .map((item) => item.provider),
     [
       providerSearchIndex,
       friendlyIntent.locationNormalized,
       normalizedSearchTerms,
+      searchState.ubicacion,
+      searchState.tipoProveedor,
+      searchState.soloVerificados,
+      searchState.soloIdentidadVerificada,
+      searchState.soloPortafolioValidado,
+      searchState.sort,
       searchNormalization.canonicalHints.disciplineSlugs,
       searchNormalization.canonicalHints.serviceSlugs,
       searchNormalization.canonicalHints.stageSlugs,
@@ -817,6 +996,9 @@ const SearchPage = () => {
   );
 
   const activeFilterCount = countActiveStructuredFilters(searchState);
+  const isSparseProviders = searchState.tab === "servicios" && filteredProviders.length > 0 && filteredProviders.length <= 3;
+  const isSparseMaterials = searchState.tab === "materiales" && filteredMaterials.length > 0 && filteredMaterials.length <= 3;
+  const isNewestSortFallback = searchState.sort === "mas_recientes";
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
@@ -909,6 +1091,11 @@ const SearchPage = () => {
               </span>
             ) : null}
           </div>
+          {isNewestSortFallback && (
+            <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Orden "Mas recientes" usa un fallback temporal hasta exponer fecha de publicacion.
+            </p>
+          )}
 
           <div className="mb-4 flex gap-2">
             <button
@@ -937,18 +1124,27 @@ const SearchPage = () => {
             <MarketplaceFilters
               state={searchState}
               categoryOptions={categoryOptions}
+              locationOptions={locationFilterOptions}
+              providerTypeOptions={providerTypeOptions}
               stageOptions={stageOptions}
               disciplineOptions={disciplineOptions}
               serviceOptions={serviceOptions}
               workTypeOptions={workTypeOptions}
+              sortOptions={sortOptions}
               activeFilterCount={activeFilterCount}
               isTaxonomyLoading={isTaxonomyLoading}
               hasTaxonomyError={hasTaxonomyError}
               onCategoryChange={onCategoryChange}
+              onLocationChange={onLocationChange}
+              onProviderTypeChange={onProviderTypeChange}
               onStageChange={onStageChange}
               onDisciplineChange={onDisciplineChange}
               onServiceChange={onServiceChange}
               onWorkTypeChange={onWorkTypeChange}
+              onVerifiedOnlyChange={onVerifiedOnlyChange}
+              onIdentityOnlyChange={onIdentityOnlyChange}
+              onPortfolioOnlyChange={onPortfolioOnlyChange}
+              onSortChange={onSortChange}
               onClearFilters={onClearFilters}
             />
           )}
@@ -978,10 +1174,17 @@ const SearchPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl bg-card p-8 text-center obra-shadow">
-                  <p className="text-sm text-muted-foreground">
-                    No encontramos proveedores con esos filtros. Ajusta etapa, disciplina o servicio.
-                  </p>
+                <div className="space-y-4">
+                  <div className="rounded-xl bg-card p-8 text-center obra-shadow">
+                    <p className="text-sm text-muted-foreground">
+                      No encontramos proveedores con esos filtros. Ajusta etapa, disciplina, ubicacion o confianza.
+                    </p>
+                  </div>
+                  <div className="flex justify-center">
+                    <Button variant="outline" onClick={onClearFilters}>
+                      Limpiar filtros y volver a intentar
+                    </Button>
+                  </div>
                 </div>
               )
             ) : hasMaterialsError ? (
@@ -1002,8 +1205,22 @@ const SearchPage = () => {
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl bg-card p-8 text-center obra-shadow">
-                <p className="text-sm text-muted-foreground">No se encontraron materiales.</p>
+              <div className="space-y-4">
+                <div className="rounded-xl bg-card p-8 text-center obra-shadow">
+                  <p className="text-sm text-muted-foreground">
+                    No se encontraron materiales con esos criterios.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="outline" onClick={onClearFilters}>
+                    Limpiar filtros
+                  </Button>
+                </div>
+              </div>
+            )}
+            {(isSparseProviders || isSparseMaterials) && (
+              <div className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
+                Pocos resultados ({searchState.tab === "servicios" ? filteredProviders.length : filteredMaterials.length}). Amplia ubicacion o quita filtros para comparar mas opciones.
               </div>
             )}
           </div>

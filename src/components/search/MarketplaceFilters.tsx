@@ -1,6 +1,7 @@
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -30,14 +31,23 @@ interface MarketplaceFiltersProps {
   disciplineOptions: FilterOption[];
   serviceOptions: FilterOption[];
   workTypeOptions: FilterOption[];
+  locationOptions: FilterOption[];
+  providerTypeOptions: FilterOption[];
+  sortOptions: FilterOption[];
   activeFilterCount: number;
   isTaxonomyLoading: boolean;
   hasTaxonomyError: boolean;
   onCategoryChange: (value: string) => void;
+  onLocationChange: (value: string) => void;
+  onProviderTypeChange: (value: string) => void;
   onStageChange: (value: string) => void;
   onDisciplineChange: (value: string) => void;
   onServiceChange: (value: string) => void;
   onWorkTypeChange: (value: string) => void;
+  onVerifiedOnlyChange: (checked: boolean) => void;
+  onIdentityOnlyChange: (checked: boolean) => void;
+  onPortfolioOnlyChange: (checked: boolean) => void;
+  onSortChange: (value: string) => void;
   onClearFilters: () => void;
 }
 
@@ -53,17 +63,26 @@ const FilterFields = ({
   disciplineOptions,
   serviceOptions,
   workTypeOptions,
+  locationOptions,
+  providerTypeOptions,
+  sortOptions,
   isTaxonomyLoading,
   hasTaxonomyError,
   onCategoryChange,
+  onLocationChange,
+  onProviderTypeChange,
   onStageChange,
   onDisciplineChange,
   onServiceChange,
   onWorkTypeChange,
+  onVerifiedOnlyChange,
+  onIdentityOnlyChange,
+  onPortfolioOnlyChange,
+  onSortChange,
   onClearFilters,
 }: Omit<MarketplaceFiltersProps, "activeFilterCount">) => (
   <div className="space-y-4">
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <div className="space-y-2">
         <Label className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Categoria legacy</Label>
         <Select value={mapToSelectValue(state.categoria)} onValueChange={(value) => onCategoryChange(mapFromSelectValue(value))}>
@@ -73,6 +92,40 @@ const FilterFields = ({
           <SelectContent>
             <SelectItem value={ALL}>Todas</SelectItem>
             {categoryOptions.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Ubicacion</Label>
+        <Select value={mapToSelectValue(state.ubicacion)} onValueChange={(value) => onLocationChange(mapFromSelectValue(value))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Todas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todas</SelectItem>
+            {locationOptions.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Tipo de proveedor</Label>
+        <Select value={mapToSelectValue(state.tipoProveedor)} onValueChange={(value) => onProviderTypeChange(mapFromSelectValue(value))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todos</SelectItem>
+            {providerTypeOptions.map((item) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>
@@ -160,6 +213,37 @@ const FilterFields = ({
           </SelectContent>
         </Select>
       </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Ordenar por</Label>
+        <Select value={state.sort} onValueChange={onSortChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Relevancia" />
+          </SelectTrigger>
+          <SelectContent>
+            {sortOptions.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <label className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+        <span className="text-sm text-foreground">Solo verificados</span>
+        <Switch checked={state.soloVerificados} onCheckedChange={onVerifiedOnlyChange} />
+      </label>
+      <label className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+        <span className="text-sm text-foreground">Identidad validada</span>
+        <Switch checked={state.soloIdentidadVerificada} onCheckedChange={onIdentityOnlyChange} />
+      </label>
+      <label className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+        <span className="text-sm text-foreground">Portafolio validado</span>
+        <Switch checked={state.soloPortafolioValidado} onCheckedChange={onPortfolioOnlyChange} />
+      </label>
     </div>
 
     {hasTaxonomyError && (
