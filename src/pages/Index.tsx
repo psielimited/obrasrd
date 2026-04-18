@@ -167,14 +167,14 @@ const Index = () => {
             <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
               Encuentra el profesional correcto para tu obra en Republica Dominicana.
             </h1>
-            <p className="mt-4 text-sm leading-relaxed text-background/80 md:text-base">
+            <p className="mt-3 hidden text-sm leading-relaxed text-background/80 sm:block md:mt-4 md:text-base">
               Compara empresas y tecnicos verificados por categoria, zona y experiencia. Contacta directo por WhatsApp y avanza tu proyecto con confianza.
             </p>
 
             <form
               role="search"
               onSubmit={handleHeroSearchSubmit}
-              className="mt-7 flex w-full max-w-xl items-center gap-2 rounded-lg border border-background/25 bg-background/5 p-1.5 backdrop-blur-sm focus-within:border-background/60"
+              className="mt-4 flex w-full max-w-xl items-center gap-2 rounded-lg border border-background/25 bg-background/5 p-1.5 backdrop-blur-sm focus-within:border-background/60 sm:mt-7"
             >
               <label htmlFor="hero-search" className="sr-only">
                 Buscar servicios, oficios o categorias
@@ -218,7 +218,7 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="mt-6 grid gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 hidden gap-2 text-[11px] sm:grid sm:grid-cols-2 lg:grid-cols-3">
               <div className="rounded-lg border border-background/20 bg-background/5 px-3 py-2">
                 <p className="font-semibold text-background">Visibilidad por categoria</p>
                 <p className="text-background/75">Aparece en busquedas por etapa, disciplina y ciudad.</p>
