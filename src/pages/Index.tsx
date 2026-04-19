@@ -13,6 +13,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import StageExplainerSection from "@/components/home/StageExplainerSection";
+import HumanPhoto from "@/components/ui/HumanPhoto";
+import contratistaPortrait from "@/assets/photos/contratista-portrait.jpg";
 import ProviderCard from "@/components/ProviderCard";
 import PortfolioProjectCard from "@/components/marketplace/PortfolioProjectCard";
 import { Button } from "@/components/ui/button";
@@ -377,33 +379,46 @@ const Index = () => {
 
       <section id="cta-empresas" className="px-4 pb-12 md:pb-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-            <p className="label-upper">Empresas</p>
-            <span aria-hidden="true" className="section-accent-bar" />
-            <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">
-              Tienes empresa, cuadrilla o servicio tecnico? Entra al flujo de captacion de ObrasRD.
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-              Registra tu perfil para ganar presencia en categorias de alta demanda, demostrar ejecucion con proyectos reales y captar leads en Republica Dominicana.
-            </p>
-            <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Aparece en busquedas de tu ciudad y especialidad.</div>
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Recibe solicitudes de clientes con intencion real de contratar.</div>
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Publica proyectos terminados para demostrar tu experiencia.</div>
-              <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Contacta directo por WhatsApp sin intermediarios ni comisiones.</div>
-            </div>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Button asChild variant="accent">
-                <Link
-                  to={PUBLIC_ROUTES.empresas}
-                  onClick={() => trackRegisterCompanyClick("homepage_cta_section", PUBLIC_ROUTES.empresas)}
-                >
-                  Registrar empresa
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/precios">Ver planes para empresas</Link>
-              </Button>
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="grid gap-0 md:grid-cols-[1.4fr_1fr]">
+              <div className="p-6 md:p-8">
+                <p className="label-upper">Empresas</p>
+                <span aria-hidden="true" className="section-accent-bar" />
+                <h2 className="mt-3 text-2xl font-black tracking-tight text-foreground md:text-3xl">
+                  Tienes empresa, cuadrilla o servicio tecnico? Entra al flujo de captacion de ObrasRD.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+                  Registra tu perfil para ganar presencia en categorias de alta demanda, demostrar ejecucion con proyectos reales y captar leads en Republica Dominicana.
+                </p>
+                <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                  <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Aparece en busquedas de tu ciudad y especialidad.</div>
+                  <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Recibe solicitudes de clientes con intencion real de contratar.</div>
+                  <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Publica proyectos terminados para demostrar tu experiencia.</div>
+                  <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">Contacta directo por WhatsApp sin intermediarios ni comisiones.</div>
+                </div>
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <Button asChild variant="accent">
+                    <Link
+                      to={PUBLIC_ROUTES.empresas}
+                      onClick={() => trackRegisterCompanyClick("homepage_cta_section", PUBLIC_ROUTES.empresas)}
+                    >
+                      Registrar empresa
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to="/precios">Ver planes para empresas</Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="relative hidden border-l border-border md:block">
+                <HumanPhoto
+                  src={contratistaPortrait}
+                  alt="Contratista dominicano frente a obra residencial"
+                  aspect="3/4"
+                  sizesHint="(min-width: 768px) 40vw, 100vw"
+                  className="h-full"
+                />
+              </div>
             </div>
           </div>
         </div>
