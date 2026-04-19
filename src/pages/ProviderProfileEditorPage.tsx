@@ -365,6 +365,8 @@ const ProviderProfileEditorPage = () => {
 
     setIsSaving(true);
     try {
+      const trimmedSlug = slug.trim().toLowerCase();
+      const slugChanged = trimmedSlug !== (providerProfile?.slug ?? "").toLowerCase();
       const providerId = await upsertMyProviderProfile({
         id: providerProfile?.id,
         name: name.trim(),
@@ -384,6 +386,7 @@ const ProviderProfileEditorPage = () => {
         primaryServiceId,
         serviceIds: selectedServiceIds,
         workTypeIds: selectedWorkTypeIds,
+        slug: trimmedSlug.length > 0 ? trimmedSlug : null,
       });
       await linkMyProviderProfileMedia(providerId);
 
