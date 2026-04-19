@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import HumanPhoto from "@/components/ui/HumanPhoto";
 import {
   CUSTOMER_JOURNEYS,
   JOURNEY_RESOURCE_TYPE_LABELS,
@@ -14,6 +15,12 @@ import {
   toJourneySearchHref,
   type CustomerJourneyDefinition,
 } from "@/lib/customer-journeys";
+import {
+  CONOCIMIENTO_HERO_ALT,
+  CONOCIMIENTO_HERO_PHOTO,
+  getStagePhoto,
+  getStagePhotoAlt,
+} from "@/lib/journey-photos";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const RESOURCE_TYPE_ORDER: readonly CustomerJourneyDefinition["resourceType"][] = [
@@ -70,18 +77,30 @@ const JourneyGuidesPage = () => {
 
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
-      <section className="border-b border-border px-4 py-8 md:py-10">
-        <div className="container mx-auto max-w-5xl">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-            Archivo de conocimiento
-          </p>
-          <h1 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">
-            Conocimiento tecnico por ciclo de proyecto en Republica Dominicana
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Organiza articulos tecnicos, guias practicas y conocimiento aplicado por Planificacion, Construccion y Mantenimiento.
-            Este espacio orienta decisiones, mientras tus acciones principales siguen en Directorio y Solicitudes.
-          </p>
+      <section className="border-b border-border">
+        <div className="container mx-auto max-w-5xl px-4 py-8 md:py-10">
+          <div className="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-center">
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                Archivo de conocimiento
+              </p>
+              <h1 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">
+                Conocimiento tecnico por ciclo de proyecto en Republica Dominicana
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                Organiza articulos tecnicos, guias practicas y conocimiento aplicado por Planificacion, Construccion y Mantenimiento.
+                Este espacio orienta decisiones, mientras tus acciones principales siguen en Directorio y Solicitudes.
+              </p>
+            </div>
+            <HumanPhoto
+              src={CONOCIMIENTO_HERO_PHOTO}
+              alt={CONOCIMIENTO_HERO_ALT}
+              aspect="16/9"
+              priority
+              sizesHint="(min-width: 768px) 45vw, 100vw"
+              className="rounded-lg border border-border"
+            />
+          </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
             {LIFECYCLE_STAGE_ORDER.map((stageSlug) => {
@@ -131,6 +150,13 @@ const JourneyGuidesPage = () => {
           ) : (
             groupedStageArchive.map((stageGroup) => (
               <section key={stageGroup.stageSlug} className="space-y-4">
+                <HumanPhoto
+                  src={getStagePhoto(stageGroup.stageSlug)}
+                  alt={getStagePhotoAlt(stageGroup.stageSlug)}
+                  aspect="4/1"
+                  sizesHint="(min-width: 1024px) 960px, 100vw"
+                  className="rounded-lg border border-border"
+                />
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                     {stageGroup.stageLabel}

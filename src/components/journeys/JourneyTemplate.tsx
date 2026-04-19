@@ -3,8 +3,15 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import HumanPhoto from "@/components/ui/HumanPhoto";
 import type { Provider } from "@/data/marketplace";
 import type { CustomerJourneyDefinition } from "@/lib/customer-journeys";
+import {
+  RELATED_PROVIDERS_AVATAR,
+  RELATED_PROVIDERS_AVATAR_ALT,
+  getStagePhoto,
+  getStagePhotoAlt,
+} from "@/lib/journey-photos";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 interface TopicDirectoryLink {
@@ -53,10 +60,18 @@ const JourneyTemplate = ({
             </Link>
           </Button>
 
-          <Card className="border-border/80 bg-card p-5 md:p-6">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Archivo de conocimiento</p>
-            <h1 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">{journey.title}</h1>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{journey.summary}</p>
+          <Card className="overflow-hidden border-border/80 bg-card">
+            <HumanPhoto
+              src={getStagePhoto(journey.stageSlug)}
+              alt={getStagePhotoAlt(journey.stageSlug)}
+              aspect="21/9"
+              sizesHint="(min-width: 768px) 768px, 100vw"
+              className="md:aspect-[21/9]"
+            />
+            <div className="p-5 md:p-6">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Archivo de conocimiento</p>
+              <h1 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">{journey.title}</h1>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{journey.summary}</p>
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
@@ -100,9 +115,10 @@ const JourneyTemplate = ({
               </div>
             </div>
 
-            <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Contexto dominicano</p>
-              <p className="mt-1 text-sm text-foreground">{dominicanContextNote}</p>
+              <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Contexto dominicano</p>
+                <p className="mt-1 text-sm text-foreground">{dominicanContextNote}</p>
+              </div>
             </div>
           </Card>
 
@@ -169,7 +185,16 @@ const JourneyTemplate = ({
 
           {relatedProviders.length > 0 && (
             <Card className="mt-4 border-border/80 bg-card p-5 md:p-6">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Empresas relacionadas</p>
+              <div className="mb-3 flex items-center gap-3">
+                <HumanPhoto
+                  src={RELATED_PROVIDERS_AVATAR}
+                  alt={RELATED_PROVIDERS_AVATAR_ALT}
+                  aspect="1/1"
+                  sizesHint="48px"
+                  className="h-12 w-12 shrink-0 rounded-full"
+                />
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Empresas relacionadas</p>
+              </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {relatedProviders.map((provider) => (
                   <div key={provider.id} className="rounded-lg border border-border bg-muted/20 p-3">
