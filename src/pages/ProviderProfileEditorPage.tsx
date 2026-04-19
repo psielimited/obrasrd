@@ -156,6 +156,49 @@ const ProviderProfileEditorPage = () => {
     setHasAppliedOnboardingDraft(true);
   }, [hasAppliedOnboardingDraft, onboardingDraft, providerProfile]);
 
+  // Debounced slug validation: format -> plan gating -> availability.
+  useEffect(() => {
+    const trimmed = slug.trim().toLowerCase();
+    if (!trimmed) {
+      setSlugStatus({ kind: "idle" });
+      return;
+    }
+    if (trimmed === (providerProfile?.slug ?? "").toLowerCase()) {
+      setSlugStatus({ kind: "ok", message: "Esta es tu URL actual." });
+      return;
+    }
+
+    const format = validateSlugFormat(trimmed);
+    if (format.status !== "ok") {
+      setSlugStatus({
+        kind: "error",
+        message:
+          format.status === "reserved"
+            ? "Esta URL esta reservada por la plataforma."
+            : format.reason,
+      });
+      return;
+    }
+
+    const planAccess = checkSlugPlanAccess(trimmed, planSnapshot?.planCode);
+    if (planAccess.status === "premium-required") {
+      setSlugStatus({ kind: "error", message: planAccess.reason });
+      return;
+    }
+
+    setSlugStatus({ kind: "checking", message: "Verificando disponibilidad..." });
+    const handle = window.setTimeout(async () => {
+      const available = await isSlugAvailable(trimmed, providerProfile?.id);
+      if (available) {
+        setSlugStatus({ kind: "ok", message: "URL disponible." });
+      } else {
+        setSlugStatus({ kind: "error", message: "Esta URL ya esta en uso. Prueba otra." });
+      }
+    }, 450);
+
+    return () => window.clearTimeout(handle);
+  }, [planSnapshot?.planCode, providerProfile?.id, providerProfile?.slug, slug]);
+
   const serviceAreas = useMemo(
     () =>
       serviceAreasRaw
