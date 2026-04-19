@@ -228,12 +228,24 @@ export const getMyProviderProfile = async (): Promise<Provider | null> => {
 export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Promise<string> => {
   const userId = await requireUserId();
 
+  // Resolve slug: explicit value wins; null means "clear"; undefined leaves untouched on update.
+  // For new providers without a slug, auto-generate one from the display name so the link is shareable from day 1.
+  let slugToPersist: string | null | undefined = payload.slug;
+  if (slugToPersist === undefined && !payload.id) {
+    slugToPersist = await findAvailableSlug(payload.name);
+  }
+  if (typeof slugToPersist === "string") {
+    slugToPersist = slugToPersist.trim().toLowerCase();
+    if (slugToPersist.length === 0) slugToPersist = null;
+  }
+
   const editableFields: Omit<TablesUpdate<"providers">, "id"> = {
     owner_user_id: userId,
     name: payload.name,
     trade: payload.trade,
     category_slug: payload.categorySlug,
     phase_id: payload.phaseId,
+    ...(slugToPersist !== undefined ? { slug: slugToPersist } : {}),
     ...(payload.primaryDisciplineId !== undefined
       ? { primary_discipline_id: payload.primaryDisciplineId }
       : {}),
