@@ -30,6 +30,7 @@ import { trackObrasRdEvent } from "@/lib/analytics/track";
 import {
   checkSlugPlanAccess,
   isSlugAvailable,
+  normalizeNameToSlug,
   validateSlugFormat,
   SLUG_FREE_PLAN_MIN_LENGTH,
 } from "@/lib/provider-slug";
@@ -155,6 +156,49 @@ const ProviderProfileEditorPage = () => {
     setHasAppliedOnboardingDraft(true);
   }, [hasAppliedOnboardingDraft, onboardingDraft, providerProfile]);
 
+  // Debounced slug validation: format -> plan gating -> availability.
+  useEffect(() => {
+    const trimmed = slug.trim().toLowerCase();
+    if (!trimmed) {
+      setSlugStatus({ kind: "idle" });
+      return;
+    }
+    if (trimmed === (providerProfile?.slug ?? "").toLowerCase()) {
+      setSlugStatus({ kind: "ok", message: "Esta es tu URL actual." });
+      return;
+    }
+
+    const format = validateSlugFormat(trimmed);
+    if (format.status !== "ok") {
+      const message =
+        format.status === "reserved"
+          ? "Esta URL esta reservada por la plataforma."
+          : format.status === "invalid"
+            ? format.reason
+            : "URL no disponible.";
+      setSlugStatus({ kind: "error", message });
+      return;
+    }
+
+    const planAccess = checkSlugPlanAccess(trimmed, planSnapshot?.planCode);
+    if (planAccess.status === "premium-required") {
+      setSlugStatus({ kind: "error", message: planAccess.reason });
+      return;
+    }
+
+    setSlugStatus({ kind: "checking", message: "Verificando disponibilidad..." });
+    const handle = window.setTimeout(async () => {
+      const available = await isSlugAvailable(trimmed, providerProfile?.id);
+      if (available) {
+        setSlugStatus({ kind: "ok", message: "URL disponible." });
+      } else {
+        setSlugStatus({ kind: "error", message: "Esta URL ya esta en uso. Prueba otra." });
+      }
+    }, 450);
+
+    return () => window.clearTimeout(handle);
+  }, [planSnapshot?.planCode, providerProfile?.id, providerProfile?.slug, slug]);
+
   const serviceAreas = useMemo(
     () =>
       serviceAreasRaw
@@ -236,7 +280,44 @@ const ProviderProfileEditorPage = () => {
     location.trim() &&
     city.trim() &&
     description.trim() &&
-    whatsapp.trim();
+    whatsapp.trim() &&
+    slugStatus.kind !== "error" &&
+    slugStatus.kind !== "checking";
+
+  const isPremiumPlan = ["pro", "premium", "elite"].includes(planSnapshot?.planCode ?? "");
+  const publicProfileBaseUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/proveedor/` : "https://obrasrd.com/proveedor/";
+  const savedSlug = providerProfile?.slug ?? "";
+  const canCopyLink = savedSlug.length > 0 && slug.trim().toLowerCase() === savedSlug.toLowerCase();
+
+  const onSuggestSlug = () => {
+    const suggestion = normalizeNameToSlug(name);
+    if (!suggestion) return;
+    const padded =
+      suggestion.length < SLUG_FREE_PLAN_MIN_LENGTH && !isPremiumPlan
+        ? `${suggestion}-perfil`
+        : suggestion;
+    setSlug(padded);
+  };
+
+  const onCopyProfileLink = async () => {
+    if (!canCopyLink || !providerProfile?.id) return;
+    const link = `${publicProfileBaseUrl}${savedSlug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({ title: "Enlace copiado", description: link });
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderProfileLinkCopied, {
+        provider_id: providerProfile.id,
+        source: "editor",
+      });
+    } catch {
+      toast({
+        title: "No se pudo copiar",
+        description: "Copia el enlace manualmente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const addPortfolioImage = () => {
     const url = portfolioImageUrl.trim();
@@ -321,6 +402,8 @@ const ProviderProfileEditorPage = () => {
 
     setIsSaving(true);
     try {
+      const trimmedSlug = slug.trim().toLowerCase();
+      const slugChanged = trimmedSlug !== (providerProfile?.slug ?? "").toLowerCase();
       const providerId = await upsertMyProviderProfile({
         id: providerProfile?.id,
         name: name.trim(),
@@ -340,6 +423,7 @@ const ProviderProfileEditorPage = () => {
         primaryServiceId,
         serviceIds: selectedServiceIds,
         workTypeIds: selectedWorkTypeIds,
+        slug: trimmedSlug.length > 0 ? trimmedSlug : null,
       });
       await linkMyProviderProfileMedia(providerId);
 
@@ -356,6 +440,13 @@ const ProviderProfileEditorPage = () => {
         });
       }
 
+      if (slugChanged && trimmedSlug.length > 0) {
+        trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderSlugClaimed, {
+          provider_id: providerId,
+          slug_length: trimmedSlug.length,
+          plan_code: planSnapshot?.planCode,
+        });
+      }
       clearStoredProviderOnboardingDraft();
       setOnboardingDraft(null);
       if (onboardingMode) {
@@ -488,6 +579,89 @@ const ProviderProfileEditorPage = () => {
               />
               <p className="text-xs text-muted-foreground">Describe el servicio por el que quieres que te encuentren primero.</p>
             </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="URL publica del perfil"
+          description="Personaliza el enlace que compartes con tus clientes."
+        >
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="slug">Tu URL personalizada</Label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                <div className="flex flex-1 items-stretch overflow-hidden rounded-lg border border-input bg-background focus-within:border-ring/60 focus-within:ring-2 focus-within:ring-ring/40">
+                  <span className="hidden items-center whitespace-nowrap border-r border-border bg-muted/40 px-3 text-xs text-muted-foreground sm:flex">
+                    obrasrd.com/proveedor/
+                  </span>
+                  <Input
+                    id="slug"
+                    value={slug}
+                    onChange={(event) =>
+                      setSlug(event.target.value.toLowerCase().replace(/\s+/g, "-"))
+                    }
+                    placeholder="javier-pichardo-construccion"
+                    className="border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={40}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onSuggestSlug}
+                    disabled={!name.trim()}
+                  >
+                    Sugerir
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCopyProfileLink}
+                    disabled={!canCopyLink}
+                  >
+                    <Copy className="h-4 w-4 mr-1.5" />
+                    Copiar enlace
+                  </Button>
+                </div>
+              </div>
+              <p
+                className={`text-xs ${
+                  slugStatus.kind === "error"
+                    ? "text-destructive"
+                    : slugStatus.kind === "ok"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-muted-foreground"
+                }`}
+              >
+                {slugStatus.message ??
+                  "Usa solo letras minusculas, numeros y guiones. Ej: javier-pichardo-construccion"}
+              </p>
+              {savedSlug && (
+                <p className="text-xs text-muted-foreground break-all">
+                  Enlace publico actual:{" "}
+                  <span className="font-medium text-foreground">
+                    {publicProfileBaseUrl}
+                    {savedSlug}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            {!isPremiumPlan && (
+              <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Reserva URLs cortas con un plan Pro
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Las URLs de menos de {SLUG_FREE_PLAN_MIN_LENGTH} caracteres (ej.{" "}
+                  <span className="font-mono">/proveedor/javier</span>) son exclusivas de planes
+                  Pro o superior.
+                </p>
+              </div>
+            )}
           </div>
         </SectionCard>
 
