@@ -185,7 +185,16 @@ const JourneyTemplate = ({
 
           {relatedProviders.length > 0 && (
             <Card className="mt-4 border-border/80 bg-card p-5 md:p-6">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Empresas relacionadas</p>
+              <div className="mb-3 flex items-center gap-3">
+                <HumanPhoto
+                  src={RELATED_PROVIDERS_AVATAR}
+                  alt={RELATED_PROVIDERS_AVATAR_ALT}
+                  aspect="1/1"
+                  sizesHint="48px"
+                  className="h-12 w-12 shrink-0 rounded-full"
+                />
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Empresas relacionadas</p>
+              </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {relatedProviders.map((provider) => (
                   <div key={provider.id} className="rounded-lg border border-border bg-muted/20 p-3">
