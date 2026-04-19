@@ -280,7 +280,44 @@ const ProviderProfileEditorPage = () => {
     location.trim() &&
     city.trim() &&
     description.trim() &&
-    whatsapp.trim();
+    whatsapp.trim() &&
+    slugStatus.kind !== "error" &&
+    slugStatus.kind !== "checking";
+
+  const isPremiumPlan = ["pro", "premium", "elite"].includes(planSnapshot?.planCode ?? "");
+  const publicProfileBaseUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/proveedor/` : "https://obrasrd.com/proveedor/";
+  const savedSlug = providerProfile?.slug ?? "";
+  const canCopyLink = savedSlug.length > 0 && slug.trim().toLowerCase() === savedSlug.toLowerCase();
+
+  const onSuggestSlug = () => {
+    const suggestion = normalizeNameToSlug(name);
+    if (!suggestion) return;
+    const padded =
+      suggestion.length < SLUG_FREE_PLAN_MIN_LENGTH && !isPremiumPlan
+        ? `${suggestion}-perfil`
+        : suggestion;
+    setSlug(padded);
+  };
+
+  const onCopyProfileLink = async () => {
+    if (!canCopyLink || !providerProfile?.id) return;
+    const link = `${publicProfileBaseUrl}${savedSlug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({ title: "Enlace copiado", description: link });
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderProfileLinkCopied, {
+        provider_id: providerProfile.id,
+        source: "editor",
+      });
+    } catch {
+      toast({
+        title: "No se pudo copiar",
+        description: "Copia el enlace manualmente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const addPortfolioImage = () => {
     const url = portfolioImageUrl.trim();
