@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ProviderPortfolioProject, ProviderTrustSnapshot } from "@/data/marketplace";
-import { CalendarDays, ImageOff, MapPin, UserRoundCheck } from "lucide-react";
+import { ImageOff, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PortfolioProjectCardProps {
@@ -78,62 +78,27 @@ const PortfolioProjectCard = ({
       <div className="space-y-3 p-3">
         <div className="space-y-1">
           <p className="text-sm font-semibold leading-snug text-[#1A1612]">{project.title}</p>
-          {project.summary && <p className="line-clamp-2 text-xs text-[#5C5046]">{project.summary}</p>}
         </div>
 
-        <div className="flex flex-wrap gap-1.5 text-xs text-[#7A6E64]">
-          {stageLabel && (
+        {stageLabel && (
+          <div className="flex flex-wrap gap-1.5">
             <Badge variant="outline" className="border-[#D2C7B9] bg-white text-[#3D342B]">
               Etapa: {stageLabel}
             </Badge>
-          )}
-          {categoryLabel && (
-            <Badge variant="outline" className="border-[#D2C7B9] bg-white text-[#3D342B]">
-              {categoryLabel}
-            </Badge>
-          )}
-          {workTypeLabel && (
-            <Badge variant="outline" className="border-[#D2C7B9] bg-white text-[#3D342B]">
-              Tipo: {workTypeLabel}
-            </Badge>
-          )}
-          {trustSnapshot?.projectRegistered && (
-            <Badge variant="outline" className="border-[#D2C7B9] bg-white text-[#3D342B]">
-              Proyecto publicado
-            </Badge>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="space-y-1.5 text-xs text-[#7A6E64]">
-          {resolvedLocation && (
-            <p className="inline-flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" />
-              {resolvedLocation}
-            </p>
-          )}
-          {project.completedOn && (
-            <p className="inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5" />
-              Finalizado: {formatDate(project.completedOn)}
-            </p>
-          )}
-          {providerName && (
-            <p className="inline-flex items-center gap-1.5 text-[#3D342B]">
-              <UserRoundCheck className="h-3.5 w-3.5" />
-              Responsable: {providerName}
-            </p>
-          )}
-        </div>
+        {resolvedLocation && (
+          <p className="inline-flex items-center gap-1.5 text-xs text-[#7A6E64]">
+            <MapPin className="h-3.5 w-3.5" />
+            {resolvedLocation}
+          </p>
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs">
             <Link to={targetHref}>Ver detalle</Link>
           </Button>
-          {providerId && (
-            <Button asChild size="sm" variant="ghost" className="h-8 rounded-lg px-2.5 text-xs">
-              <Link to={`/proveedor/${providerId}`}>Ver proveedor</Link>
-            </Button>
-          )}
         </div>
       </div>
     </>

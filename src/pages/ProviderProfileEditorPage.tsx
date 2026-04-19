@@ -521,9 +521,24 @@ const ProviderProfileEditorPage = () => {
               <Input
                 id="years"
                 type="number"
+                inputMode="numeric"
                 min={0}
-                value={yearsExperience}
-                onChange={(event) => setYearsExperience(Number(event.target.value) || 0)}
+                max={80}
+                step={1}
+                value={String(yearsExperience)}
+                onChange={(event) => {
+                  const raw = event.target.value;
+                  if (raw === "") {
+                    setYearsExperience(0);
+                    return;
+                  }
+                  const parsed = Number.parseInt(raw, 10);
+                  if (Number.isNaN(parsed) || parsed < 0) {
+                    setYearsExperience(0);
+                    return;
+                  }
+                  setYearsExperience(Math.min(parsed, 80));
+                }}
               />
             </div>
           </div>

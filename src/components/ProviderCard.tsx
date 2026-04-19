@@ -123,18 +123,15 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
       }
       trustContent={
         <div className="space-y-2.5">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Proyectos</p>
-              <p className="text-sm font-semibold text-foreground">{projectLabel}</p>
-            </div>
-            <div className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Perfil</p>
-              <p className="text-sm font-semibold text-foreground">{profileCompleteness}% completo</p>
-            </div>
+          <div className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Proyectos</p>
+            <p className="text-sm font-semibold text-foreground">{projectLabel}</p>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className="text-[10px]">
+              Perfil {profileCompleteness}%
+            </Badge>
             <Badge variant="secondary" className="text-[10px]">
               {ratingLabel}
             </Badge>
