@@ -170,13 +170,13 @@ const ProviderProfileEditorPage = () => {
 
     const format = validateSlugFormat(trimmed);
     if (format.status !== "ok") {
-      setSlugStatus({
-        kind: "error",
-        message:
-          format.status === "reserved"
-            ? "Esta URL esta reservada por la plataforma."
-            : format.reason,
-      });
+      const message =
+        format.status === "reserved"
+          ? "Esta URL esta reservada por la plataforma."
+          : format.status === "invalid"
+            ? format.reason
+            : "URL no disponible.";
+      setSlugStatus({ kind: "error", message });
       return;
     }
 
