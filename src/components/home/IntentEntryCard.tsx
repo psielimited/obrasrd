@@ -47,10 +47,21 @@ const IntentEntryCard = ({
   return (
     <Card className="h-full overflow-hidden border-border/70 bg-card/95 p-5 obra-shadow-md">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Entrada por necesidad</p>
           <h3 className="text-lg font-black leading-tight text-foreground">{title}</h3>
         </div>
+        {avatarSrc ? (
+          <img
+            src={avatarSrc}
+            alt={avatarAlt ?? ""}
+            loading="lazy"
+            decoding="async"
+            width={56}
+            height={56}
+            className="h-14 w-14 shrink-0 rounded-full object-cover grayscale ring-1 ring-border"
+          />
+        ) : null}
       </div>
 
       <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{description}</p>
