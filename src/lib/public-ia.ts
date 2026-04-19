@@ -20,3 +20,16 @@ export const PRIMARY_PUBLIC_NAV_ITEMS = [
   { to: PUBLIC_ROUTES.directorio, label: "Directorio" },
   { to: PUBLIC_ROUTES.conocimiento, label: "Guias" },
 ] as const;
+
+/**
+ * Builds the canonical public href for a provider profile.
+ * Prefers the human-readable slug when present, falling back to the UUID.
+ */
+export const getProviderHref = (
+  provider: { id: string; slug?: string | null } | null | undefined,
+): string => {
+  if (!provider?.id) return PUBLIC_ROUTES.directorio;
+  const slug = provider.slug?.trim();
+  return `/proveedor/${slug && slug.length > 0 ? slug : provider.id}`;
+};
+

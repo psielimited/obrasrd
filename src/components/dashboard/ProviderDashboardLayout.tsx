@@ -18,7 +18,7 @@ import SidebarNav, { type ProviderNavItem } from "@/components/dashboard/Sidebar
 import { useMyProfile, useMyProviderProfile } from "@/hooks/use-profile-data";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications-data";
 import { supabase } from "@/integrations/supabase/client";
-import { PUBLIC_ROUTES } from "@/lib/public-ia";
+import { PUBLIC_ROUTES, getProviderHref } from "@/lib/public-ia";
 
 interface ProviderDashboardLayoutProps {
   title: string;
@@ -44,7 +44,7 @@ const ProviderDashboardLayout = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const identity = providerProfile?.name || profile?.displayName || "Cuenta de proveedor";
-  const marketplaceHref = providerProfile?.id ? `/proveedor/${providerProfile.id}` : PUBLIC_ROUTES.directorio;
+  const marketplaceHref = providerProfile?.id ? getProviderHref(providerProfile) : PUBLIC_ROUTES.directorio;
 
   const navItems: ProviderNavItem[] = [
     { label: "Resumen", to: "/dashboard/proveedor", icon: LayoutDashboard, exact: true },

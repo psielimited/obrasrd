@@ -39,6 +39,7 @@ export interface PortfolioProjectWithProvider extends ProviderPortfolioProject {
 
 type ProviderSummaryRow = {
   id: string;
+  slug: string | null;
   name: string;
   trade: string;
   category_slug: string;
@@ -131,6 +132,7 @@ const toProvider = (
   portfolioProjects?: Tables<"portfolio_projects">[],
 ): Provider => ({
   id: row.id,
+  slug: (row as any).slug ?? undefined,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,
@@ -189,6 +191,7 @@ const toMaterial = (row: Tables<"materials">): Material => ({
 
 const mapProviderSummaryRow = (row: ProviderSummaryRow): Provider => ({
   id: row.id,
+  slug: row.slug ?? undefined,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,
@@ -285,9 +288,11 @@ export const fetchFeaturedProviders = async (limit = 4): Promise<Provider[]> => 
 
 export const fetchProviders = fetchProviderSummaries;
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const fetchProviderById = async (id: string): Promise<Provider | null> => {
   if (!hasSupabaseConfig) {
-    const provider = PROVIDERS.find((item) => item.id === id);
+    const provider = PROVIDERS.find((item) => item.id === id || item.slug === id);
     if (!provider) return null;
     return {
       ...provider,
@@ -302,10 +307,33 @@ export const fetchProviderById = async (id: string): Promise<Provider | null> =>
     };
   }
 
-  const { data, error } = await supabase.from("providers").select("*").eq("id", id).maybeSingle();
+  const lookupValue = id.trim();
+  const looksLikeUuid = UUID_PATTERN.test(lookupValue);
 
-  if (error || !data) {
-    return PROVIDERS.find((provider) => provider.id === id) ?? null;
+  let data: Tables<"providers"> | null = null;
+
+  // Slug-first lookup (case-insensitive). Skip when the param is clearly a UUID.
+  if (!looksLikeUuid) {
+    const slugResponse = await supabase
+      .from("providers")
+      .select("*")
+      .ilike("slug", lookupValue)
+      .maybeSingle();
+    data = (slugResponse.data as Tables<"providers"> | null) ?? null;
+  }
+
+  // Fallback to UUID lookup for back-compat or when slug lookup missed.
+  if (!data) {
+    const idResponse = await supabase
+      .from("providers")
+      .select("*")
+      .eq("id", lookupValue)
+      .maybeSingle();
+    data = (idResponse.data as Tables<"providers"> | null) ?? null;
+  }
+
+  if (!data) {
+    return PROVIDERS.find((provider) => provider.id === lookupValue || provider.slug === lookupValue) ?? null;
   }
 
   const [{ data: providerServices }, { data: providerWorkTypes }] = await Promise.all([

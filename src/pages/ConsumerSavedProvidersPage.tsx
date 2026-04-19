@@ -11,6 +11,7 @@ import { useMySavedProviders, savedProvidersQueryKeys } from "@/hooks/use-saved-
 import { unsaveProvider, updateSavedProviderMeta } from "@/lib/saved-providers-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { getProviderHref } from "@/lib/public-ia";
 
 const ConsumerSavedProvidersPage = () => {
   const navigate = useNavigate();
@@ -146,7 +147,7 @@ const ConsumerSavedProvidersPage = () => {
                           <Star className={`h-4 w-4 mr-1 ${isShortlisted ? "fill-current" : ""}`} />
                           {isShortlisted ? "En shortlist" : "Shortlist"}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/proveedor/${provider.id}`)}>
+                        <Button variant="outline" size="sm" onClick={() => navigate(getProviderHref(provider))}>
                           Ver perfil
                         </Button>
                         <Button variant="destructive" size="sm" onClick={() => onRemove(provider.id)}>

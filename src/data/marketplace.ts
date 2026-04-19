@@ -40,6 +40,7 @@ export interface Category {
 
 export interface Provider {
   id: string;
+  slug?: string;
   name: string;
   trade: string;
   categorySlug: string;

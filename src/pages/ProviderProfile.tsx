@@ -28,6 +28,7 @@ import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { deriveProvinceFromText } from "@/lib/analytics/province";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
+import { getProviderHref } from "@/lib/public-ia";
 import { cn } from "@/lib/utils";
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -171,6 +172,14 @@ const ProviderProfile = () => {
     });
   }, [providerId, phaseId, primaryDisciplineId, primaryServiceId, firstWorkTypeId, province]);
 
+  // Canonical redirect: when accessed by UUID and the provider has a slug, replace with the slug URL.
+  useEffect(() => {
+    if (!provider?.slug || !id) return;
+    if (id.toLowerCase() === provider.slug.toLowerCase()) return;
+    if (id !== provider.id) return; // only redirect when the URL param is the UUID
+    navigate(`/proveedor/${provider.slug}`, { replace: true });
+  }, [id, navigate, provider?.id, provider?.slug]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -269,7 +278,7 @@ const ProviderProfile = () => {
 
   const onToggleSave = async () => {
     if (!user) {
-      navigate("/auth", { state: { from: `/proveedor/${provider.id}` } });
+      navigate("/auth", { state: { from: getProviderHref(provider) } });
       return;
     }
 
@@ -294,7 +303,7 @@ const ProviderProfile = () => {
   };
 
   const onShare = async () => {
-    const shareUrl = `${window.location.origin}/proveedor/${provider.id}`;
+    const shareUrl = `${window.location.origin}${getProviderHref(provider)}`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -306,6 +315,10 @@ const ProviderProfile = () => {
       }
 
       await navigator.clipboard.writeText(shareUrl);
+      trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderProfileLinkCopied, {
+        provider_id: provider.id,
+        source: "public_profile",
+      });
       toast({
         title: "Enlace copiado",
         description: "Comparte este perfil con tu equipo.",

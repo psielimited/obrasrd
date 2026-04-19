@@ -1,6 +1,7 @@
 import type { Provider } from "@/data/marketplace";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { findAvailableSlug } from "@/lib/provider-slug";
 
 export type UserRole = "buyer" | "provider";
 
@@ -15,6 +16,7 @@ export interface UserProfile {
 
 export interface ProviderProfileInput {
   id?: string;
+  slug?: string | null;
   name: string;
   trade: string;
   categorySlug: string;
@@ -36,6 +38,7 @@ export interface ProviderProfileInput {
 
 const toProvider = (row: Tables<"providers">): Provider => ({
   id: row.id,
+  slug: (row as any).slug ?? undefined,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,
@@ -225,12 +228,24 @@ export const getMyProviderProfile = async (): Promise<Provider | null> => {
 export const upsertMyProviderProfile = async (payload: ProviderProfileInput): Promise<string> => {
   const userId = await requireUserId();
 
+  // Resolve slug: explicit value wins; null means "clear"; undefined leaves untouched on update.
+  // For new providers without a slug, auto-generate one from the display name so the link is shareable from day 1.
+  let slugToPersist: string | null | undefined = payload.slug;
+  if (slugToPersist === undefined && !payload.id) {
+    slugToPersist = await findAvailableSlug(payload.name);
+  }
+  if (typeof slugToPersist === "string") {
+    slugToPersist = slugToPersist.trim().toLowerCase();
+    if (slugToPersist.length === 0) slugToPersist = null;
+  }
+
   const editableFields: Omit<TablesUpdate<"providers">, "id"> = {
     owner_user_id: userId,
     name: payload.name,
     trade: payload.trade,
     category_slug: payload.categorySlug,
     phase_id: payload.phaseId,
+    ...(slugToPersist !== undefined ? { slug: slugToPersist } : {}),
     ...(payload.primaryDisciplineId !== undefined
       ? { primary_discipline_id: payload.primaryDisciplineId }
       : {}),
