@@ -30,6 +30,7 @@ import { trackObrasRdEvent } from "@/lib/analytics/track";
 import {
   checkSlugPlanAccess,
   isSlugAvailable,
+  normalizeNameToSlug,
   validateSlugFormat,
   SLUG_FREE_PLAN_MIN_LENGTH,
 } from "@/lib/provider-slug";
