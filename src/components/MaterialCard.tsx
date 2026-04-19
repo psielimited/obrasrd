@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import ProofFirstCard from "@/components/marketplace/ProofFirstCard";
 import { Material } from "@/data/marketplace";
+import { getMaterialPhoto, getMaterialPhotoAlt } from "@/lib/material-photos";
 
 interface MaterialCardProps {
   material: Material;
@@ -14,7 +15,8 @@ const MaterialCard = ({ material }: MaterialCardProps) => {
 
   return (
     <ProofFirstCard
-      imageAlt={material.name}
+      imageUrl={getMaterialPhoto(material.category)}
+      imageAlt={getMaterialPhotoAlt(material.category)}
       title={material.name}
       stageLabel="Sin etapa"
       disciplineLabel="Sin disciplina"
