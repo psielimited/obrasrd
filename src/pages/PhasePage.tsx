@@ -3,10 +3,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import ProviderCard from "@/components/ProviderCard";
 import { Button } from "@/components/ui/button";
+import HumanPhoto from "@/components/ui/HumanPhoto";
 import { usePhases, useProviderSummaries } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
+import {
+  RELATED_PROVIDERS_AVATAR,
+  RELATED_PROVIDERS_AVATAR_ALT,
+} from "@/lib/journey-photos";
+import { getLifecycleStageForPhase } from "@/lib/phase-stage-mapping";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 import { normalizeSearchText } from "@/lib/search/search-normalization";
 
@@ -148,12 +154,31 @@ const PhasePage = () => {
             Volver
           </Button>
 
-          <div className="flex items-baseline gap-3 mb-1">
-            <span className="text-4xl font-black text-muted-foreground/30">
-              {String(phase.id).padStart(2, "0")}
-            </span>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">{phase.name}</h1>
-          </div>
+          {(() => {
+            const lifecycle = getLifecycleStageForPhase(phase.slug);
+            return (
+              <>
+                <HumanPhoto
+                  src={lifecycle.photo}
+                  alt={lifecycle.photoAlt}
+                  aspect="16/9"
+                  priority
+                  sizesHint="(min-width: 1024px) 1024px, 100vw"
+                  className="mb-6 rounded-xl"
+                />
+
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  Etapa {lifecycle.stageNumber} · {lifecycle.stageLabel}
+                </p>
+                <div className="flex items-baseline gap-3 mb-1">
+                  <span className="text-4xl font-black text-muted-foreground/30">
+                    {lifecycle.stageNumber}
+                  </span>
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">{phase.name}</h1>
+                </div>
+              </>
+            );
+          })()}
           <p className="text-sm text-muted-foreground mb-6">{phase.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-8">
@@ -168,9 +193,18 @@ const PhasePage = () => {
             ))}
           </div>
 
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
-            Proveedores en esta fase ({phaseProviders.length})
-          </h2>
+          <div className="mb-4 flex items-center gap-3">
+            <HumanPhoto
+              src={RELATED_PROVIDERS_AVATAR}
+              alt={RELATED_PROVIDERS_AVATAR_ALT}
+              aspect="1/1"
+              sizesHint="40px"
+              className="h-10 w-10 shrink-0 rounded-full"
+            />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Proveedores en esta fase ({phaseProviders.length})
+            </h2>
+          </div>
 
           {phaseProviders.length > 0 ? (
             <div className="space-y-4">
