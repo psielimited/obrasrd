@@ -3,8 +3,15 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import HumanPhoto from "@/components/ui/HumanPhoto";
 import type { Provider } from "@/data/marketplace";
 import type { CustomerJourneyDefinition } from "@/lib/customer-journeys";
+import {
+  RELATED_PROVIDERS_AVATAR,
+  RELATED_PROVIDERS_AVATAR_ALT,
+  getStagePhoto,
+  getStagePhotoAlt,
+} from "@/lib/journey-photos";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 interface TopicDirectoryLink {
