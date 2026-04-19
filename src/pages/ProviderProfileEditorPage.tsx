@@ -582,6 +582,89 @@ const ProviderProfileEditorPage = () => {
           </div>
         </SectionCard>
 
+        <SectionCard
+          title="URL publica del perfil"
+          description="Personaliza el enlace que compartes con tus clientes."
+        >
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="slug">Tu URL personalizada</Label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                <div className="flex flex-1 items-stretch overflow-hidden rounded-lg border border-input bg-background focus-within:border-ring/60 focus-within:ring-2 focus-within:ring-ring/40">
+                  <span className="hidden items-center whitespace-nowrap border-r border-border bg-muted/40 px-3 text-xs text-muted-foreground sm:flex">
+                    obrasrd.com/proveedor/
+                  </span>
+                  <Input
+                    id="slug"
+                    value={slug}
+                    onChange={(event) =>
+                      setSlug(event.target.value.toLowerCase().replace(/\s+/g, "-"))
+                    }
+                    placeholder="javier-pichardo-construccion"
+                    className="border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={40}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onSuggestSlug}
+                    disabled={!name.trim()}
+                  >
+                    Sugerir
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCopyProfileLink}
+                    disabled={!canCopyLink}
+                  >
+                    <Copy className="h-4 w-4 mr-1.5" />
+                    Copiar enlace
+                  </Button>
+                </div>
+              </div>
+              <p
+                className={`text-xs ${
+                  slugStatus.kind === "error"
+                    ? "text-destructive"
+                    : slugStatus.kind === "ok"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-muted-foreground"
+                }`}
+              >
+                {slugStatus.message ??
+                  "Usa solo letras minusculas, numeros y guiones. Ej: javier-pichardo-construccion"}
+              </p>
+              {savedSlug && (
+                <p className="text-xs text-muted-foreground break-all">
+                  Enlace publico actual:{" "}
+                  <span className="font-medium text-foreground">
+                    {publicProfileBaseUrl}
+                    {savedSlug}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            {!isPremiumPlan && (
+              <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Reserva URLs cortas con un plan Pro
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Las URLs de menos de {SLUG_FREE_PLAN_MIN_LENGTH} caracteres (ej.{" "}
+                  <span className="font-mono">/proveedor/javier</span>) son exclusivas de planes
+                  Pro o superior.
+                </p>
+              </div>
+            )}
+          </div>
+        </SectionCard>
+
         <SectionCard title="Especialidad" description="Define fase y categoria donde ofreces servicios">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
