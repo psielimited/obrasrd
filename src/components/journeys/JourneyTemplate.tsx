@@ -115,9 +115,10 @@ const JourneyTemplate = ({
               </div>
             </div>
 
-            <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Contexto dominicano</p>
-              <p className="mt-1 text-sm text-foreground">{dominicanContextNote}</p>
+              <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Contexto dominicano</p>
+                <p className="mt-1 text-sm text-foreground">{dominicanContextNote}</p>
+              </div>
             </div>
           </Card>
 
