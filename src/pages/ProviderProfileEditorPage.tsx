@@ -600,7 +600,7 @@ const ProviderProfileEditorPage = () => {
                     onChange={(event) =>
                       setSlug(event.target.value.toLowerCase().replace(/\s+/g, "-"))
                     }
-                    placeholder="javier-pichardo-construccion"
+                    placeholder="url-personalizado"
                     className="border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     autoComplete="off"
                     spellCheck={false}
@@ -637,7 +637,7 @@ const ProviderProfileEditorPage = () => {
                 }`}
               >
                 {slugStatus.message ??
-                  "Usa solo letras minusculas, numeros y guiones. Ej: javier-pichardo-construccion"}
+                  "Usa solo letras minusculas, numeros y guiones. Ej: url-personalizado"}
               </p>
               {savedSlug && (
                 <p className="text-xs text-muted-foreground break-all">
