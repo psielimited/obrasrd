@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import ProofFirstCard from "@/components/marketplace/ProofFirstCard";
 import { Material } from "@/data/marketplace";
+import { getMaterialPhoto, getMaterialPhotoAlt } from "@/lib/material-photos";
 
 interface MaterialCardProps {
   material: Material;
