@@ -3,10 +3,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import ProviderCard from "@/components/ProviderCard";
 import { Button } from "@/components/ui/button";
+import HumanPhoto from "@/components/ui/HumanPhoto";
 import { usePhases, useProviderSummaries } from "@/hooks/use-marketplace-data";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
+import {
+  RELATED_PROVIDERS_AVATAR,
+  RELATED_PROVIDERS_AVATAR_ALT,
+} from "@/lib/journey-photos";
+import { getLifecycleStageForPhase } from "@/lib/phase-stage-mapping";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 import { normalizeSearchText } from "@/lib/search/search-normalization";
 
