@@ -14,7 +14,8 @@ const MaterialCard = ({ material }: MaterialCardProps) => {
 
   return (
     <ProofFirstCard
-      imageAlt={material.name}
+      imageUrl={getMaterialPhoto(material.category)}
+      imageAlt={getMaterialPhotoAlt(material.category)}
       title={material.name}
       stageLabel="Sin etapa"
       disciplineLabel="Sin disciplina"
