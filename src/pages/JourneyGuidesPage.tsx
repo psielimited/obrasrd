@@ -77,12 +77,6 @@ const JourneyGuidesPage = () => {
 
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
-      <section className="border-b border-border px-4 py-8 md:py-10">
-        <div className="container mx-auto max-w-5xl">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-            Archivo de conocimiento
-          </p>
-    <div className="min-h-screen bg-background pb-16 md:pb-0">
       <section className="border-b border-border">
         <div className="container mx-auto max-w-5xl px-4 py-8 md:py-10">
           <div className="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-center">
