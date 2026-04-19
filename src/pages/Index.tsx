@@ -154,16 +154,16 @@ const Index = () => {
       <section className="relative overflow-hidden border-b border-border bg-foreground text-background">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 bg-cover bg-center opacity-20 mix-blend-luminosity md:block lg:w-[55%]"
+          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 bg-cover bg-center opacity-70 md:block lg:w-[55%]"
           style={{ backgroundImage: "url('/hero-construction-bw.jpg')" }}
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 hidden w-full bg-gradient-to-r from-foreground via-foreground/85 to-foreground/40 md:block"
+          className="pointer-events-none absolute inset-y-0 left-0 hidden w-full bg-gradient-to-r from-foreground via-foreground/90 via-40% to-transparent md:block"
         />
         <div className="container relative mx-auto max-w-5xl px-4 py-12 md:py-16">
           <div className="w-full">
-            <div className="md:max-w-3xl">
+            <div className="md:max-w-4xl lg:max-w-[56rem] xl:max-w-[64rem]">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/65">ObrasRD - Republica Dominicana</p>
             <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
               Encuentra el profesional correcto para tu obra en Republica Dominicana.
