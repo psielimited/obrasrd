@@ -13,6 +13,9 @@ interface IntentEntryCardProps {
   searchHref: string;
   journeyHref: string;
   journeyLabel: string;
+  /** Optional decorative B&W avatar (small, ~64px). */
+  avatarSrc?: string;
+  avatarAlt?: string;
 }
 
 const IntentEntryCard = ({
@@ -23,6 +26,8 @@ const IntentEntryCard = ({
   searchHref,
   journeyHref,
   journeyLabel,
+  avatarSrc,
+  avatarAlt,
 }: IntentEntryCardProps) => {
   const trackIntentClick = (cta: "search" | "journey") => {
     trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.HomepageIntentClick, {
