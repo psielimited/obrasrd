@@ -39,6 +39,7 @@ export interface PortfolioProjectWithProvider extends ProviderPortfolioProject {
 
 type ProviderSummaryRow = {
   id: string;
+  slug: string | null;
   name: string;
   trade: string;
   category_slug: string;
