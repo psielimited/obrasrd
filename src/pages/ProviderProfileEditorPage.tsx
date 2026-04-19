@@ -403,6 +403,13 @@ const ProviderProfileEditorPage = () => {
         });
       }
 
+      if (slugChanged && trimmedSlug.length > 0) {
+        trackObrasRdEvent(OBRASRD_ANALYTICS_EVENTS.ProviderSlugClaimed, {
+          provider_id: providerId,
+          slug_length: trimmedSlug.length,
+          plan_code: planSnapshot?.planCode,
+        });
+      }
       clearStoredProviderOnboardingDraft();
       setOnboardingDraft(null);
       if (onboardingMode) {
