@@ -28,12 +28,18 @@ import { getProviderProfileQualitySnapshot } from "@/lib/provider-trust";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
 import {
+  checkSlugPlanAccess,
+  isSlugAvailable,
+  validateSlugFormat,
+  SLUG_FREE_PLAN_MIN_LENGTH,
+} from "@/lib/provider-slug";
+import {
   clearStoredProviderOnboardingDraft,
   getProviderSignupTypeOption,
   readStoredProviderOnboardingDraft,
 } from "@/lib/provider-onboarding";
 import type { Provider } from "@/data/marketplace";
-import { ArrowDown, ArrowUp, ImagePlus, Loader2, Trash2, Upload, UserRoundCog } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, ImagePlus, Loader2, Trash2, Upload, UserRoundCog } from "lucide-react";
 
 const ProviderProfileEditorPage = () => {
   const navigate = useNavigate();
@@ -66,6 +72,8 @@ const ProviderProfileEditorPage = () => {
   const [primaryServiceId, setPrimaryServiceId] = useState<number | undefined>(undefined);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
   const [selectedWorkTypeIds, setSelectedWorkTypeIds] = useState<number[]>([]);
+  const [slug, setSlug] = useState("");
+  const [slugStatus, setSlugStatus] = useState<{ kind: "idle" | "checking" | "ok" | "error"; message?: string }>({ kind: "idle" });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [onboardingDraft, setOnboardingDraft] = useState(() => readStoredProviderOnboardingDraft());
   const [hasAppliedOnboardingDraft, setHasAppliedOnboardingDraft] = useState(false);
@@ -105,6 +113,7 @@ const ProviderProfileEditorPage = () => {
     setPrimaryServiceId(providerProfile.primaryServiceId);
     setSelectedServiceIds(providerProfile.serviceIds ?? []);
     setSelectedWorkTypeIds(providerProfile.workTypeIds ?? []);
+    setSlug(providerProfile.slug ?? "");
   }, [providerProfile]);
 
   useEffect(() => {
