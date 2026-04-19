@@ -159,7 +159,7 @@ const ConsumerCompareProvidersPage = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => navigate(`/proveedor/${provider.id}`)}
+                              onClick={() => navigate(getProviderHref(provider))}
                             >
                               Ver perfil
                             </Button>

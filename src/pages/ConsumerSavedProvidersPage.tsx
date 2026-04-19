@@ -146,7 +146,7 @@ const ConsumerSavedProvidersPage = () => {
                           <Star className={`h-4 w-4 mr-1 ${isShortlisted ? "fill-current" : ""}`} />
                           {isShortlisted ? "En shortlist" : "Shortlist"}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/proveedor/${provider.id}`)}>
+                        <Button variant="outline" size="sm" onClick={() => navigate(getProviderHref(provider))}>
                           Ver perfil
                         </Button>
                         <Button variant="destructive" size="sm" onClick={() => onRemove(provider.id)}>
