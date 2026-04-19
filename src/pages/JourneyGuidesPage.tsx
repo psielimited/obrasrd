@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import HumanPhoto from "@/components/ui/HumanPhoto";
 import {
   CUSTOMER_JOURNEYS,
   JOURNEY_RESOURCE_TYPE_LABELS,
@@ -14,6 +15,12 @@ import {
   toJourneySearchHref,
   type CustomerJourneyDefinition,
 } from "@/lib/customer-journeys";
+import {
+  CONOCIMIENTO_HERO_ALT,
+  CONOCIMIENTO_HERO_PHOTO,
+  getStagePhoto,
+  getStagePhotoAlt,
+} from "@/lib/journey-photos";
 import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const RESOURCE_TYPE_ORDER: readonly CustomerJourneyDefinition["resourceType"][] = [
