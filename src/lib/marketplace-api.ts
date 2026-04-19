@@ -132,6 +132,7 @@ const toProvider = (
   portfolioProjects?: Tables<"portfolio_projects">[],
 ): Provider => ({
   id: row.id,
+  slug: (row as any).slug ?? undefined,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,
@@ -190,6 +191,7 @@ const toMaterial = (row: Tables<"materials">): Material => ({
 
 const mapProviderSummaryRow = (row: ProviderSummaryRow): Provider => ({
   id: row.id,
+  slug: row.slug ?? undefined,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,
