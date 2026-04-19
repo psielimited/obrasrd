@@ -1123,6 +1123,7 @@ export type Database = {
           rating: number
           review_count: number
           service_areas: string[]
+          slug: string | null
           starting_price: number | null
           trade: string
           updated_at: string
@@ -1148,6 +1149,7 @@ export type Database = {
           rating?: number
           review_count?: number
           service_areas?: string[]
+          slug?: string | null
           starting_price?: number | null
           trade: string
           updated_at?: string
@@ -1173,6 +1175,7 @@ export type Database = {
           rating?: number
           review_count?: number
           service_areas?: string[]
+          slug?: string | null
           starting_price?: number | null
           trade?: string
           updated_at?: string
