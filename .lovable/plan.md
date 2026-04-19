@@ -1,74 +1,80 @@
 
 ## Goal
-Let providers claim a custom, human-readable slug for their public profile URL so they can share `obrasrd.com/proveedor/javier-pichardo-construction` instead of a UUID. Lay groundwork to monetize premium slugs (short/branded) later.
+Add warmth and human presence to ObrasRD by incorporating photography of people working in construction — without sacrificing the fast, mobile-first performance the homepage already has (lazy data loading, minimal JS, slow-3G targets).
 
-## Investigation summary
-- Public profile route is `/proveedor/:id` (rendered by `ProviderProfile.tsx`), and `ProviderCard` navigates with `provider.id` (UUID). Need to confirm exact route + lookup logic before finalizing.
-- `providers` table has no `slug` column today. Add one with a unique index, nullable (back-compat), with reserved-word + format validation.
-- Provider editor (`ProviderProfileEditorPage.tsx`) is where the new "URL personalizada" field lives.
-- Plan tiers exist (`provider_plans` + `provider_subscriptions`) — perfect hook for future monetization (free tier auto-slug, paid tier custom/short slug).
+## Investigation
 
-## Plan
+Current state of imagery in the app:
+- Homepage hero already uses `/hero-construction-bw.jpg` as a B&W background (good — sets a tone but only one human touchpoint).
+- Other public surfaces (`StageExplainerSection`, `IntentEntryCard`, `JourneyTemplate`, category shortcuts, "Empresas" CTA, footer) are pure type + icons + cards. Zero human photography.
+- `/public` only contains SVG doodles (`hero-doodle-*.svg`) and the one hero JPG. No portrait/action photos.
+- Provider cards already render real portfolio images when providers upload them — that's the strongest "human" signal we have, but it's behind data loading and only appears on `/directorio` and provider profiles.
+- Per memory: brand is **minimalist B&W with orange accent**, **bold typography**, **mobile-first**, **slow-3G optimized**. Any image strategy must respect this — no full-color stock photo soup.
 
-### 1. Schema (migration)
-Add to `providers`:
-- `slug text` — nullable, lowercase, `^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$` (3–40 chars, no leading/trailing hyphen).
-- Unique partial index on `lower(slug)` where `slug is not null`.
-- Validation **trigger** (not CHECK) enforcing format + reserved words (`admin`, `api`, `dashboard`, `auth`, `proveedor`, `directorio`, `empresas`, `materiales`, `conocimiento`, `perfil`, `pricing`, `nuevo`, `editar`).
-- RLS: existing "owner can update" policy already covers slug edits. No new policy needed.
+The "cold" feeling comes from: above-the-fold sections after the hero are entirely typographic, and the only human touchpoint disappears as soon as you scroll past the hero.
 
-Rollback note: `alter table providers drop column slug;` + drop trigger/index.
+## Recommendation: 3-layer image strategy
 
-### 2. Auto-suggest slug on first save
-In `upsertMyProviderProfile` (`src/lib/profile-api.ts`): if provider has no slug yet, generate one from `name` (kebab-case, ASCII-fold, strip diacritics, dedupe with `-2`, `-3` if taken). Always allow user to edit it later.
+### Layer 1 — Curated B&W human photography in 3–4 strategic spots
+Add real construction-worker imagery (cropped, B&W, low contrast so the orange accent + type stay dominant) to these high-impact, low-traffic-cost surfaces:
 
-### 3. Provider editor UI
-In `ProviderProfileEditorPage.tsx`, add a new field "URL pública del perfil" near the name/description block:
-- Input with prefix `obrasrd.com/proveedor/` (read-only) + editable slug field.
-- Live validation: format, length, availability (debounced query against `providers.slug`).
-- Helper text: "Usa solo letras, números y guiones. Ej: javier-pichardo-construccion".
-- "Copiar enlace" button (only enabled when slug is saved + valid).
-- Status messages in Spanish DR.
+1. **`StageExplainerSection`** — one B&W photo per stage card (Planificación / Construcción / Mantenimiento). Small aspect-ratio band at the top of each card (16:9, ~400px wide rendered). Humans at work = instant warmth in the densest typographic section.
+2. **"Empresas" CTA section** (`#cta-empresas`) — split layout on `md+`: left = current copy + CTAs, right = single B&W portrait of a contratista. Reinforces the "tu negocio" message.
+3. **`IntentEntryCard`** (the 3 intent cards on the homepage) — small circular B&W avatar/scene per card (propietario / contratista / suplidor). Tiny, decorative, ~64px.
+4. **Footer top band** — optional thin B&W photo strip (people on site) above the link grid. Pure mood, no interaction.
 
-### 4. Public profile route resolution
-Update `ProviderProfile.tsx` lookup in `marketplace-api.ts` (or wherever `getProviderById` lives) to:
-- First try `providers.slug = :param` (case-insensitive).
-- Fallback to `providers.id = :param` (UUID) for back-compat with existing shared links.
-- If found by UUID **and** provider has a slug, issue a client-side `<Navigate replace>` to the slug URL (canonical redirect, good for SEO + sharing).
+Why B&W: matches the hero treatment, keeps the page visually unified, makes the orange accent pop harder, and B&W JPEGs compress ~30% better than color at equivalent perceived quality.
 
-Route stays `/proveedor/:id` — no router changes; the param just accepts slug or UUID.
+### Layer 2 — Generate the assets via Nano Banana Pro
+We don't have a photo library and stock photos won't reflect Dominican context (clothing, sites, ethnicity, materials). Use `google/gemini-3-pro-image-preview` to generate ~6–8 hero/section images:
+- "Dominican construction worker in hard hat reviewing blueprints on site, B&W, documentary style"
+- "Contratista smiling at camera in front of unfinished structure, B&W portrait"
+- "Three workers pouring concrete, wide shot, B&W, gritty texture"
+- "Architect and client looking at plans together, B&W, warm composition"
+- etc.
 
-### 5. Update share/link generators
-- `ProviderCard` → navigate with `provider.slug ?? provider.id`.
-- Anywhere else building `/proveedor/${id}` links (search results, saved providers, leads). Quick grep + swap to a small helper `getProviderHref(provider)` in `src/lib/public-ia.ts`.
+Generate at 1600px wide source, post-process to AVIF + WebP fallbacks via the build pipeline (or just commit pre-optimized files to `/public/photos/`).
 
-### 6. Monetization hook (groundwork only, no paywall yet)
-- Add a soft rule in the editor: free plan = slug must be ≥ 8 chars; paid plans (`pro`, `premium`) unlock "short slug" (3–7 chars) and "premium reserved words" (e.g. trade names). Read plan from existing `get_my_provider_plan_snapshot()` RPC.
-- Show a non-blocking upsell card: "Upgrade para reservar URLs cortas tipo `/proveedor/javier`."
-- No payment changes. Just the gating logic + UI hint, ready to flip on later.
+### Layer 3 — Performance guardrails (non-negotiable)
+This is what keeps it fast:
 
-### 7. Analytics
-Add two events to `src/lib/analytics/events.ts`:
-- `provider_slug_claimed` (provider_id, slug_length, plan_code)
-- `provider_profile_link_copied` (provider_id, source: editor|public_profile)
+- **Format**: AVIF (primary) → WebP (fallback) → JPEG (legacy). Use `<picture>` element. AVIF B&W photos at 1600px are typically 30–60KB.
+- **Sizing**: Serve responsive sources with `srcset` + `sizes`. Mobile gets ~640px wide max.
+- **Lazy-load**: Every photo below the fold gets `loading="lazy"` and `decoding="async"`. The hero photo is the only eager one (and it already is).
+- **Aspect-ratio reserved**: Wrap each `<img>` in a CSS `aspect-ratio` container so layout doesn't shift (LCP/CLS protection).
+- **Defer in render path**: Reuse the existing `shouldLoadDeferredData` pattern from `Index.tsx` (double-RAF) so non-hero images don't compete with the initial paint. Optionally use `IntersectionObserver` for the deeper sections.
+- **No JS image libraries** — plain `<picture>` + native lazy loading only.
+- **Total budget**: Add no more than ~150KB total image weight to a cold homepage load (mobile, AVIF). Hero already accounts for the largest single asset.
 
-### 8. Out of scope
-- Custom domains (e.g. `javierpichardo.obrasrd.com`).
-- Slug history / 301 chain beyond one canonical redirect.
-- Bulk slug reservation admin UI.
-- Actual paywall enforcement / Stripe.
+Estimated impact at 4G: +80–150ms LCP worst case if hero image isn't touched (it isn't). At slow 3G: deferred images don't block first paint at all because they're below the fold and lazy-loaded.
+
+### Layer 4 — Reusable component
+Create one small `<HumanPhoto>` component that wraps `<picture>` with the AVIF/WebP/JPEG sources, aspect-ratio container, B&W CSS filter as a safety net (so even if a slightly-off image slips in, it stays on-brand), and lazy defaults. Single source of truth, easy to audit later.
+
+```tsx
+<HumanPhoto
+  src="/photos/stage-planning"   // resolves to .avif / .webp / .jpg
+  alt="Arquitecta revisando planos en obra"
+  aspect="16/9"
+  priority={false}                // true only for hero
+/>
+```
 
 ## Files touched
-- `supabase/migrations/<timestamp>_add_provider_slug.sql` (new)
-- `src/lib/profile-api.ts` — slug generation + upsert
-- `src/lib/marketplace-api.ts` — slug-or-UUID lookup
-- `src/lib/public-ia.ts` — `getProviderHref()` helper + reserved-word list
-- `src/lib/analytics/events.ts` — 2 new events
-- `src/pages/ProviderProfileEditorPage.tsx` — slug field + validation UI
-- `src/pages/ProviderProfile.tsx` — canonical redirect when accessed by UUID
-- `src/components/ProviderCard.tsx` + 2–3 other link sites — use helper
+- `public/photos/*.avif|.webp|.jpg` — 6–8 generated, optimized assets (new)
+- `src/components/ui/HumanPhoto.tsx` — new wrapper component
+- `src/components/home/StageExplainerSection.tsx` — add photo band per stage
+- `src/components/home/IntentEntryCard.tsx` — add small avatar
+- `src/pages/Index.tsx` — photo in `#cta-empresas` split layout + optional footer strip
+
+## Out of scope
+- Replacing the existing hero image (works well, stays).
+- Color photography anywhere on public surfaces.
+- Photos on dashboard/auth/editor screens (functional surfaces, no warmth needed).
+- A CMS-managed photo library — defer until we have ≥20 assets.
 
 ## Validation
 - `npm run lint` and `npm run build`.
-- Manual: claim a slug, copy link, open in incognito, confirm it loads and that the old UUID URL redirects to the slug URL.
-- Edge cases: reserved word rejected, duplicate slug rejected, accents stripped (`José Núñez` → `jose-nunez`), 2-char slug rejected on free plan.
+- Manual: throttle to "Slow 3G" in DevTools, hard reload `/`, confirm hero paints first and below-fold photos load only on scroll, no layout shift.
+- Lighthouse before/after on mobile — LCP should stay <2.5s, CLS <0.05.
+- Visual: scroll through homepage on 390px and 1280px and confirm the page now feels human, not just typographic.
