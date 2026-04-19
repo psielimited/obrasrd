@@ -1,6 +1,7 @@
 import type { Provider } from "@/data/marketplace";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { findAvailableSlug } from "@/lib/provider-slug";
 
 export type UserRole = "buyer" | "provider";
 
@@ -15,6 +16,7 @@ export interface UserProfile {
 
 export interface ProviderProfileInput {
   id?: string;
+  slug?: string | null;
   name: string;
   trade: string;
   categorySlug: string;
@@ -36,6 +38,7 @@ export interface ProviderProfileInput {
 
 const toProvider = (row: Tables<"providers">): Provider => ({
   id: row.id,
+  slug: (row as any).slug ?? undefined,
   name: row.name,
   trade: row.trade,
   categorySlug: row.category_slug,

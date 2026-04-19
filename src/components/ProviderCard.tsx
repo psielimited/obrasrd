@@ -16,6 +16,7 @@ import { getLegacyCategoryDisplayFallback } from "@/lib/legacy-taxonomy-compat";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { deriveProvinceFromText } from "@/lib/analytics/province";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
+import { getProviderHref } from "@/lib/public-ia";
 
 interface ProviderCardProps {
   provider: Provider;
@@ -86,7 +87,7 @@ const ProviderCard = ({ provider, phases = [], taxonomyCatalog }: ProviderCardPr
 
   const onOpenProfile = () => {
     trackProviderViewed("provider_card");
-    navigate(`/proveedor/${provider.id}`);
+    navigate(getProviderHref(provider));
   };
 
   const onContactViaWhatsapp = () => {
