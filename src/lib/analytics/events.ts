@@ -19,6 +19,8 @@ export const OBRASRD_ANALYTICS_EVENTS = {
   SearchRecoveryStateViewed: "search_recovery_state_viewed",
   SearchRecoveryActionClicked: "search_recovery_action_clicked",
   ContentToDirectoryClick: "content_to_directory_click",
+  ProviderSlugClaimed: "provider_slug_claimed",
+  ProviderProfileLinkCopied: "provider_profile_link_copied",
 } as const;
 
 export type ObrasRdAnalyticsEventName =
@@ -163,6 +165,15 @@ type EventPayloadMap = {
     project_id?: string;
     cta_type: "ver_empresas_relacionadas" | "buscar_este_servicio" | "ver_categoria_relacionada" | "ver_proveedor_relacionado";
     target_href: string;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.ProviderSlugClaimed]: {
+    provider_id: string;
+    slug_length: number;
+    plan_code?: string;
+  };
+  [OBRASRD_ANALYTICS_EVENTS.ProviderProfileLinkCopied]: {
+    provider_id: string;
+    source: "editor" | "public_profile";
   };
 };
 
