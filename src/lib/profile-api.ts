@@ -126,8 +126,13 @@ const syncProviderTaxonomyRelations = async (
       provider_id: providerId,
       work_type_id: workTypeId,
     }));
-    const { error } = await providerWorkTypesTable.upsert(rows, {
+
+    // `provider_work_types` rows are append-only for ownership purposes.
+    // Use insert+ignoreDuplicates so writes stay on the INSERT policy path
+    // and do not require an UPDATE RLS policy during conflict handling.
+    const { error } = await providerWorkTypesTable.insert(rows, {
       onConflict: "provider_id,work_type_id",
+      ignoreDuplicates: true,
     });
     if (error) throw error;
   }
