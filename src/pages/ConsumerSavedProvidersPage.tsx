@@ -11,6 +11,7 @@ import { useMySavedProviders, savedProvidersQueryKeys } from "@/hooks/use-saved-
 import { unsaveProvider, updateSavedProviderMeta } from "@/lib/saved-providers-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { getProviderHref } from "@/lib/public-ia";
 
 const ConsumerSavedProvidersPage = () => {
   const navigate = useNavigate();

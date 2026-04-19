@@ -7,6 +7,7 @@ import SectionCard from "@/components/dashboard/SectionCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useMySavedProviders } from "@/hooks/use-saved-providers-data";
+import { getProviderHref } from "@/lib/public-ia";
 
 const MAX_COMPARE = 4;
 

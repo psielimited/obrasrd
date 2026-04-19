@@ -34,7 +34,7 @@ import CategoryTag from "@/components/marketplace/CategoryTag";
 import TrustBadgeRow from "@/components/marketplace/TrustBadgeRow";
 import MarketplaceVisualFrame from "@/components/marketplace/MarketplaceVisualFrame";
 import { useMemo } from "react";
-import { PUBLIC_ROUTES } from "@/lib/public-ia";
+import { PUBLIC_ROUTES, getProviderHref } from "@/lib/public-ia";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   active: "Activo",
