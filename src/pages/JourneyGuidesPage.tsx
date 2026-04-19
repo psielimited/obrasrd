@@ -150,6 +150,13 @@ const JourneyGuidesPage = () => {
           ) : (
             groupedStageArchive.map((stageGroup) => (
               <section key={stageGroup.stageSlug} className="space-y-4">
+                <HumanPhoto
+                  src={getStagePhoto(stageGroup.stageSlug)}
+                  alt={getStagePhotoAlt(stageGroup.stageSlug)}
+                  aspect="4/1"
+                  sizesHint="(min-width: 1024px) 960px, 100vw"
+                  className="rounded-lg border border-border"
+                />
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                     {stageGroup.stageLabel}
