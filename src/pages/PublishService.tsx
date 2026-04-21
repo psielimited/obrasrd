@@ -1,17 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { createServicePost, usePhases } from "@/hooks/use-marketplace-data";
 import { useToast } from "@/hooks/use-toast";
 import { useTaxonomyCatalog } from "@/hooks/use-taxonomy-data";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { OBRASRD_ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { deriveProvinceFromText } from "@/lib/analytics/province";
 import { trackObrasRdEvent } from "@/lib/analytics/track";
+import { PUBLIC_ROUTES } from "@/lib/public-ia";
 
 const PublishService = () => {
   const navigate = useNavigate();
+  const routeLocation = useLocation();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuthSession();
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [postType, setPostType] = useState("Ofrezco servicios");
@@ -39,6 +43,20 @@ const PublishService = () => {
 
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) {
+      return;
+    }
+
+    if (authLoading) {
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Inicia sesion para publicar",
+        description: "Necesitas una cuenta activa para crear esta publicacion.",
+        variant: "destructive",
+      });
+      navigate("/auth", { state: { from: routeLocation.pathname || PUBLIC_ROUTES.empresas } });
       return;
     }
 
@@ -72,7 +90,7 @@ const PublishService = () => {
       console.error(error);
       toast({
         title: "No se pudo publicar",
-        description: "Intenta nuevamente en unos minutos.",
+        description: error instanceof Error ? error.message : "Intenta nuevamente en unos minutos.",
         variant: "destructive",
       });
     } finally {
