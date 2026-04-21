@@ -490,6 +490,19 @@ export const createServicePost = async (payload: PublishServiceInput): Promise<v
     return;
   }
 
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    throw authError;
+  }
+
+  if (!user) {
+    throw new Error("Debes iniciar sesion para publicar.");
+  }
+
   const { error } = await (supabase.from("service_posts") as any).insert({
     post_type: payload.postType,
     title: payload.title,
@@ -497,6 +510,7 @@ export const createServicePost = async (payload: PublishServiceInput): Promise<v
     description: payload.description,
     estimated_budget: payload.estimatedBudget?.trim() ? payload.estimatedBudget : null,
     whatsapp: payload.whatsapp,
+    owner_user_id: user.id,
     ...(payload.requestedStageId !== undefined ? { requested_stage_id: payload.requestedStageId } : {}),
     ...(payload.requestedDisciplineId !== undefined
       ? { requested_discipline_id: payload.requestedDisciplineId }
