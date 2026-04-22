@@ -138,7 +138,7 @@ const AdminServicePostsModerationPage = () => {
           <p className="text-sm font-semibold text-foreground">Acceso restringido</p>
           <p className="mt-1 text-sm text-muted-foreground">Este panel requiere rol admin.</p>
           <Button asChild variant="ghost" className="mt-3">
-            <Link to="/dashboard">Ir al dashboard</Link>
+            <Link to="/perfil">Ir a perfil</Link>
           </Button>
         </div>
       </div>
@@ -151,9 +151,9 @@ const AdminServicePostsModerationPage = () => {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <Button asChild variant="ghost" size="sm" className="mb-1">
-              <Link to="/dashboard">
+              <Link to="/perfil">
                 <ArrowLeft className="mr-1 h-4 w-4" />
-                Dashboard
+                Perfil
               </Link>
             </Button>
             <h1 className="text-2xl font-black tracking-tight text-foreground">Revision de publicaciones</h1>
