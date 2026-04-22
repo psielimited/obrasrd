@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useMyProfile } from "@/hooks/use-profile-data";
 import { upsertMyProfile, type UserRole } from "@/lib/profile-api";
@@ -9,6 +9,7 @@ import { profileQueryKeys } from "@/hooks/use-profile-data";
 import { supabase } from "@/integrations/supabase/client";
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const { data: profile } = useMyProfile();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -18,6 +19,7 @@ const ProfilePage = () => {
   const [notificationEmailEnabled, setNotificationEmailEnabled] = useState(true);
   const [notificationWhatsappEnabled, setNotificationWhatsappEnabled] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const isAdmin = (profile?.role as string) === "admin";
 
   useEffect(() => {
     if (!profile) return;
@@ -96,6 +98,11 @@ const ProfilePage = () => {
               <Button variant={role === "provider" ? "default" : "outline"} onClick={() => setRole("provider")}>
                 Proveedor
               </Button>
+              {isAdmin && (
+                <Button variant="outline" onClick={() => navigate("/dashboard/admin/publicaciones")}>
+                  Admin / Moderacion
+                </Button>
+              )}
             </div>
           </div>
 
@@ -133,6 +140,14 @@ const ProfilePage = () => {
               <p className="text-sm text-foreground">Tu cuenta esta configurada como cliente.</p>
               <Link to="/dashboard" className="text-sm font-semibold text-accent hover:underline">
                 Ir al dashboard de cliente
+              </Link>
+            </div>
+          )}
+          {isAdmin && (
+            <div className="bg-muted/40 p-4 rounded-lg flex flex-col gap-2">
+              <p className="text-sm text-foreground">Tu cuenta tiene acceso de admin para revisar publicaciones.</p>
+              <Link to="/dashboard/admin/publicaciones" className="text-sm font-semibold text-accent hover:underline">
+                Ir al dashboard de moderacion
               </Link>
             </div>
           )}
