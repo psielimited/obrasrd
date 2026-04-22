@@ -9,7 +9,13 @@ import {
   fetchProviderById,
   fetchProviderSummaries,
   fetchProviders,
+  listMyServicePosts,
+  listPendingServicePosts,
+  moderateServicePost,
+  type ModerateServicePostInput,
   type PortfolioProjectWithProvider,
+  type ServicePostModerationRecord,
+  type ServicePostStatus,
   PublishServiceInput,
 } from "@/lib/marketplace-api";
 import {
@@ -26,6 +32,9 @@ export const marketplaceQueryKeys = {
   provider: (id: string) => ["marketplace", "providers", id] as const,
   materials: ["marketplace", "materials"] as const,
   phases: ["marketplace", "phases"] as const,
+  myServicePosts: ["marketplace", "service-posts", "me"] as const,
+  pendingServicePosts: (status: ServicePostStatus | "all") =>
+    ["marketplace", "service-posts", "pending", status] as const,
 };
 
 export const useProviders = () =>
@@ -95,5 +104,26 @@ export const usePhases = (enabled = true) =>
     ...CATALOG_QUERY_OPTIONS,
   });
 
-export { createServicePost };
-export type { PublishServiceInput };
+export const useMyServicePosts = (enabled = true) =>
+  useQuery<ServicePostModerationRecord[]>({
+    queryKey: marketplaceQueryKeys.myServicePosts,
+    queryFn: listMyServicePosts,
+    enabled,
+    ...MARKETPLACE_LIST_QUERY_OPTIONS,
+  });
+
+export const usePendingServicePosts = (status: ServicePostStatus | "all" = "pending", enabled = true) =>
+  useQuery<ServicePostModerationRecord[]>({
+    queryKey: marketplaceQueryKeys.pendingServicePosts(status),
+    queryFn: () => listPendingServicePosts(status),
+    enabled,
+    ...MARKETPLACE_LIST_QUERY_OPTIONS,
+  });
+
+export { createServicePost, listMyServicePosts, listPendingServicePosts, moderateServicePost };
+export type {
+  ModerateServicePostInput,
+  PublishServiceInput,
+  ServicePostModerationRecord,
+  ServicePostStatus,
+};

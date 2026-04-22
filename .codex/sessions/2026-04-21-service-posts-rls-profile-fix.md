@@ -1,30 +1,53 @@
 # Goal
-Fix Supabase RLS failure when creating `service_posts` during publish/profile completion flow.
+Implement service-post moderation workflow with admin review queue and owner-facing status tracking.
 
 # In scope / out of scope
-- In scope: client insert path for `service_posts` ownership binding to authenticated user.
-- In scope: `/empresas` UX handling for unauthenticated publish attempts and clearer error feedback.
-- Out of scope: DB policy changes, route redesign, auth UX redesign.
+- In scope: `service_posts` moderation schema + RLS, admin moderation UI, owner status UI, route wiring, submit-flow copy update.
+- Out of scope: notifications (email/WhatsApp), public listing behavior changes, historical review event table.
 
 # Decisions
-- Keep strict RLS policy (`owner_user_id = auth.uid()`) intact.
-- Update client insert to set `owner_user_id` from `supabase.auth.getUser()` before insert.
-- Fail fast with clear error when user session is missing.
-- On `/empresas`, redirect unauthenticated users to `/auth` before submit and preserve return path.
-- Show backend error message in toast instead of a generic fallback-only message.
+- Added moderation audit fields directly on `service_posts` (`reviewed_at`, `reviewed_by_user_id`, `review_note`).
+- Added admin policies for service-post read/update based on `user_profiles.role = 'admin'`.
+- Kept existing owner policies in place.
+- Owner-facing module is `/dashboard/publicaciones`.
+- Admin queue route is `/dashboard/admin/publicaciones`.
+- `/empresas` success copy now states submission enters review queue and links to status page.
 
 # Files changed
+- supabase/migrations/20260421103000_service_posts_moderation_workflow.sql
 - src/lib/marketplace-api.ts
+- src/hooks/use-marketplace-data.ts
+- src/pages/AdminServicePostsModerationPage.tsx
+- src/pages/MyServicePostsPage.tsx
+- src/App.tsx
+- src/components/dashboard/ProviderDashboardLayout.tsx
+- src/components/dashboard/ConsumerDashboardLayout.tsx
+- src/pages/DashboardHomeRedirect.tsx
 - src/pages/PublishService.tsx
-- .codex/sessions/2026-04-21-service-posts-rls-profile-fix.md
 
 # Validation results
 - `npm run build`: passed.
-- `npm run lint`: not rerun in this pass (known baseline issues already present in branch).
+- `npm run lint`: fails due existing repo-wide baseline issues unrelated to this feature (same `no-explicit-any`, UI warnings, etc.).
 
 # Known issues
-- Lint baseline is currently red in this branch due unrelated pre-existing issues.
+- Migration not applied automatically; run your normal Supabase migration deploy flow.
+- Admin role must exist in `user_profiles` via backoffice/service-role path.
+- Owner update policy still allows owner edits on own posts per existing policy design.
 
 # Next steps
-- Deploy latest frontend build so production `/empresas` picks up auth-aware submit handling.
-- Validate unauthenticated and authenticated submit flows in production.
+- Apply Supabase migration in target environments.
+- Smoke test:
+  1) submit post as authenticated user,
+  2) moderate as admin on `/dashboard/admin/publicaciones`,
+  3) verify owner sees updated status/note on `/dashboard/publicaciones`.
+
+# Schema rollback notes
+- Drop admin policies on `public.service_posts`:
+  - `Admins can read all service posts`
+  - `Admins can moderate service posts`
+- Drop moderation columns from `public.service_posts`:
+  - `reviewed_at`
+  - `reviewed_by_user_id`
+  - `review_note`
+- Drop index:
+  - `service_posts_status_created_at_idx`

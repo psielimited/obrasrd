@@ -36,6 +36,8 @@ const ConsumerCompareProvidersPage = lazy(() => import("./pages/ConsumerCompareP
 const DashboardHomeRedirect = lazy(() => import("./pages/DashboardHomeRedirect"));
 const LeadThreadPage = lazy(() => import("./pages/LeadThreadPage"));
 const InternalDataQualityPage = lazy(() => import("./pages/InternalDataQualityPage"));
+const MyServicePostsPage = lazy(() => import("./pages/MyServicePostsPage"));
+const AdminServicePostsModerationPage = lazy(() => import("./pages/AdminServicePostsModerationPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -158,6 +160,22 @@ const AppContent = () => {
             element={
               <RequireAuth>
                 <ProviderLeadsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/publicaciones"
+            element={
+              <RequireAuth>
+                <MyServicePostsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/admin/publicaciones"
+            element={
+              <RequireAuth>
+                <AdminServicePostsModerationPage />
               </RequireAuth>
             }
           />

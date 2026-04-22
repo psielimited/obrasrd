@@ -52,6 +52,7 @@ const ConsumerDashboardLayout = ({
     { label: "Comparar proveedores", to: "/dashboard/cliente/comparar", icon: Scale },
     { label: "Notificaciones", to: "/notificaciones", icon: Bell },
     { label: "Publicar servicio", to: PUBLIC_ROUTES.empresas, icon: FilePlus2 },
+    { label: "Mis publicaciones", to: "/dashboard/publicaciones", icon: ClipboardList },
     { label: "Marketplace", to: PUBLIC_ROUTES.directorio, icon: Search },
     { label: "Ajustes / Cuenta", to: "/perfil", icon: Settings },
   ];

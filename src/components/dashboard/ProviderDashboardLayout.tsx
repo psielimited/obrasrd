@@ -4,6 +4,7 @@ import {
   Bell,
   BriefcaseBusiness,
   Building2,
+  ClipboardList,
   FilePlus2,
   LayoutDashboard,
   LogOut,
@@ -52,6 +53,7 @@ const ProviderDashboardLayout = ({
     { label: "Leads", to: "/dashboard/leads", icon: BriefcaseBusiness },
     { label: "Notificaciones", to: "/notificaciones", icon: Bell },
     { label: "Publicar servicio", to: PUBLIC_ROUTES.empresas, icon: FilePlus2 },
+    { label: "Mis publicaciones", to: "/dashboard/publicaciones", icon: ClipboardList },
     { label: "Marketplace", to: marketplaceHref, icon: Search },
     { label: "Ajustes / Cuenta", to: "/perfil", icon: Settings },
   ];

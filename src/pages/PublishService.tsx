@@ -104,11 +104,16 @@ const PublishService = () => {
         <div className="bg-card p-8 rounded-xl obra-shadow text-center max-w-md">
           <h2 className="text-xl font-bold text-foreground mb-2">Solicitud enviada</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Tu publicacion sera revisada y aparecera en el marketplace pronto.
+            Tu publicacion entro a la cola de revision. Te notificaremos en tu historial cuando sea aprobada o rechazada.
           </p>
-          <Button variant="accent" onClick={() => navigate("/")}>
-            Volver al inicio
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button variant="accent" onClick={() => navigate("/dashboard/publicaciones")}>
+              Ver estado
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              Volver al inicio
+            </Button>
+          </div>
         </div>
       </div>
     );

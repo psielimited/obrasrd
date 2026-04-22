@@ -16,6 +16,41 @@ export interface PublishServiceInput {
   requestedWorkTypeId?: number;
 }
 
+export type ServicePostStatus = "pending" | "approved" | "rejected";
+
+export interface ServicePostModerationRecord {
+  id: string;
+  ownerUserId?: string;
+  postType: string;
+  title: string;
+  location: string;
+  description: string;
+  estimatedBudget?: string;
+  whatsapp: string;
+  status: ServicePostStatus;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt?: string;
+  reviewedByUserId?: string;
+  reviewNote?: string;
+  requestedStageId?: number;
+  requestedDisciplineId?: number;
+  requestedServiceId?: number;
+  requestedWorkTypeId?: number;
+}
+
+export interface ModerateServicePostInput {
+  id: string;
+  status: Exclude<ServicePostStatus, "pending">;
+  reviewNote?: string;
+  title?: string;
+  location?: string;
+  description?: string;
+  estimatedBudget?: string;
+  whatsapp?: string;
+  postType?: string;
+}
+
 const hasSupabaseConfig = Boolean(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
 );
@@ -490,15 +525,7 @@ export const createServicePost = async (payload: PublishServiceInput): Promise<v
     return;
   }
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError) {
-    throw authError;
-  }
-
+  const user = await requireAuthenticatedUser();
   if (!user) {
     throw new Error("Debes iniciar sesion para publicar.");
   }
@@ -522,4 +549,122 @@ export const createServicePost = async (payload: PublishServiceInput): Promise<v
   if (error) {
     throw error;
   }
+};
+
+const mapServicePostRecord = (row: Tables<"service_posts">): ServicePostModerationRecord => ({
+  id: row.id,
+  ownerUserId: row.owner_user_id ?? undefined,
+  postType: row.post_type,
+  title: row.title,
+  location: row.location,
+  description: row.description,
+  estimatedBudget: row.estimated_budget ?? undefined,
+  whatsapp: row.whatsapp,
+  status: row.status as ServicePostStatus,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+  reviewedAt: (row as any).reviewed_at ?? undefined,
+  reviewedByUserId: (row as any).reviewed_by_user_id ?? undefined,
+  reviewNote: (row as any).review_note ?? undefined,
+  requestedStageId: row.requested_stage_id ?? undefined,
+  requestedDisciplineId: row.requested_discipline_id ?? undefined,
+  requestedServiceId: row.requested_service_id ?? undefined,
+  requestedWorkTypeId: row.requested_work_type_id ?? undefined,
+});
+
+const requireAuthenticatedUser = async () => {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError) {
+    throw authError;
+  }
+  if (!user) {
+    throw new Error("Debes iniciar sesion.");
+  }
+  return user;
+};
+
+export const listPendingServicePosts = async (
+  status: ServicePostStatus | "all" = "pending",
+): Promise<ServicePostModerationRecord[]> => {
+  if (!hasSupabaseConfig) {
+    return [];
+  }
+
+  await requireAuthenticatedUser();
+
+  let query = supabase
+    .from("service_posts")
+    .select(
+      "id,owner_user_id,post_type,title,location,description,estimated_budget,whatsapp,status,created_at,updated_at,reviewed_at,reviewed_by_user_id,review_note,requested_stage_id,requested_discipline_id,requested_service_id,requested_work_type_id",
+    )
+    .order("created_at", { ascending: true });
+
+  if (status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => mapServicePostRecord(row as Tables<"service_posts">));
+};
+
+export const moderateServicePost = async (payload: ModerateServicePostInput): Promise<void> => {
+  if (!hasSupabaseConfig) {
+    return;
+  }
+
+  const user = await requireAuthenticatedUser();
+  const reviewNote = payload.reviewNote?.trim() ?? "";
+  const nowIso = new Date().toISOString();
+
+  const updatePayload: Record<string, unknown> = {
+    status: payload.status,
+    reviewed_at: nowIso,
+    reviewed_by_user_id: user.id,
+    review_note: reviewNote.length > 0 ? reviewNote : null,
+  };
+
+  if (payload.title !== undefined) updatePayload.title = payload.title;
+  if (payload.location !== undefined) updatePayload.location = payload.location;
+  if (payload.description !== undefined) updatePayload.description = payload.description;
+  if (payload.whatsapp !== undefined) updatePayload.whatsapp = payload.whatsapp;
+  if (payload.postType !== undefined) updatePayload.post_type = payload.postType;
+  if (payload.estimatedBudget !== undefined) {
+    updatePayload.estimated_budget = payload.estimatedBudget.trim().length > 0 ? payload.estimatedBudget : null;
+  }
+
+  const { error } = await (supabase.from("service_posts") as any)
+    .update(updatePayload)
+    .eq("id", payload.id);
+
+  if (error) {
+    throw error;
+  }
+};
+
+export const listMyServicePosts = async (): Promise<ServicePostModerationRecord[]> => {
+  if (!hasSupabaseConfig) {
+    return [];
+  }
+
+  await requireAuthenticatedUser();
+
+  const { data, error } = await supabase
+    .from("service_posts")
+    .select(
+      "id,owner_user_id,post_type,title,location,description,estimated_budget,whatsapp,status,created_at,updated_at,reviewed_at,reviewed_by_user_id,review_note,requested_stage_id,requested_discipline_id,requested_service_id,requested_work_type_id",
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => mapServicePostRecord(row as Tables<"service_posts">));
 };

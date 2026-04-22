@@ -22,6 +22,10 @@ const DashboardHomeRedirect = () => {
     return <Navigate to="/dashboard/proveedor" replace />;
   }
 
+  if ((profile?.role as string) === "admin") {
+    return <Navigate to="/dashboard/admin/publicaciones" replace />;
+  }
+
   return <Navigate to="/dashboard/cliente" replace />;
 };
 
