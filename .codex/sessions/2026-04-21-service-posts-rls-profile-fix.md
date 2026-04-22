@@ -3,6 +3,7 @@ Implement service-post moderation workflow with admin review queue and owner-fac
 
 # In scope / out of scope
 - In scope: `service_posts` moderation schema + RLS, admin moderation UI, owner status UI, route wiring, submit-flow copy update.
+- In scope: grant admin access for `allen.rodriguez@gmail.com` via migration data update.
 - Out of scope: notifications (email/WhatsApp), public listing behavior changes, historical review event table.
 
 # Decisions
@@ -12,9 +13,11 @@ Implement service-post moderation workflow with admin review queue and owner-fac
 - Owner-facing module is `/dashboard/publicaciones`.
 - Admin queue route is `/dashboard/admin/publicaciones`.
 - `/empresas` success copy now states submission enters review queue and links to status page.
+- Added a dedicated migration to set `allen.rodriguez@gmail.com` role to `admin` when the auth user exists.
 
 # Files changed
 - supabase/migrations/20260421103000_service_posts_moderation_workflow.sql
+- supabase/migrations/20260421110000_grant_admin_allen_rodriguez.sql
 - src/lib/marketplace-api.ts
 - src/hooks/use-marketplace-data.ts
 - src/pages/AdminServicePostsModerationPage.tsx
@@ -35,7 +38,7 @@ Implement service-post moderation workflow with admin review queue and owner-fac
 - Owner update policy still allows owner edits on own posts per existing policy design.
 
 # Next steps
-- Apply Supabase migration in target environments.
+- Apply Supabase migrations in target environments.
 - Smoke test:
   1) submit post as authenticated user,
   2) moderate as admin on `/dashboard/admin/publicaciones`,
@@ -51,3 +54,5 @@ Implement service-post moderation workflow with admin review queue and owner-fac
   - `review_note`
 - Drop index:
   - `service_posts_status_created_at_idx`
+- Revoke admin grant for target user:
+  - set role back to `buyer` (see rollback note in `20260421110000_grant_admin_allen_rodriguez.sql`)
